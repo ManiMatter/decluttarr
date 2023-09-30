@@ -1,7 +1,7 @@
 name: Deploy Images to GHCR
 
-env:
-  DOTNET_VERSION: '6.0.x' 
+# env:
+#   DOTNET_VERSION: '6.0.x' 
 
 on:
   push:
@@ -29,5 +29,5 @@ jobs:
           - name: 'Build Inventory Image'
             run: |
               # docker build . --tag ghcr.io/manimatter/decluttarr:latest
-              docker build . --tag ghcr.io/manimatter/decluttarr:latest             
+              docker build docker/. --tag ghcr.io/manimatter/decluttarr:latest             
               docker push ghcr.io/manimatter/decluttarr:latest
