@@ -3,7 +3,7 @@ import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 from src.utils.rest import (rest_get, rest_delete)
 import json
-from src.utils.nest_functions.py import (add_keys_nested_dict, nested_get)
+from src.utils.nest_functions import (add_keys_nested_dict, nested_get)
 class Deleted_Downloads:
     # Keeps track of which downloads have already been deleted (to not double-delete)
     def __init__(self, dict):

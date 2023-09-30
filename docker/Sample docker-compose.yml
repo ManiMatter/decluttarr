@@ -1,9 +1,9 @@
-# declutarr - Keeps radarr and sonarr download queues free of stalled and redundant items
-declutarr:
+# decluttarr - Keeps radarr and sonarr download queues free of stalled and redundant items
+ decluttarr:
    build:
-     context: ./own_coding/declutarr/
+     context: ./own_coding/decluttarr/
      dockerfile: docker/Dockerfile
-   container_name: declutarr
+   container_name: decluttarr
    environment:
      TZ: Europe/Zurich
      PUID: 1000
@@ -32,3 +32,6 @@ declutarr:
 
      #qBitorrent
      QBITTORRENT_URL: http://qbittorrent:8080
+     
+   labels:
+     - "com.centurylinklabs.watchtower.enable=false"

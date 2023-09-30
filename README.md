@@ -1,7 +1,7 @@
-# **Declutarr**
+# **Decluttarr**
 
 ## Overview
-Declutarr keeps the radarr & sonarr queue free of stalled / redundant downloads.
+Decluttarr keeps the radarr & sonarr queue free of stalled / redundant downloads.
 
 Feature overview:
 - Automatically delete failed downloads
@@ -15,14 +15,14 @@ A sample docker-compose.yml is included.
 
 ## Getting started
 If you want to run in docker:
-1) Pull the declutarr into "your-docker-folder/own_coding/declutarr"
+1) Pull the decluttarr into "your-docker-folder/own_coding/decluttarr"
 2) Study the config file to understand the settings
 3) Update your docker-compose (see the template)
 4) Run the docker-compose
 5) Enjoy
 
 If you want to run locally:
-1) Pull declutarr into whatever location you want
+1) Pull decluttarr into whatever location you want
 2) Study the config file to understand the settings
 3) Edit the config file to your liking
 4) run main.py
