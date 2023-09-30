@@ -1,0 +1,5 @@
+requests
+aiohttp
+asyncio
+python-dateutil
+verboselogs

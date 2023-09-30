@@ -1,0 +1,5 @@
+__pycache__/
+config/config.conf
+test*.py
+ToDo
+.vscode

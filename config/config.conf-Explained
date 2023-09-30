@@ -1,0 +1,115 @@
+# The config file is only relevant when running main.py locally.
+# When running within docker, all settings are to be set via the docker-compose.yml, and this config.conf file will be ignored
+
+################################# GENERAL SECTION #################################
+# General parameters such as log level / test run
+[general]
+
+###### LOG_LEVEL ######
+# Sets the level at which logging will take place.
+# INFO will only show changes applied to Radarr/Sonarr
+# VERBOSE will show when script runs (even if it results in no change)
+# Type: String
+# Permissible Values: CRITICAL, ERROR, WARNING, INFO, VERBOSE, DEBUG
+# Is Mandatory: No (Defaults to INFO)
+LOG_LEVEL = INFO
+
+###### TEST_RUN ######
+# Allows you to safely try out this tool. If active, downloads will not be removed. 
+# Type: Boolean
+# Permissible Values: True, False
+# Is Mandatory: No (Defaults to False)
+TEST_RUN = False
+
+################################# FEATURES SETTINGS #################################
+# Steers which type of cleaning is applied to the downloads queue. 
+# Requires QUEUE_CLEANING to be set to True to take effect. 
+[features]
+
+###### REMOVE_TIMER ######
+# Sets the frequency how often the queue is cleaned form orphan and stalled downloads
+# Type: Integer
+# Unit: Minutes
+# Is Mandatory: No (Defaults to 10)
+REMOVE_TIMER = 10
+
+###### REMOVE_FAILED ######
+# Steers whether failed downloads with no connections are removed from the queue
+# Failed downloads are not added to the blocklist
+# Type: Boolean
+# Permissible Values: True, False
+# Is Mandatory: No (Defaults to False)
+REMOVE_FAILED  = False
+
+###### REMOVE_STALLED ######
+# Steers whether stalled downloads with no connections are removed from the queue
+# Stalled downloads are added to the blocklist, so that they are not re-requested in the future
+# Type: Boolean
+# Permissible Values: True, False
+# Is Mandatory: No (Defaults to False)
+REMOVE_STALLED  = False
+
+###### REMOVE_METADATA_MISSING ######
+# Steers whether downloads stuck obtaining meta data are removed from the queue
+# These downloads are added the blocklist, so that they are not re-requested in the future
+# Type: Boolean
+# Permissible Values: True, False
+# Is Mandatory: No (Defaults to False)
+REMOVE_METADATA_MISSING  = False
+
+###### REMOVE_ORPHANS ######
+# Steers whether orphan downloads are removed from the queue 
+# Orphan downloads those that do not belong to any movie/tvshow anymore (since the movie/TV show was deleted post request)
+# Orphan downloads are not added to the block list
+# Type: Boolean
+# Permissible Values: True, False
+# Is Mandatory: No (Defaults to False)
+REMOVE_ORPHANS  = False
+
+###### REMOVE_UNMONITORED ######
+# Steers whether downloads belonging to unmonitored movies/TV shows are removed from the queue
+# Note: Will only remove from queue if all tv shows depending on the same download are unmonitored
+# Unmonitored downloads are not added to the block list
+# Type: Boolean
+# Permissible Values: True, False
+# Is Mandatory: No (Defaults to False)
+REMOVE_UNMONITORED  = False
+
+###### PERMITTED_ATTEMPTS ######
+# Defines how many times a download has to be caught as stalled or stuck downloading metadata before it is removed
+# Type: Integer
+# Unit: Number of scans
+# Is Mandatory: No (Defaults to 3)
+PERMITTED_ATTEMPTS= 3
+
+###### NO_STALLED_REMOVAL_QBIT_TAG ######
+# Downloads in qBittorrent tagged with this tag will not be killed even if they are stalled
+# Type: String
+# Is Mandatory: No (Defaults to "Don't Kill If Stalled")
+NO_STALLED_REMOVAL_QBIT_TAG= Don't Kill If Stalled
+
+################################# RADARR SECTION #################################
+[radarr]
+# Defines radarr instance on which download queue should be decluttered
+# RADARR_URL    : URL under which the instance can be reached. If not defined, this instance will not be monitored.
+# RADARR_KEY    : API Key (mandatory if RADARR_URL is specifidd)
+RADARR_URL    = http://radarrA:7878
+RADARR_KEY    = XXXXX
+
+################################# SONARR SECTION #################################
+[sonarr]
+# Please see the documentation under the RADARR section - the explanations the same.
+SONARR_URL    = http://sonarrA:8989
+SONARR_KEY    = XXXXX
+
+################################# SONARR SECTION #################################
+[sonarr]
+# Please see the documentation under the RADARR section - the explanations the same.
+SONARR_URL    = http://sonarrA:8989
+SONARR_KEY    = XXXXX
+
+################################# QBITTORRENT SECTION #################################
+[qbittorrent]
+# Defines URL of qBittorrent
+# QBITTORRENT_URL    : URL under which the instance can be reached. If not defined, the NO_STALLED_REMOVAL_QBIT_TAG takes no effect
+QBITTORRENT_URL     = http://qbittorrent:8080

@@ -1,0 +1,34 @@
+# declutarr - Keeps radarr and sonarr download queues free of stalled and redundant items
+declutarr:
+   build:
+     context: ./own_coding/declutarr/
+     dockerfile: docker/Dockerfile
+   container_name: declutarr
+   environment:
+     TZ: Europe/Zurich
+     PUID: 1000
+     PGID: 1000
+
+     # General
+     LOG_LEVEL: INFO 
+
+     # features 
+     REMOVE_TIMER: 10
+     REMOVE_FAILED: True
+     REMOVE_STALLED: True
+     REMOVE_METADATA_MISSING: True     
+     REMOVE_ORPHANS: True
+     REMOVE_UNMONITORED: True
+     PERMITTED_ATTEMPTS: 3
+     NO_STALLED_REMOVAL_QBIT_TAG: Don't Kill If Stalled
+
+     #Radarr
+     RADARR_URL: http://radarr:7878
+     RADARR_KEY: $RADARR_API_KEY
+
+     #Sonarr
+     SONARR_URL: http://sonarr:8989
+     SONARR_KEY: $SONARR_API_KEY
+
+     #qBitorrent
+     QBITTORRENT_URL: http://qbittorrent:8080
