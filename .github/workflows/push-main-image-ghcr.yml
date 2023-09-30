@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-latest
         defaults:
           run:
-            working-directory: './own_coding/decluttarr/'
+            working-directory: '.'
         steps:
           - name: 'Checkout GitHub Action'
             uses: actions/checkout@main
