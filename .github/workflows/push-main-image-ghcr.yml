@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
 
 jobs:
-      push-store-image:
+      push-decluttarr-image:
         runs-on: ubuntu-latest
         defaults:
           run:
-            working-directory: './Store'
+            working-directory: './own_coding/decluttarr/'
         steps:
           - name: 'Checkout GitHub Action'
             uses: actions/checkout@main
@@ -28,6 +28,6 @@ jobs:
 
           - name: 'Build Inventory Image'
             run: |
-              # docker build . --tag ghcr.io/ManiMatter/store:latest
-              docker build docker/Dockerfile --tag ghcr.io/ManiMatter/store:latest             
-              docker push ghcr.io/ManiMatter/store:latest
+              # docker build . --tag ghcr.io/ManiMatter/decluttarr:latest
+              docker build docker/Dockerfile --tag ghcr.io/ManiMatter/decluttarr:latest             
+              docker push ghcr.io/ManiMatter/decluttarr:latest
