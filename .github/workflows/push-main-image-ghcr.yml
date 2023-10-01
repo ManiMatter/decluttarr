@@ -40,6 +40,8 @@ jobs:
 
           - name: 'Build Inventory Image'
             env:
+              ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+              ECR_REPOSITORY: reponame
               IMAGE_TAG: ${{ env.GIT_TAG }}          
             run: |
               docker build -f docker/Dockerfile . -t ghcr.io/manimatter/decluttarr:$IMAGE_TAG              
