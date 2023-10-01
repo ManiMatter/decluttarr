@@ -42,5 +42,5 @@ jobs:
             env:
               IMAGE_TAG: ${{ env.GIT_TAG }}          
             run: |
-              docker build -f docker/Dockerfile . -t ghcr.io/manimatter/decluttarr:latest -t ghcr.io/manimatter/decluttarr:$IMAGE_TAG              
+              docker build -f docker/Dockerfile . -t ghcr.io/manimatter/decluttarr:$IMAGE_TAG              
               docker push ghcr.io/manimatter/decluttarr:latest
