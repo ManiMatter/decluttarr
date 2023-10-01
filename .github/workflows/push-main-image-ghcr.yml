@@ -36,7 +36,7 @@ jobs:
             with:  
                 production-branch: main 
 
-          - name: 'Build Inventory Image'
-            run: |
-              docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
-              docker push ghcr.io/manimatter/decluttarr:latest
+          # - name: 'Build Inventory Image'
+          #   run: |
+          #     docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
+          #     docker push ghcr.io/manimatter/decluttarr:latest
