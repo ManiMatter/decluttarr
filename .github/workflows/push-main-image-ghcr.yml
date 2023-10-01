@@ -5,9 +5,8 @@ name: Deploy Images to GHCR
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ "main" ]
+    tags: ["v[0-9]+.[0-9]+.[0-9]*"]
 
 jobs:
       push-decluttarr-image:
@@ -35,12 +34,11 @@ jobs:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               WITH_V: true
 
-          - name: Extract Git Tag
-            run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-
-          - name: 'Build Inventory Image'
+          - name: "Build, Tag, and push the Docker image"
             env:
-              IMAGE_TAG: ${{ env.GIT_TAG }}          
+              IMAGE_NAME: ghcr.io/manimatter/decluttarr
+              IMAGE_TAG: ${{ github.ref_name }}
             run: |
-              docker build -f docker/Dockerfile -t ghcr.io/manimatter/decluttarr:$IMAGE_TAG .         
-              docker push ghcr.io/manimatter/decluttarr:latest
+              docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+              docker push $IMAGE_NAME:$IMAGE_TAG
+
