@@ -29,6 +29,7 @@ jobs:
             with:
               fetch-depth: '0'
           - name: Bump version and push tag
+            id: setversion
             uses: anothrNick/github-tag-action@1.36.0
             env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +38,7 @@ jobs:
           - name: "Build, Tag, and push the Docker image"
             env:
               IMAGE_NAME: ghcr.io/manimatter/decluttarr
-              IMAGE_TAG: ${{ github.ref_name }}
+              IMAGE_TAG: ${{ setversion.new_tag }}
             run: |
               docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
               docker push $IMAGE_NAME:$IMAGE_TAG
