@@ -35,7 +35,12 @@ jobs:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               WITH_V: true
 
+          - name: Extract Git Tag
+            run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+
           - name: 'Build Inventory Image'
+            env:
+              IMAGE_TAG: ${{ env.GIT_TAG }}          
             run: |
-              docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
+              docker build -f docker/Dockerfile . -t ghcr.io/manimatter/decluttarr:latest -t ghcr.io/manimatter/decluttarr:$IMAGE_TAG              
               docker push ghcr.io/manimatter/decluttarr:latest
