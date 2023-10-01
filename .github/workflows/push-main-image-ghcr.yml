@@ -15,7 +15,7 @@ jobs:
         defaults:
           run:
             working-directory: '.'
-        steps:
+        steps: 
           - name: 'Checkout GitHub Action'
             uses: actions/checkout@main
 
