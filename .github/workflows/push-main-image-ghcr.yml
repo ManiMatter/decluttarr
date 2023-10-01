@@ -26,6 +26,9 @@ jobs:
               username: ${{github.actor}}
               password: ${{secrets.GITHUB_TOKEN}}
 
+          - name: name: tag-version
+            uses: juliansangillo/tag-version@v1.5
+
           - name: 'Build Inventory Image'
             run: |
               docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
