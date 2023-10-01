@@ -32,11 +32,16 @@ jobs:
           fetch-depth: '0'
 
       - name: Bump version and push tag
-        id: setversion
         uses: anothrNick/github-tag-action@1.36.0
+        id: setversion
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
+
+      - name: Read output
+        id: read-output
+        run: |
+          echo "${{ steps.setversion.outputs.new_tag }}"
 
       - name: "Build, Tag, and push the Docker image"
         env:
