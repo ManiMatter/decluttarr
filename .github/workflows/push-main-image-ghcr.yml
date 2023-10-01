@@ -28,5 +28,5 @@ jobs:
 
           - name: 'Build Inventory Image'
             run: |
-              docker build docker/. --tag ghcr.io/manimatter/decluttarr:latest             
+              docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
               docker push ghcr.io/manimatter/decluttarr:latest
