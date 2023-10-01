@@ -38,11 +38,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
 
-      - name: Read output
-        id: read-output
-        run: |
-          echo "${{ steps.setversion.outputs.new_tag }}"
-
       - name: "Build, Tag, and push the Docker image"
         env:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
@@ -51,3 +46,10 @@ jobs:
           docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
           docker push $IMAGE_NAME:$IMAGE_TAG
 
+      - name: "Build, Tag, and push the Docker image"
+        env:
+          IMAGE_NAME: ghcr.io/manimatter/decluttarr
+          IMAGE_TAG: latest
+        run: |
+          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+          docker push $IMAGE_NAME:$IMAGE_TAG
