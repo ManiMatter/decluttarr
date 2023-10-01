@@ -11,8 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      new_tag: ${{ steps.setversion.outputs.new_tag }}    
+    # outputs:
+    #   new_tag: ${{ steps.setversion.outputs.new_tag }}    
     defaults:
       run:
         working-directory: '.'
