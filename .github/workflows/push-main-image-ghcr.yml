@@ -28,6 +28,8 @@ jobs:
 
           - name: tag-version
             uses: juliansangillo/tag-version@v1.5
+            with:  
+                production-branch: main 
 
           - name: 'Build Inventory Image'
             run: |
