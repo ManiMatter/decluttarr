@@ -1,8 +1,6 @@
 # decluttarr - Keeps radarr and sonarr download queues free of stalled and redundant items
  decluttarr:
-   build:
-     context: ./own_coding/decluttarr/
-     dockerfile: docker/Dockerfile
+   image: ghcr.io/manimatter/decluttarr:latest   
    container_name: decluttarr
    environment:
      TZ: Europe/Zurich

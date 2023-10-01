@@ -15,11 +15,9 @@ A sample docker-compose.yml is included.
 
 ## Getting started
 If you want to run in docker:
-1) Pull the decluttarr into "your-docker-folder/own_coding/decluttarr"
+1) Adapt the sample docker-compose to your own needs
 2) Study the config file to understand the settings
-3) Update your docker-compose (see the template)
-4) Run the docker-compose
-5) Enjoy
+3) Have fun
 
 If you want to run locally:
 1) Pull decluttarr into whatever location you want
