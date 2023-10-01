@@ -26,7 +26,7 @@ jobs:
               username: ${{github.actor}}
               password: ${{secrets.GITHUB_TOKEN}}
 
-          - name: name: tag-version
+          - name: tag-version
             uses: juliansangillo/tag-version@v1.5
 
           - name: 'Build Inventory Image'
