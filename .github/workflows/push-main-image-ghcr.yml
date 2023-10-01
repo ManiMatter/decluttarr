@@ -26,8 +26,6 @@ jobs:
               username: ${{github.actor}}
               password: ${{secrets.GITHUB_TOKEN}}
 
-
-
           - uses: actions/checkout@v2
             with:
               fetch-depth: '0'
@@ -37,7 +35,7 @@ jobs:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               WITH_V: true
 
-          # - name: 'Build Inventory Image'
-          #   run: |
-          #     docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
-          #     docker push ghcr.io/manimatter/decluttarr:latest
+          - name: 'Build Inventory Image'
+            run: |
+              docker build -f docker/Dockerfile . --tag ghcr.io/manimatter/decluttarr:latest             
+              docker push ghcr.io/manimatter/decluttarr:latest
