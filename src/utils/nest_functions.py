@@ -19,7 +19,7 @@ async def nested_set(dic, keys, value, matchConditions=None):
                 break
             i += 1
     dic[keys[-1]] = value
-
+    
 
 async def add_keys_nested_dict(d, keys, defaultValue = None):
     # Creates a nested value if key does not exist
