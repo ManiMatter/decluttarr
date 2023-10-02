@@ -24,7 +24,6 @@ logging.basicConfig(
     level=log_level_num 
 )
 
-
 class Defective_Tracker:
     # Keeps track of which downloads were already caught as stalled previously
     def __init__(self, dict):
