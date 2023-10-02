@@ -4,10 +4,10 @@
 Decluttarr keeps the radarr & sonarr queue free of stalled / redundant downloads.
 
 Feature overview:
-- Automatically delete failed downloads
+- Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
+- Automatically delete failed downloads (& trigger download from another source)
 - Automatically delete downloads belonging to Movies/TV shows that have been deleted in the meantime ('Orphan downloads')
 - Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row
-- Automatically delete downloads that are stuck downloading metadata
 - Automatically delete downloads belonging to Movies/TV shows that are unmonitored
 
 You may run this locally by launch main.py, or by mounting it inside a docker container.
@@ -25,6 +25,9 @@ If you want to run locally:
 3) Edit the config file to your liking
 4) run main.py
 5) Enjoy
+
+## Known Limitations:
+- The connection to qBittorrent only works if no login is required (I use the setting "Bypass authentication for clients on localhost")
 
 ## Credits
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner

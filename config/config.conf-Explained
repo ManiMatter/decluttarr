@@ -112,5 +112,6 @@ SONARR_KEY    = XXXXX
 ################################# QBITTORRENT SECTION #################################
 [qbittorrent]
 # Defines URL of qBittorrent
+# LIMITATION: The connection to qBittorrent only works if no login is required (I use the setting "Bypass authentication for clients on localhost")
 # QBITTORRENT_URL    : URL under which the instance can be reached. If not defined, the NO_STALLED_REMOVAL_QBIT_TAG takes no effect
 QBITTORRENT_URL     = http://qbittorrent:8080
