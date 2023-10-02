@@ -38,13 +38,12 @@ async def rest_delete(url, api_key, params=None):
         return None
 
 # POST
-async def rest_post(url, api_key, data):
+async def rest_post(url, data, headers):
     if TEST_RUN: return
     try:
-        headers = {'X-Api-Key': api_key} | {"content-type": "application/json"}
         response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(url, data=data, headers=headers))
         response.raise_for_status()
-        if response.status_code == 201:
+        if response.status_code in (200,201):
             return None
         return response.json()
     except RequestException as e:

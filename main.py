@@ -1,7 +1,7 @@
 ########### Import Libraries
 import asyncio
 import logging, verboselogs
-from src.utils.rest import (rest_get)
+from src.utils.rest import (rest_get, rest_post)
 from requests.exceptions import RequestException
 import json
 from dateutil.relativedelta import relativedelta as rd
@@ -49,7 +49,10 @@ async def main():
     logger.info('%s | Removing downloads missing metadata', str(REMOVE_METADATA_MISSING))
     logger.info('%s | Removing orphan downloads', str(REMOVE_ORPHANS))
     logger.info('%s | Removing downloads belonging to unmonitored TV shows/movies', str(REMOVE_UNMONITORED))
-    logger.info('Running every %s.', fmt.format(rd(minutes=REMOVE_TIMER)))           
+    logger.info('')          
+    logger.info('Running every: %s', fmt.format(rd(minutes=REMOVE_TIMER)))   
+    logger.info('Permitted number of times before stalled/missing metadata downloads are removed: %s', str(PERMITTED_ATTEMPTS))      
+    logger.info('Downloads with this tag will be skipped: %s', NO_STALLED_REMOVAL_QBIT_TAG)                  
     logger.info('') 
     logger.info('*** Configured Instances ***')
     if RADARR_URL: logger.info('%s: %s', RADARR_NAME, RADARR_URL)
@@ -70,6 +73,15 @@ async def main():
         logger.info(f'')
         logger.info(f'*'* 50)
         logger.info(f'*'* 50)
+    
+    # Check if Qbit Tag exists:
+    if QBITTORRENT_URL:
+        current_tags = await rest_get(QBITTORRENT_URL+'/torrents/tags','')
+        if not NO_STALLED_REMOVAL_QBIT_TAG in current_tags:
+            if QBITTORRENT_URL: 
+                logger.info('Creating tag in qBittorrent: %s', NO_STALLED_REMOVAL_QBIT_TAG)  
+                if not TEST_RUN:
+                    await rest_post(url=QBITTORRENT_URL+'/torrents/createTags', data={'tags': NO_STALLED_REMOVAL_QBIT_TAG}, headers={'content-type': 'application/x-www-form-urlencoded'})
 
     # Start application
     while True:
@@ -79,7 +91,6 @@ async def main():
         logger.verbose('')  
         logger.verbose('Queue clean-up complete!')  
         await asyncio.sleep(REMOVE_TIMER*60)
-
     return
 
 if __name__ == '__main__':
