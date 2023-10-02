@@ -10,7 +10,7 @@
      # General
      LOG_LEVEL: INFO 
 
-     # features 
+     # Features 
      REMOVE_TIMER: 10
      REMOVE_FAILED: True
      REMOVE_STALLED: True
@@ -20,16 +20,14 @@
      PERMITTED_ATTEMPTS: 3
      NO_STALLED_REMOVAL_QBIT_TAG: Don't Kill If Stalled
 
-     #Radarr
+     # Radarr
      RADARR_URL: http://radarr:7878
      RADARR_KEY: $RADARR_API_KEY
 
-     #Sonarr
+     # Sonarr
      SONARR_URL: http://sonarr:8989
      SONARR_KEY: $SONARR_API_KEY
 
-     #qBitorrent
+     # qBitorrent
      QBITTORRENT_URL: http://qbittorrent:8080
      
-   labels:
-     - "com.centurylinklabs.watchtower.enable=false"
