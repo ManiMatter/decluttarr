@@ -52,4 +52,4 @@ jobs:
           IMAGE_TAG: latest
         run: |
           docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
-          docker push $IMAGE_NAME:$IMAGE_TAG
+          docker push $IMAGE_NAME:$IMAGE_TAG 
