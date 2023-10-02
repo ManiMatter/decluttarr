@@ -44,6 +44,7 @@ REMOVE_FAILED  = False
 ###### REMOVE_STALLED ######
 # Steers whether stalled downloads with no connections are removed from the queue
 # Stalled downloads are added to the blocklist, so that they are not re-requested in the future
+# A new download from another source is automatically added by sonarr/radarr (if available)
 # Type: Boolean
 # Permissible Values: True, False
 # Is Mandatory: No (Defaults to False)
@@ -52,6 +53,7 @@ REMOVE_STALLED  = False
 ###### REMOVE_METADATA_MISSING ######
 # Steers whether downloads stuck obtaining meta data are removed from the queue
 # These downloads are added the blocklist, so that they are not re-requested in the future
+# A new download from another source is automatically added by sonarr/radarr (if available)
 # Type: Boolean
 # Permissible Values: True, False
 # Is Mandatory: No (Defaults to False)
