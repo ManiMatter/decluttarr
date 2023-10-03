@@ -2,6 +2,7 @@
  decluttarr:
    image: ghcr.io/manimatter/decluttarr:latest   
    container_name: decluttarr
+   restart: always
    environment:
      TZ: Europe/Zurich
      PUID: 1000
