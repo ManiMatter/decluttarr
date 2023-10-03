@@ -38,10 +38,10 @@ async def rest_delete(url, api_key, params=None):
         return None
 
 # POST
-async def rest_post(url, data, headers):
+async def rest_post(url, data, headers, cookies=None):
     if settings_dict['TEST_RUN']: return
     try:
-        response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(url, data=data, headers=headers))
+        response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(url, data=data, headers=headers, cookies=cookies))
         response.raise_for_status()
         if response.status_code in (200,201):
             return None
