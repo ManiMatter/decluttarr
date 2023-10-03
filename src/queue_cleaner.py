@@ -130,7 +130,7 @@ async def remove_download(settings_dict, BASE_URL, API_KEY, queueId, queueTitle,
     # Removes downloads and creates log entry
     if downloadId not in deleted_downloads.dict:
         logger.info('>>> Removing %s download: %s', failType, queueTitle)
-        #if not settings_dict['TEST_RUN']: await rest_delete(f'{BASE_URL}/queue/{queueId}', API_KEY, {'removeFromClient': 'true', 'blocklist': blocklist}) 
+        if not settings_dict['TEST_RUN']: await rest_delete(f'{BASE_URL}/queue/{queueId}', API_KEY, {'removeFromClient': 'true', 'blocklist': blocklist}) 
         deleted_downloads.dict.append(downloadId)    
     return
 
