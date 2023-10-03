@@ -4,13 +4,13 @@ import asyncio
 import requests
 from requests.exceptions import RequestException
 import json
-from config.config import (TEST_RUN)
+from config.config import settings_dict
 
 # GET
-async def rest_get(url, api_key, params=None):
+async def rest_get(url, api_key=None, params=None, cookies=None):
     try:
-        headers = {'X-Api-Key': api_key} # | {'accept': 'application/json'}
-        response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(url, params=params, headers=headers))
+        headers = {'X-Api-Key': api_key} if api_key else None 
+        response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(url, params=params, headers=headers, cookies=cookies))
         response.raise_for_status()
         return response.json()
     except RequestException as e:
@@ -22,7 +22,7 @@ async def rest_get(url, api_key, params=None):
 
 # DELETE
 async def rest_delete(url, api_key, params=None):
-    if TEST_RUN: return
+    if settings_dict['TEST_RUN']: return
     try:
         headers = {'X-Api-Key': api_key}
         response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.delete(url, params=params, headers=headers))
@@ -39,7 +39,7 @@ async def rest_delete(url, api_key, params=None):
 
 # POST
 async def rest_post(url, data, headers):
-    if TEST_RUN: return
+    if settings_dict['TEST_RUN']: return
     try:
         response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(url, data=data, headers=headers))
         response.raise_for_status()
@@ -56,7 +56,7 @@ async def rest_post(url, data, headers):
 
 # PUT
 async def rest_put(url, api_key, data):
-    if TEST_RUN: return
+    if settings_dict['TEST_RUN']: return
     try:
         headers = {'X-Api-Key': api_key} | {"content-type": "application/json"}
         response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.put(url, data=data, headers=headers))

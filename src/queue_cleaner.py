@@ -4,6 +4,8 @@ logger = verboselogs.VerboseLogger(__name__)
 from src.utils.rest import (rest_get, rest_delete)
 import json
 from src.utils.nest_functions import (add_keys_nested_dict, nested_get)
+import sys, os
+
 class Deleted_Downloads:
     # Keeps track of which downloads have already been deleted (to not double-delete)
     def __init__(self, dict):
@@ -16,21 +18,25 @@ async def get_queue(BASE_URL, API_KEY, params = {}):
     queue = await rest_get(f'{BASE_URL}/queue', API_KEY, {'page': '1', 'pageSize': totalRecords}|params) 
     return queue
 
-async def remove_failed(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, queue, deleted_downloads, TEST_RUN):
+async def remove_failed(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads):
     # Detects failed and triggers delete. Does not add to blocklist
+    queue = await get_queue(BASE_URL, API_KEY)
+    if not queue: return 0
     failedItems = []    
     for queueItem in queue['records']:
         if 'errorMessage' in queueItem and 'status' in queueItem:
-            if  queueItem['status']        == 'failed' or \
+            if  queueItem['status']       == 'failed' or \
                (queueItem['status']       == 'warning' and queueItem['errorMessage'] == 'The download is missing files'):
-                await remove_download(BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'failed', False, deleted_downloads, TEST_RUN)
+                await remove_download(BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'failed', False, deleted_downloads, settings_dict['TEST_RUN'])
                 failedItems.append(queueItem)
     return len(failedItems)
 
-async def remove_stalled(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, queue, deleted_downloads, NO_STALLED_REMOVAL_QBIT_TAG, QBITTORRENT_URL, TEST_RUN):
+async def remove_stalled(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
-    if QBITTORRENT_URL:
-        protected_dowloadItems = await rest_get(QBITTORRENT_URL+'/torrents/info','',{'tag': NO_STALLED_REMOVAL_QBIT_TAG})
+    queue = await get_queue(BASE_URL, API_KEY)
+    if not queue: return 0
+    if settings_dict['QBITTORRENT_URL']:
+        protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
         protected_downloadIDs = [str.upper(item['hash']) for item in protected_dowloadItems]
     else:
         protected_downloadIDs = []
@@ -43,33 +49,41 @@ async def remove_stalled(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS
                         logger.verbose('>>> Detected stalled download, tagged not to be killed: %s',queueItem['title'])
                     else:
                         stalledItems.append(queueItem)
-    await check_permitted_attempts(stalledItems, 'stalled', True, deleted_downloads, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, TEST_RUN)
+    await check_permitted_attempts(settings_dict, stalledItems, 'stalled', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
     return len(stalledItems)
 
-async def remove_metadata_missing(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, queue, deleted_downloads, TEST_RUN):
+async def remove_metadata_missing(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist  
+    queue = await get_queue(BASE_URL, API_KEY)
+    if not queue: return 0
     missing_metadataItems = []
     for queueItem in queue['records']:
         if 'errorMessage' in queueItem and 'status' in queueItem:
             if  queueItem['status']        == 'queued' and \
                 queueItem['errorMessage']  == 'qBittorrent is downloading metadata':
                     missing_metadataItems.append(queueItem)
-    await check_permitted_attempts(missing_metadataItems, 'missing metadata', True, deleted_downloads, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, TEST_RUN)
+    await check_permitted_attempts(settings_dict, missing_metadataItems, 'missing metadata', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
     return len(missing_metadataItems)
 
-async def remove_orphans(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, queue, deleted_downloads, TEST_RUN):
+async def remove_orphans(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads):
     # Removes downloads belonging to movies/tv shows that have been deleted in the meantime
     full_queue = await get_queue(BASE_URL, API_KEY, params = {'includeUnknownMovieItems' if radarr_or_sonarr == 'radarr' else 'includeUnknownSeriesItems': 'true'})
     if not full_queue: return 0 # By now the queue may be empty 
-    full_queue_items = [{'id': queueItem['id'], 'title': queueItem['title']} for queueItem in full_queue['records']]
-    queue_ids = [queueItem['id'] for queueItem in queue['records']]
-    orphanItems = [{'id': queueItem['id'], 'title': queueItem['title']} for queueItem in full_queue_items if queueItem['id'] not in queue_ids]
+    queue = await get_queue(BASE_URL, API_KEY) 
+    full_queue_items = [{'id': queueItem['id'], 'title': queueItem['title'], 'downloadId': queueItem['downloadId']} for queueItem in full_queue['records']]
+    if queue:
+        queue_ids = [queueItem['id'] for queueItem in queue['records']]
+    else:
+        queue_ids = []
+    orphanItems = [{'id': queueItem['id'], 'title': queueItem['title'], 'downloadId': queueItem['downloadId']} for queueItem in full_queue_items if queueItem['id'] not in queue_ids]
     for queueItem in orphanItems:
-        await remove_download(BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'orphan', False, deleted_downloads, TEST_RUN)
+        await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'orphan', False, deleted_downloads)
     return len(orphanItems)
 
-async def remove_unmonitored(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, queue, deleted_downloads, TEST_RUN):
+async def remove_unmonitored(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads):
     # Removes downloads belonging to movies/tv shows that are not monitored
+    queue = await get_queue(BASE_URL, API_KEY) 
+    if not queue: return 0
     unmonitoredItems= []
     downloadItems = []
     for queueItem in queue['records']:
@@ -81,10 +95,10 @@ async def remove_unmonitored(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTE
     monitored_downloadIds = [downloadItem['downloadId'] for downloadItem in downloadItems if downloadItem['monitored']]
     unmonitoredItems = [downloadItem for downloadItem in downloadItems if downloadItem['downloadId'] not in monitored_downloadIds]
     for unmonitoredItem in unmonitoredItems:
-        await remove_download(BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'unmonitored', False, deleted_downloads, TEST_RUN)
+        await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'unmonitored', False, deleted_downloads)
     return len(unmonitoredItems)
 
-async def check_permitted_attempts(current_defective_items, failType, blocklist, deleted_downloads, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, TEST_RUN):
+async def check_permitted_attempts(settings_dict, current_defective_items, failType, blocklist, deleted_downloads, BASE_URL, API_KEY, defective_tracker):
     # Checks if downloads are repeatedly found as stalled / stuck in metadata and if yes, deletes them
     # 1. Create list of currently defective
     current_defective = {}
@@ -107,50 +121,63 @@ async def check_permitted_attempts(current_defective_items, failType, blocklist,
             await add_keys_nested_dict(defective_tracker.dict,[BASE_URL, failType, queueId], {'title': current_defective[queueId]['title'], 'downloadId': current_defective[queueId]['downloadId'], 'Attempts': 1})
         if current_defective[queueId]['downloadId'] not in download_ids_stuck:
             download_ids_stuck.append(current_defective[queueId]['downloadId'])
-            logger.info('>>> Detected %s download (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][queueId]['Attempts']), str(PERMITTED_ATTEMPTS), defective_tracker.dict[BASE_URL][failType][queueId]['title'])
-        if defective_tracker.dict[BASE_URL][failType][queueId]['Attempts'] > PERMITTED_ATTEMPTS:
-            await remove_download(BASE_URL, API_KEY, queueId, current_defective[queueId]['title'], current_defective[queueId]['downloadId'],  failType, blocklist, deleted_downloads, TEST_RUN)
+            logger.info('>>> Detected %s download (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][queueId]['Attempts']), str(settings_dict['PERMITTED_ATTEMPTS']), defective_tracker.dict[BASE_URL][failType][queueId]['title'])
+        if defective_tracker.dict[BASE_URL][failType][queueId]['Attempts'] > settings_dict['PERMITTED_ATTEMPTS']:
+            await remove_download(settings_dict, BASE_URL, API_KEY, queueId, current_defective[queueId]['title'], current_defective[queueId]['downloadId'],  failType, blocklist, deleted_downloads)
     return
 
-async def remove_download(BASE_URL, API_KEY, queueId, queueTitle, downloadId, failType, blocklist, deleted_downloads, TEST_RUN):
+async def remove_download(settings_dict, BASE_URL, API_KEY, queueId, queueTitle, downloadId, failType, blocklist, deleted_downloads):
     # Removes downloads and creates log entry
     if downloadId not in deleted_downloads.dict:
         logger.info('>>> Removing %s download: %s', failType, queueTitle)
-        if not TEST_RUN: await rest_delete(f'{BASE_URL}/queue/{queueId}', API_KEY, {'removeFromClient': 'true', 'blocklist': blocklist}) 
+        #if not settings_dict['TEST_RUN']: await rest_delete(f'{BASE_URL}/queue/{queueId}', API_KEY, {'removeFromClient': 'true', 'blocklist': blocklist}) 
         deleted_downloads.dict.append(downloadId)    
     return
 
 ########### MAIN FUNCTION ###########
-async def queue_cleaner(radarr_or_sonarr, BASE_URL, API_KEY, NAME, REMOVE_FAILED, REMOVE_STALLED, REMOVE_METADATA_MISSING, REMOVE_ORPHANS, REMOVE_UNMONITORED, PERMITTED_ATTEMPTS, NO_STALLED_REMOVAL_QBIT_TAG, QBITTORRENT_URL, defective_tracker, TEST_RUN):
+async def queue_cleaner(settings_dict, radarr_or_sonarr, defective_tracker):
+    # Read out correct instance depending on radarr/sonarr flag
+    run_dict = {}
+    if radarr_or_sonarr == 'radarr':
+        BASE_URL    = settings_dict['RADARR_URL']
+        API_KEY     = settings_dict['RADARR_KEY']
+        NAME        = settings_dict['RADARR_NAME']
+    else:
+        BASE_URL    = settings_dict['SONARR_URL']
+        API_KEY     = settings_dict['SONARR_KEY']
+        NAME        = settings_dict['SONARR_NAME']
+
     # Cleans up the downloads queue
     logger.verbose('Cleaning queue on %s:', NAME)
     try:
-        queue = await get_queue(BASE_URL, API_KEY)
-        if not queue: 
+        full_queue = await get_queue(BASE_URL, API_KEY, params = {'includeUnknownMovieItems' if radarr_or_sonarr == 'radarr' else 'includeUnknownSeriesItems': 'true'})
+        if not full_queue: 
             logger.verbose('>>> Queue is empty.')
             return
-
+              
         deleted_downloads = Deleted_Downloads([])
         items_detected = 0
-        if REMOVE_FAILED:
-            items_detected += await remove_failed(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, queue, deleted_downloads, TEST_RUN)
+        if settings_dict['REMOVE_FAILED']:
+            items_detected += await remove_failed(            settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads)
         
-        if REMOVE_STALLED:
-            items_detected += await remove_stalled(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, queue, deleted_downloads, NO_STALLED_REMOVAL_QBIT_TAG, QBITTORRENT_URL, TEST_RUN)
+        if settings_dict['REMOVE_STALLED']: 
+            items_detected += await remove_stalled(           settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
 
-        if REMOVE_METADATA_MISSING:
-            items_detected += await remove_metadata_missing(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, defective_tracker, queue, deleted_downloads, TEST_RUN)
+        if settings_dict['REMOVE_METADATA_MISSING']: 
+            items_detected += await remove_metadata_missing(  settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
 
-        if REMOVE_ORPHANS:
-            items_detected += await remove_orphans(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, queue, deleted_downloads, TEST_RUN)
+        if settings_dict['REMOVE_ORPHANS']: 
+            items_detected += await remove_orphans(           settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads)
 
-        if REMOVE_UNMONITORED:
-            items_detected += await remove_unmonitored(radarr_or_sonarr, BASE_URL, API_KEY, PERMITTED_ATTEMPTS, queue, deleted_downloads, TEST_RUN)
+        if settings_dict['REMOVE_UNMONITORED']: 
+            items_detected += await remove_unmonitored(       settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads)
 
         if items_detected == 0:
             logger.verbose('>>> Queue is clean.')
-    except:
-            logger.warning('>>> Queue cleaning failed on %s.', NAME)
+    except Exception as error:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            logger.warning('>>> Queue cleaning failed on %s. (File: %s / Line: %s / Error Message: %s / Error Type: %s)', NAME, fname, exc_tb.tb_lineno, error, exc_type)
 
 
 

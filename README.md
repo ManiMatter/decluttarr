@@ -27,7 +27,7 @@ If you want to run locally:
 5) Enjoy
 
 ## Known Limitations:
-- The connection to qBittorrent only works if no login is required (I use the setting "Bypass authentication for clients on localhost")
+- None :-)
 
 ## Credits
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner

@@ -13,12 +13,14 @@ PERMITTED_ATTEMPTS          = 3
 NO_STALLED_REMOVAL_QBIT_TAG = Don't Kill If Stalled
 
 [radarr]
-RADARR_URL      = http://radarr:7878
-RADARR_KEY      = $RADARR_KEY
+RADARR_URL                  = http://radarr:7878
+RADARR_KEY                  = $RADARR_KEY
 
 [sonarr]
-SONARR_URL      = http://sonarr:8989
-SONARR_KEY      = $SONARR_KEY
+SONARR_URL                  = http://sonarr:8989
+SONARR_KEY                  = $SONARR_KEY
 
 [qbittorrent]
-QBITTORRENT_URL = http://qbittorrent:8080
+QBITTORRENT_URL             = http://qbittorrent:8080
+QBITTORRENT_USERNAME        = YourName or Empty
+QBITTORRENT_PASSWORD        = YourPassword or Empty

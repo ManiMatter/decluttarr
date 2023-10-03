@@ -8,7 +8,7 @@ import configparser
 IS_IN_DOCKER = os.environ.get('IS_IN_DOCKER')
 
 ########################################################################################################################
-def ConfigSectionMap(section):
+def config_section_map(section):
     'Load the config file into a dictionary'
     dict1 = {}
     options = config.options(section)
@@ -40,7 +40,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
 
     else:
         try:
-            config_value = ConfigSectionMap(config_section).get(key)
+            config_value = config_section_map(config_section).get(key)
         except configparser.NoSectionError:
             config_value = None
         if config_value is not None:
@@ -66,12 +66,12 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
 
 ########################################################################################################################
 # Load Config File
-Config_FileName = 'config.conf'
-Config_FileFullPath = os.path.join(os.path.abspath(os.path.dirname(__file__)), Config_FileName)
+config_file_name = 'config.conf'
+config_file_full_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), config_file_name)
 sys.tracebacklimit = 0  # dont show stack traces in prod mode
 config = configparser.ConfigParser()
 config.optionxform = str # maintain capitalization of config keys
-config.read(Config_FileFullPath)
+config.read(config_file_full_path)
 
 ########################################################################################################################
 # Load Config
@@ -101,14 +101,23 @@ SONARR_KEY                  = None if SONARR_URL == None else \
 
 # qBittorrent
 QBITTORRENT_URL             = get_config_value('QBITTORRENT_URL',               'qbittorrent',  False,  str,    '')
+QBITTORRENT_USERNAME        = get_config_value('QBITTORRENT_USERNAME',          'qbittorrent',  False,  str,    '')
+QBITTORRENT_PASSWORD        = get_config_value('QBITTORRENT_PASSWORD',          'qbittorrent',  False,  str,    '')
 
 ########################################################################################################################
+########### Validate settings
 if not (RADARR_URL or SONARR_URL):
     print(f'[ ERROR ]: No Radarr/Sonarr URLs specified (nothing to monitor)')
     sys.exit(0)
 
-########### Add API to URLs
+########### Enrich setting variables
 if RADARR_URL:      RADARR_URL      += '/api/v3'
 if SONARR_URL:      SONARR_URL      += '/api/v3'
 if QBITTORRENT_URL: QBITTORRENT_URL += '/api/v2'
+
+########### Add Variables to Dictionary
+settings_dict = {}
+for var_name in dir():
+    if var_name.isupper():
+        settings_dict[var_name] = locals()[var_name]
 
