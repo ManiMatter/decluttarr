@@ -12,12 +12,7 @@ jobs:
         working-directory: '.'    
     steps:    
     - uses: actions/checkout@v4
-    # - name: show branch name
-    #   run: echo ${GITHUB_REF##*/}    
-    - name: show current path
-      run: |
-        echo ${{ github.workspace }}
-        ls -ahl
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
