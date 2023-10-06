@@ -27,7 +27,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest pytest-cov 
         pip install -r docker/requirements.txt
-        pip install -e .
+
     - name: Test with pytest
       run: |
         src/utils/test_nest_functions.py
