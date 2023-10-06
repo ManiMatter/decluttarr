@@ -9,13 +9,13 @@ on:
 
 jobs:
   # unit-tests: 
-  #   if: github.event.pull_request.merged == true
   #   runs-on: ubuntu-latest 
   #   defaults:
   #     run:
-  #       working-directory: './src/utils/'    
-  #   steps:
+  #       working-directory: '.'    
+  #   steps:    
   #   - uses: actions/checkout@v4
+
   #   - name: Set up Python
   #     uses: actions/setup-python@v4
   #     with:
@@ -23,12 +23,10 @@ jobs:
   #   - name: Install pip and pytest
   #     run: |
   #       python -m pip install --upgrade pip
-  #       pip install pytest pytest-cov 
+  #       pip install -r docker/requirements.txt
   #   - name: Test with pytest
   #     run: |
-  #       pytest test_nest_functions.py -vv   
-  #   - name: show branch name
-  #     run: echo ${GITHUB_REF##*/}
+  #       python3 -m pytest --import-mode=append tests/
 
   build-main:
     # if: github.ref == 'refs/heads/main'
