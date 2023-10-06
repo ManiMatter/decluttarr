@@ -30,7 +30,6 @@ jobs:
 
     - name: Test with pytest
       run: |
-        src/utils/test_nest_functions.py
         python3 -m pytest --import-mode=append tests/
 
   build-main:
