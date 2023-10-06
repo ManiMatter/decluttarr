@@ -27,10 +27,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest pytest-cov 
         pip install -r docker/requirements.txt
+        pip install -e .
     - name: Test with pytest
       run: |
-        python -m pytest src/utils/test_nest_functions.py -vv   
-
+        src/utils/test_nest_functions.py
+        python3 -m pytest --import-mode=append tests/
 
   build-main:
     if: github.ref == 'refs/heads/main'
