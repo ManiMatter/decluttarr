@@ -3,4 +3,5 @@ aiohttp
 asyncio
 python-dateutil
 verboselogs
+pytest
 pytest-asyncio
