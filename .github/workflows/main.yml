@@ -75,28 +75,28 @@ jobs:
           docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
           docker push $IMAGE_NAME:$IMAGE_TAG 
 
-  build-dev:
-    if: github.ref == 'refs/heads/dev'
-    needs: unit-tests
-    runs-on: ubuntu-latest 
-    defaults:
-      run:
-        working-directory: '.'
-    steps: 
-      - name: 'Checkout GitHub Action'
-        uses: actions/checkout@main
+  # build-dev:
+  #   if: github.ref == 'refs/heads/dev'
+  #   needs: unit-tests
+  #   runs-on: ubuntu-latest 
+  #   defaults:
+  #     run:
+  #       working-directory: '.'
+  #   steps: 
+  #     - name: 'Checkout GitHub Action'
+  #       uses: actions/checkout@main
 
-      - name: 'Login to GitHub Container Registry'
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
+  #     - name: 'Login to GitHub Container Registry'
+  #       uses: docker/login-action@v1
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{github.actor}}
+  #         password: ${{secrets.GITHUB_TOKEN}}
 
-      - name: "Build, Tag, and push the Docker image"
-        env:
-          IMAGE_NAME: ghcr.io/manimatter/decluttarr
-          IMAGE_TAG: dev
-        run: |
-          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
-          docker push $IMAGE_NAME:$IMAGE_TAG
+  #     - name: "Build, Tag, and push the Docker image"
+  #       env:
+  #         IMAGE_NAME: ghcr.io/manimatter/decluttarr
+  #         IMAGE_TAG: dev
+  #       run: |
+  #         docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+  #         docker push $IMAGE_NAME:$IMAGE_TAG
