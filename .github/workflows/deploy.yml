@@ -1,12 +1,8 @@
 name: Deploy Images to GHCR
 
-# env:
-#   DOTNET_VERSION: '6.0.x' 
-
 on:
   push:
-    branches: [ "main" ]
-    tags: ["v[0-9]+.[0-9]+.[0-9]*"]
+    branches: [ "main", "dev" ]
 
 jobs:
   unit-tests: 
@@ -27,8 +23,12 @@ jobs:
     - name: Test with pytest
       run: |
         pytest test_nest_functions.py -vv   
+    - name: show branch name
+      run: echo ${GITHUB_REF##*/}
 
-  build:
+  build-main:
+    if: github.ref == 'refs/heads/main'
+    needs: unit-tests
     runs-on: ubuntu-latest 
     defaults:
       run:
@@ -70,3 +70,29 @@ jobs:
         run: |
           docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
           docker push $IMAGE_NAME:$IMAGE_TAG 
+
+  build-dev:
+    if: github.ref == 'refs/heads/dev'
+    needs: unit-tests
+    runs-on: ubuntu-latest 
+    defaults:
+      run:
+        working-directory: '.'
+    steps: 
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@main
+
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: "Build, Tag, and push the Docker image"
+        env:
+          IMAGE_NAME: ghcr.io/manimatter/decluttarr
+          IMAGE_TAG: dev
+        run: |
+          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+          docker push $IMAGE_NAME:$IMAGE_TAG
