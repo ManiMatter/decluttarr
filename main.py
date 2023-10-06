@@ -53,7 +53,7 @@ async def main():
     logger.info('')          
     logger.info('Running every: %s', fmt.format(rd(minutes=settings_dict['REMOVE_TIMER'])))   
     logger.info('Permitted number of times before stalled/missing metadata downloads are removed: %s', str(settings_dict['PERMITTED_ATTEMPTS']))      
-    logger.info('Downloads with this tag will be skipped: \"%s\"', settings_dict['NO_STALLED_REMOVAL_QBIT_TAG'])                  
+    if settings_dict['QBITTORRENT_URL']: logger.info('Downloads with this tag will be skipped: \"%s\"', settings_dict['NO_STALLED_REMOVAL_QBIT_TAG'])                  
     
     logger.info('') 
     logger.info('*** Configured Instances ***')
