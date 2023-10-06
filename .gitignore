@@ -2,5 +2,4 @@ __pycache__/
 .pytest_cache/
 .vscode/
 config/config.conf
-test*.py
 ToDo 
