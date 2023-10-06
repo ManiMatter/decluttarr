@@ -1,4 +1,4 @@
-name: Deploy Images to GHCR
+name: Unit Tests & Dev Deployment
 
 on:
   push:
@@ -49,3 +49,10 @@ jobs:
         run: |
           docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
           docker push $IMAGE_NAME:$IMAGE_TAG
+          
+      - name: "Delete untagged versions"
+        uses: actions/delete-package-versions@v4
+        with: 
+          package-name: 'decluttarr'
+          package-type: 'container'
+          delete-only-untagged-versions: 'true'
