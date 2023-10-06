@@ -15,7 +15,9 @@ jobs:
     # - name: show branch name
     #   run: echo ${GITHUB_REF##*/}    
     - name: show current path
-      run: echo ${{ github.workspace }}
+      run: |
+        echo ${{ github.workspace }}
+        ls
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
