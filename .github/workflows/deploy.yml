@@ -10,8 +10,10 @@ jobs:
     defaults:
       run:
         working-directory: './src/utils/'    
-    steps:
+    steps:    
     - uses: actions/checkout@v4
+    - name: show branch name
+      run: echo ${GITHUB_REF##*/}    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -23,8 +25,7 @@ jobs:
     - name: Test with pytest
       run: |
         pytest test_nest_functions.py -vv   
-    - name: show branch name
-      run: echo ${GITHUB_REF##*/}
+
 
   build-main:
     if: github.ref == 'refs/heads/main'
