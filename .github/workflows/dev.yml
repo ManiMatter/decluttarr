@@ -1,4 +1,4 @@
-name: Deploy Images to GHCR
+name: Unit Tests & Dev Deployment
 
 on:
   push:
