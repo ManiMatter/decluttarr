@@ -24,8 +24,9 @@ jobs:
         python-version: '3.x'
     - name: Install pip and pytest
       run: |
-        sudo apt-get install -y python3-pip --fix-missing
-        sudo pip install -r docker/requirements.txt
+        python -m pip install --upgrade pip
+        pip install -r docker/requirements.txt
+        pip install -e .
 
     - name: Test with pytest
       run: |
