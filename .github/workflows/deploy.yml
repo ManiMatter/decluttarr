@@ -102,4 +102,5 @@ jobs:
         uses: actions/delete-package-versions@v4
         with: 
           package-name: 'decluttarr'
+          package-type: 'container'
           delete-only-untagged-versions: 'true'
