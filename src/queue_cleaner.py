@@ -34,6 +34,7 @@ async def remove_failed(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, dele
 async def remove_stalled(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     queue = await get_queue(BASE_URL, API_KEY)
+    logger.debug('remove_stalled/queue: %s', str(queue))
     if not queue: return 0
     if settings_dict['QBITTORRENT_URL']:
         protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
@@ -104,14 +105,17 @@ async def check_permitted_attempts(settings_dict, current_defective_items, failT
     current_defective = {}
     for queueItem in current_defective_items:
         current_defective[queueItem['id']] = {'title': queueItem['title'],'downloadId': queueItem['downloadId']}
-        
+    logger.debug('check_permitted_attempts/deleted_downloads: %s', str(deleted_downloads))
+    logger.debug('check_permitted_attempts/current_defective: %s', str(current_defective))
     # 2. Check if those that were previously defective are no longer defective -> those are recovered
     try:
         recovered_ids = [tracked_id for tracked_id in defective_tracker.dict[BASE_URL][failType] if tracked_id not in current_defective]
     except KeyError:
         recovered_ids = []
+    logger.debug('check_permitted_attempts/recovered_ids: %s' + str(recovered_ids))
     for recovered_id in recovered_ids:
        del defective_tracker.dict[BASE_URL][failType][recovered_id]
+    logger.debug('check_permitted_attempts/defective_tracker.dict IN: %s', str(defective_tracker.dict))
     # 3. For those that are defective, add attempt + 1 if present before, or make attempt = 0. If exceeding number of permitted attempts, delete hem
     download_ids_stuck = []
     for queueId in current_defective:
@@ -124,14 +128,18 @@ async def check_permitted_attempts(settings_dict, current_defective_items, failT
             logger.info('>>> Detected %s download (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][queueId]['Attempts']), str(settings_dict['PERMITTED_ATTEMPTS']), defective_tracker.dict[BASE_URL][failType][queueId]['title'])
         if defective_tracker.dict[BASE_URL][failType][queueId]['Attempts'] > settings_dict['PERMITTED_ATTEMPTS']:
             await remove_download(settings_dict, BASE_URL, API_KEY, queueId, current_defective[queueId]['title'], current_defective[queueId]['downloadId'],  failType, blocklist, deleted_downloads)
+    logger.debug('check_permitted_attempts/defective_tracker.dict OUT: %s', str(defective_tracker.dict))
     return
 
 async def remove_download(settings_dict, BASE_URL, API_KEY, queueId, queueTitle, downloadId, failType, blocklist, deleted_downloads):
     # Removes downloads and creates log entry
+    logger.debug('remove_download/deleted_downloads.dict IN: %s' + str(deleted_downloads.dict)) 
     if downloadId not in deleted_downloads.dict:
         logger.info('>>> Removing %s download: %s', failType, queueTitle)
         if not settings_dict['TEST_RUN']: await rest_delete(f'{BASE_URL}/queue/{queueId}', API_KEY, {'removeFromClient': 'true', 'blocklist': blocklist}) 
-        deleted_downloads.dict.append(downloadId)    
+        deleted_downloads.dict.append(downloadId)   
+    
+    logger.debug('remove_download/deleted_downloads.dict OUT: %s' + str(deleted_downloads.dict)) 
     return
 
 ########### MAIN FUNCTION ###########
