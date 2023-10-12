@@ -34,8 +34,8 @@ async def remove_failed(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, dele
 async def remove_stalled(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     queue = await get_queue(BASE_URL, API_KEY)
+    if not queue: return 0    
     logger.debug('remove_stalled/queue: %s', str(queue))
-    if not queue: return 0
     if settings_dict['QBITTORRENT_URL']:
         protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
         protected_downloadIDs = [str.upper(item['hash']) for item in protected_dowloadItems]
@@ -56,7 +56,8 @@ async def remove_stalled(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, del
 async def remove_metadata_missing(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist  
     queue = await get_queue(BASE_URL, API_KEY)
-    if not queue: return 0
+    if not queue: return 0    
+    logger.debug('remove_metadata_missing/queue: %s', str(queue))
     missing_metadataItems = []
     for queueItem in queue['records']:
         if 'errorMessage' in queueItem and 'status' in queueItem:
