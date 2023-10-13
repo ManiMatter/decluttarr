@@ -3,3 +3,4 @@ __pycache__/
 .vscode/
 config/config.conf
 ToDo 
+snip*.py

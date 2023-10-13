@@ -4,4 +4,4 @@ config/config.conf
 test*.py
 ToDo
 .vscode
- 
+snip*.py
