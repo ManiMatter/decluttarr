@@ -52,13 +52,15 @@ async def remove_stalled(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, del
                     else:
                         stalledItems.append(queueItem)
     await check_permitted_attempts(settings_dict, stalledItems, 'stalled', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
+    queue = await get_queue(BASE_URL, API_KEY) 
+    logger.debug('remove_stalled/queue OUT: %s', str(queue))
     return len(stalledItems)
 
 async def test_remove_ALL(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     queue = await get_queue(BASE_URL, API_KEY)
     if not queue: return 0    
-    logger.debug('remove_stalled_test/queue: %s', str(queue))
+    logger.debug('test_remove_ALL/queue: %s', str(queue))
     if settings_dict['QBITTORRENT_URL']:
         protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
         protected_downloadIDs = [str.upper(item['hash']) for item in protected_dowloadItems]
@@ -68,6 +70,8 @@ async def test_remove_ALL(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, de
     for queueItem in queue['records']:
         stalledItems.append(queueItem)
     await check_permitted_attempts(settings_dict, stalledItems, 'stalled', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
+    queue = await get_queue(BASE_URL, API_KEY) 
+    logger.debug('test_remove_ALL/queue OUT: %s', str(queue))
     return len(stalledItems)
 
 
@@ -83,6 +87,8 @@ async def remove_metadata_missing(settings_dict, radarr_or_sonarr, BASE_URL, API
                 queueItem['errorMessage']  == 'qBittorrent is downloading metadata':
                     missing_metadataItems.append(queueItem)
     await check_permitted_attempts(settings_dict, missing_metadataItems, 'missing metadata', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
+    queue = await get_queue(BASE_URL, API_KEY) 
+    logger.debug('remove_metadata_missing/queue OUT: %s', str(queue))
     return len(missing_metadataItems)
 
 async def remove_orphans(settings_dict, radarr_or_sonarr, BASE_URL, API_KEY, deleted_downloads):
