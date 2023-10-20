@@ -1,14 +1,14 @@
 # **Decluttarr**
 
 ## Overview
-Decluttarr keeps the radarr & sonarr queue free of stalled / redundant downloads.
+Decluttarr keeps the radarr & sonarr & lidarr queue free of stalled / redundant downloads.
 
 Feature overview:
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
 - Automatically delete failed downloads (& trigger download from another source)
-- Automatically delete downloads belonging to Movies/TV shows that have been deleted in the meantime ('Orphan downloads')
+- Automatically delete downloads belonging to Movies/TV shows/Music requests that have been deleted in the meantime ('Orphan downloads')
 - Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row
-- Automatically delete downloads belonging to Movies/TV shows that are unmonitored
+- Automatically delete downloads belonging to Movies/TV/Music requests shows that are unmonitored
 
 You may run this locally by launch main.py, or by mounting it inside a docker container.
 A sample docker-compose.yml is included.
@@ -25,9 +25,6 @@ If you want to run locally:
 3) Edit the config file to your liking
 4) run main.py
 5) Enjoy
-
-## Known Limitations:
-- None :-)
 
 ## Credits
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner

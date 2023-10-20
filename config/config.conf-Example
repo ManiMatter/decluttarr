@@ -20,6 +20,10 @@ RADARR_KEY                  = $RADARR_KEY
 SONARR_URL                  = http://sonarr:8989
 SONARR_KEY                  = $SONARR_KEY
 
+[lidarr]
+LIDARR_URL                  = http://lidarr:8686
+LIDARR_KEY                  = $LIDARR_KEY
+
 [qbittorrent]
 QBITTORRENT_URL             = http://qbittorrent:8080
 QBITTORRENT_USERNAME        = YourName or Empty
