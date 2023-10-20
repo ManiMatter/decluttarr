@@ -19,7 +19,7 @@ async def get_queue(BASE_URL, API_KEY, params = {}):
     queue = await rest_get(f'{BASE_URL}/queue', API_KEY, {'page': '1', 'pageSize': totalRecords}|params) 
     return queue
 
-async def remove_failed(settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads):
+async def remove_failed(settings_dict, BASE_URL, API_KEY, deleted_downloads):
     # Detects failed and triggers delete. Does not add to blocklist
     queue = await get_queue(BASE_URL, API_KEY)
     if not queue: return 0
@@ -32,7 +32,7 @@ async def remove_failed(settings_dict, arr_type, BASE_URL, API_KEY, deleted_down
                 failedItems.append(queueItem)
     return len(failedItems)
 
-async def remove_stalled(settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
+async def remove_stalled(settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     queue = await get_queue(BASE_URL, API_KEY)
     if not queue: return 0    
@@ -56,7 +56,7 @@ async def remove_stalled(settings_dict, arr_type, BASE_URL, API_KEY, deleted_dow
     logger.debug('remove_stalled/queue OUT: %s', str(queue))
     return len(stalledItems)
 
-async def test_remove_ALL(settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
+async def test_remove_ALL(settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     queue = await get_queue(BASE_URL, API_KEY)
     if not queue: return 0    
@@ -75,7 +75,7 @@ async def test_remove_ALL(settings_dict, arr_type, BASE_URL, API_KEY, deleted_do
     return len(stalledItems)
 
 
-async def remove_metadata_missing(settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
+async def remove_metadata_missing(settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
     # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist  
     queue = await get_queue(BASE_URL, API_KEY)
     if not queue: return 0    
@@ -91,7 +91,7 @@ async def remove_metadata_missing(settings_dict, arr_type, BASE_URL, API_KEY, de
     logger.debug('remove_metadata_missing/queue OUT: %s', str(queue))
     return len(missing_metadataItems)
 
-async def remove_orphans(settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, full_queue_param):
+async def remove_orphans(settings_dict, BASE_URL, API_KEY, deleted_downloads, full_queue_param):
     # Removes downloads belonging to movies/tv shows that have been deleted in the meantime
     full_queue = await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})
     if not full_queue: return 0 # By now the queue may be empty 
@@ -106,7 +106,7 @@ async def remove_orphans(settings_dict, arr_type, BASE_URL, API_KEY, deleted_dow
         await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'orphan', False, deleted_downloads)
     return len(orphanItems)
 
-async def remove_unmonitored(settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads):
+async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads, arr_type):
     # Removes downloads belonging to movies/tv shows that are not monitored
     queue = await get_queue(BASE_URL, API_KEY) 
     if not queue: return 0
@@ -203,22 +203,22 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
         deleted_downloads = Deleted_Downloads([])
         items_detected = 0
 
-        #items_detected += await test_remove_ALL(           settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
+        #items_detected += await test_remove_ALL(           settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
 
         if settings_dict['REMOVE_FAILED']:
-            items_detected += await remove_failed(            settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads)
+            items_detected += await remove_failed(            settings_dict, BASE_URL, API_KEY, deleted_downloads)
         
         if settings_dict['REMOVE_STALLED']: 
-            items_detected += await remove_stalled(           settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
+            items_detected += await remove_stalled(           settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
 
         if settings_dict['REMOVE_METADATA_MISSING']: 
-            items_detected += await remove_metadata_missing(  settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
+            items_detected += await remove_metadata_missing(  settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
 
         if settings_dict['REMOVE_ORPHANS']: 
-            items_detected += await remove_orphans(           settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads, full_queue_param)
+            items_detected += await remove_orphans(           settings_dict, BASE_URL, API_KEY, deleted_downloads, full_queue_param)
 
         if settings_dict['REMOVE_UNMONITORED']: 
-            items_detected += await remove_unmonitored(       settings_dict, arr_type, BASE_URL, API_KEY, deleted_downloads)
+            items_detected += await remove_unmonitored(       settings_dict, BASE_URL, API_KEY, deleted_downloads, arr_type)
 
         if items_detected == 0:
             logger.verbose('>>> Queue is clean.')
