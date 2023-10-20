@@ -203,7 +203,7 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
         deleted_downloads = Deleted_Downloads([])
         items_detected = 0
 
-        #items_detected += await test_remove_ALL(           settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
+        #items_detected += await test_remove_ALL(             settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
 
         if settings_dict['REMOVE_FAILED']:
             items_detected += await remove_failed(            settings_dict, BASE_URL, API_KEY, deleted_downloads)
