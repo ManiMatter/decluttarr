@@ -70,8 +70,7 @@ async def test_remove_ALL(settings_dict, BASE_URL, API_KEY, deleted_downloads, d
     for queueItem in queue['records']:
         stalledItems.append(queueItem)
     await check_permitted_attempts(settings_dict, stalledItems, 'stalled', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
-    queue = await get_queue(BASE_URL, API_KEY) 
-    logger.debug('test_remove_ALL/queue OUT: %s', str(queue))
+    logger.debug('test_remove_ALL/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(stalledItems)
 
 
@@ -87,8 +86,7 @@ async def remove_metadata_missing(settings_dict, BASE_URL, API_KEY, deleted_down
                 queueItem['errorMessage']  == 'qBittorrent is downloading metadata':
                     missing_metadataItems.append(queueItem)
     await check_permitted_attempts(settings_dict, missing_metadataItems, 'missing metadata', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
-    queue = await get_queue(BASE_URL, API_KEY) 
-    logger.debug('remove_metadata_missing/queue OUT: %s', str(queue))
+    logger.debug('remove_metadata_missing/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(missing_metadataItems)
 
 async def remove_orphans(settings_dict, BASE_URL, API_KEY, deleted_downloads, full_queue_param):
@@ -96,6 +94,8 @@ async def remove_orphans(settings_dict, BASE_URL, API_KEY, deleted_downloads, fu
     full_queue = await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})
     if not full_queue: return 0 # By now the queue may be empty 
     queue = await get_queue(BASE_URL, API_KEY) 
+    logger.debug('remove_orphans/full queue IN: %s', str(full_queue))
+    logger.debug('remove_orphans/queue IN: %s', str(queue))
     full_queue_items = [{'id': queueItem['id'], 'title': queueItem['title'], 'downloadId': queueItem['downloadId']} for queueItem in full_queue['records']]
     if queue:
         queue_ids = [queueItem['id'] for queueItem in queue['records']]
@@ -104,12 +104,15 @@ async def remove_orphans(settings_dict, BASE_URL, API_KEY, deleted_downloads, fu
     orphanItems = [{'id': queueItem['id'], 'title': queueItem['title'], 'downloadId': queueItem['downloadId']} for queueItem in full_queue_items if queueItem['id'] not in queue_ids]
     for queueItem in orphanItems:
         await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'orphan', False, deleted_downloads)
+    logger.debug('remove_orphans/full queue OUT: %s', str(await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})))
+    logger.debug('remove_orphans/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(orphanItems)
 
 async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads, arr_type):
     # Removes downloads belonging to movies/tv shows that are not monitored
     queue = await get_queue(BASE_URL, API_KEY) 
     if not queue: return 0
+    logger.debug('remove_unmonitored/queue IN: %s', str(queue))
     unmonitoredItems= []
     downloadItems = []
     for queueItem in queue['records']:
@@ -124,6 +127,7 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads
     unmonitoredItems = [downloadItem for downloadItem in downloadItems if downloadItem['downloadId'] not in monitored_downloadIds]
     for unmonitoredItem in unmonitoredItems:
         await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'unmonitored', False, deleted_downloads)
+    logger.debug('remove_unmonitored/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(unmonitoredItems)
 
 async def check_permitted_attempts(settings_dict, current_defective_items, failType, blocklist, deleted_downloads, BASE_URL, API_KEY, defective_tracker):
