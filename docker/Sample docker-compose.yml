@@ -8,7 +8,8 @@
      PUID: 1000
      PGID: 1000
      # General
-     LOG_LEVEL: INFO 
+     LOG_LEVEL: INFO
+     #TEST_RUN: True 
      # Features 
      REMOVE_TIMER: 10
      REMOVE_FAILED: True

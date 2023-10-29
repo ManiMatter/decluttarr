@@ -10,7 +10,7 @@ Feature overview:
 - Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row
 - Automatically delete downloads belonging to Movies/TV/Music requests shows that are unmonitored
 
-You may run this locally by launch main.py, or by mounting it inside a docker container.
+You may run this locally by launch main.py, or by pulling the docker image.
 A sample docker-compose.yml is included.
 
 ## Getting started
