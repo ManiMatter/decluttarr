@@ -1,10 +1,7 @@
 requests
+aiohttp
 asyncio
 python-dateutil
 verboselogs
 pytest
 pytest-asyncio
-
-aiohttp==3.8.2
-yarl==1.8.1
-frozenlist==1.3.1
