@@ -102,14 +102,20 @@ RADARR_KEY    = XXXXX
 ################################# SONARR SECTION #################################
 [sonarr]
 # Please see the documentation under the RADARR section - the explanations the same.
-SONARR_URL    = http://sonarrA:8989
+SONARR_URL    = http://sonarr:8989
 SONARR_KEY    = XXXXX
 
 ################################# SONARR SECTION #################################
 [sonarr]
 # Please see the documentation under the RADARR section - the explanations the same.
-SONARR_URL    = http://sonarrA:8989
+SONARR_URL    = http://sonarr:8989
 SONARR_KEY    = XXXXX
+
+################################# SONARR SECTION #################################
+[lidarr]
+# Please see the documentation under the RADARR section - the explanations the same.
+LIDARR_URL    = http://lidarr:8686
+LIDARR_KEY    = XXXXX
 
 ################################# QBITTORRENT SECTION #################################
 [qbittorrent]

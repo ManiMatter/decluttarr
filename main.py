@@ -37,6 +37,12 @@ async def main():
     except:
         settings_dict['SONARR_NAME'] = 'Sonarr'
 
+    try:
+        if settings_dict['LIDARR_URL']:
+            settings_dict['LIDARR_NAME'] = (await rest_get(settings_dict['LIDARR_URL']+'/system/status', settings_dict['LIDARR_KEY']))['instanceName']
+    except:
+        settings_dict['LIDARR_NAME'] = 'Lidarr'
+
     # Print Settings
     fmt = '{0.days} days {0.hours} hours {0.minutes} minutes'
     logger.info('#' * 50)
@@ -58,7 +64,8 @@ async def main():
     logger.info('') 
     logger.info('*** Configured Instances ***')
     if settings_dict['RADARR_URL']: logger.info('%s: %s', settings_dict['RADARR_NAME'], settings_dict['RADARR_URL'])
-    if settings_dict['SONARR_URL']: logger.info('%s: %s', settings_dict['SONARR_NAME'], settings_dict['SONARR_URL'])    
+    if settings_dict['SONARR_URL']: logger.info('%s: %s', settings_dict['SONARR_NAME'], settings_dict['SONARR_URL'])   
+    if settings_dict['LIDARR_URL']: logger.info('%s: %s', settings_dict['LIDARR_NAME'], settings_dict['LIDARR_URL'])    
     if settings_dict['QBITTORRENT_URL']: logger.info('qBittorrent: %s', settings_dict['QBITTORRENT_URL'])    
 
     logger.info('') 
@@ -79,6 +86,14 @@ async def main():
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s ***', settings_dict['SONARR_NAME'], error)
+
+    if settings_dict['LIDARR_URL']:
+        try: 
+            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['LIDARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['LIDARR_KEY']}))
+            logger.info('OK | %s', settings_dict['LIDARR_NAME'])
+        except Exception as error:
+            error_occured = True
+            logger.error('-- | %s *** Error: %s ***', settings_dict['LIDARR_NAME'], error)
 
     if settings_dict['QBITTORRENT_URL']:
         try: 
@@ -127,6 +142,7 @@ async def main():
         logger.verbose('-' * 50)
         if settings_dict['RADARR_URL']: await queue_cleaner(settings_dict, 'radarr', defective_tracker)
         if settings_dict['SONARR_URL']: await queue_cleaner(settings_dict, 'sonarr', defective_tracker)
+        if settings_dict['LIDARR_URL']: await queue_cleaner(settings_dict, 'lidarr', defective_tracker)
         logger.verbose('')  
         logger.verbose('Queue clean-up complete!')  
         await asyncio.sleep(settings_dict['REMOVE_TIMER']*60)
@@ -134,7 +150,8 @@ async def main():
 
 if __name__ == '__main__':
     instances = {settings_dict['RADARR_URL']: {}} if settings_dict['RADARR_URL'] else {} + \
-                {settings_dict['SONARR_URL']: {}} if settings_dict['SONARR_URL'] else {} 
+                {settings_dict['SONARR_URL']: {}} if settings_dict['SONARR_URL'] else {} + \
+                {settings_dict['LIDARR_URL']: {}} if settings_dict['LIDARR_URL'] else {} 
     defective_tracker = Defective_Tracker(instances)
     asyncio.run(main())
 

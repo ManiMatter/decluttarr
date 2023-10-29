@@ -8,7 +8,8 @@
      PUID: 1000
      PGID: 1000
      # General
-     LOG_LEVEL: INFO 
+     LOG_LEVEL: INFO
+     #TEST_RUN: True 
      # Features 
      REMOVE_TIMER: 10
      REMOVE_FAILED: True
@@ -24,6 +25,9 @@
      # Sonarr
      SONARR_URL: http://sonarr:8989
      SONARR_KEY: $SONARR_API_KEY
+     # Lidarr
+     LIDARR_URL: http://lidarr:8686
+     LIDARR_KEY: $LIDARR_KEY     
      # qBitorrent
      QBITTORRENT_URL: http://qbittorrent:8080
      #QBITTORRENT_USERNAME: Your Name
