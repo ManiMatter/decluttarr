@@ -43,12 +43,15 @@ async def remove_stalled(settings_dict, BASE_URL, API_KEY, deleted_downloads, de
     else:
         protected_downloadIDs = []
     stalledItems = []    
+    already_detected = []
     for queueItem in queue['records']:
         if 'errorMessage' in queueItem and 'status' in queueItem:
             if  queueItem['status']        == 'warning' and \
                 queueItem['errorMessage']  == 'The download is stalled with no connections':
                     if queueItem['downloadId'] in protected_downloadIDs:
-                        logger.verbose('>>> Detected stalled download, tagged not to be killed: %s',queueItem['title'])
+                        if queueItem['downloadId'] not in already_detected:
+                            already_detected.append(queueItem['downloadId'])
+                            logger.verbose('>>> Detected stalled download, tagged not to be killed: %s',queueItem['title'])
                     else:
                         stalledItems.append(queueItem)
     await check_permitted_attempts(settings_dict, stalledItems, 'stalled', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
@@ -61,11 +64,6 @@ async def test_remove_ALL(settings_dict, BASE_URL, API_KEY, deleted_downloads, d
     queue = await get_queue(BASE_URL, API_KEY)
     if not queue: return 0    
     logger.debug('test_remove_ALL/queue: %s', str(queue))
-    if settings_dict['QBITTORRENT_URL']:
-        protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
-        protected_downloadIDs = [str.upper(item['hash']) for item in protected_dowloadItems]
-    else:
-        protected_downloadIDs = []
     stalledItems = []    
     for queueItem in queue['records']:
         stalledItems.append(queueItem)
@@ -113,8 +111,12 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads
     queue = await get_queue(BASE_URL, API_KEY) 
     if not queue: return 0
     logger.debug('remove_unmonitored/queue IN: %s', str(queue))
-    unmonitoredItems= []
     downloadItems = []
+    if settings_dict['QBITTORRENT_URL']:
+        protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
+        protected_downloadIDs = [str.upper(item['hash']) for item in protected_dowloadItems]
+    else:
+        protected_downloadIDs = []
     for queueItem in queue['records']:
         if arr_type == 'sonarr': 
             monitored = (await rest_get(f'{BASE_URL}/episode/{str(queueItem["episodeId"])}', API_KEY))['monitored']
@@ -122,10 +124,19 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads
             monitored = (await rest_get(f'{BASE_URL}/movie/{str(queueItem["movieId"])}', API_KEY))['monitored']
         elif arr_type == 'lidarr': 
             monitored = (await rest_get(f'{BASE_URL}/album/{str(queueItem["albumId"])}', API_KEY))['monitored']            
-        downloadItems.append({'downloadId': queueItem['downloadId'], 'id': queueItem['id'], 'monitored': monitored})
-    monitored_downloadIds = [downloadItem['downloadId'] for downloadItem in downloadItems if downloadItem['monitored']]
-    unmonitoredItems = [downloadItem for downloadItem in downloadItems if downloadItem['downloadId'] not in monitored_downloadIds]
-    for unmonitoredItem in unmonitoredItems:
+        downloadItems.append({'downloadId': queueItem['downloadId'], 'id': queueItem['id'], 'monitored': monitored, 'title': queueItem['title']})
+    unmonitoredItems= []
+    already_detected = []
+    for downloadItem in downloadItems:
+        if not downloadItem['monitored']:
+            if downloadItem['downloadId'] in protected_downloadIDs:
+                if downloadItem['downloadId'] not in already_detected:
+                    already_detected.append(queueItem['downloadId'])
+                    logger.verbose('>>> Detected unmonitored download, tagged not to be killed: %s',downloadItem['title'])
+            else:
+                unmonitoredItems.append(downloadItem)
+
+    for queueItem in unmonitoredItems:
         await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'unmonitored', False, deleted_downloads)
     logger.debug('remove_unmonitored/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(unmonitoredItems)
