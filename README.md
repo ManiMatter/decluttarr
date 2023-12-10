@@ -26,6 +26,10 @@ If you want to run locally:
 4) run main.py
 5) Enjoy
 
+## Dependencies
+Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
+Use latest version of qBittorrent.
+
 ## Credits
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner
 - Script to read out config expanded on code by syncarr/syncarr 
