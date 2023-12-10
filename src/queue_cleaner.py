@@ -241,7 +241,7 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             logger.warning('>>> Queue cleaning failed on %s. (File: %s / Line: %s / Error Message: %s / Error Type: %s)', NAME, fname, exc_tb.tb_lineno, error, exc_type)
-            if settings_dict['LOG_LEVEL']=='DEBUG':
-                print(traceback.format_exc())
+            logger.debug(traceback.format_exc())
+
 
 
