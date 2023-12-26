@@ -50,6 +50,17 @@ REMOVE_FAILED  = False
 # Is Mandatory: No (Defaults to False)
 REMOVE_STALLED  = False
 
+###### MIN_DOWNLOAD_SPEED ######
+# Sets the minimum download speed for active downloads.
+# If the increase in the downloaded file size of a download is less than this value between two consecutive checks, the download is considered slow and is removed.
+# Only applies to downloads that are not yet complete.
+# Slow downloads are added to the blocklist, so that they are not re-requested in the future
+# A new download from another source is automatically added by sonarr/radarr (if available)
+# Type: Integer
+# Unit: KBytes per second
+# Is Mandatory: No (Defaults to 0, which means this feature is turned off)
+MIN_DOWNLOAD_SPEED = 0
+
 ###### REMOVE_METADATA_MISSING ######
 # Steers whether downloads stuck obtaining meta data are removed from the queue
 # These downloads are added the blocklist, so that they are not re-requested in the future
