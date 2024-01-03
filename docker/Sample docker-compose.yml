@@ -17,8 +17,10 @@
      REMOVE_METADATA_MISSING: True     
      REMOVE_ORPHANS: True
      REMOVE_UNMONITORED: True
+     MIN_DOWNLOAD_SPEED: 0
      PERMITTED_ATTEMPTS: 3
      NO_STALLED_REMOVAL_QBIT_TAG: Don't Kill If Stalled
+     NO_SLOW_REMOVAL_QBIT_TAG: Don't Kill If Slow
      # Radarr
      RADARR_URL: http://radarr:7878
      RADARR_KEY: $RADARR_API_KEY

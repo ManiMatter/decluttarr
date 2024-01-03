@@ -52,6 +52,7 @@ async def main():
     logger.info('*** Current Settings ***') 
     logger.info('%s | Removing failed downloads', str(settings_dict['REMOVE_FAILED']))
     logger.info('%s | Removing stalled downloads', str(settings_dict['REMOVE_STALLED']))
+    logger.info('%s | Removing slow downloads', str(settings_dict['MIN_DOWNLOAD_SPEED']) + 'KB/s')
     logger.info('%s | Removing downloads missing metadata', str(settings_dict['REMOVE_METADATA_MISSING']))
     logger.info('%s | Removing orphan downloads', str(settings_dict['REMOVE_ORPHANS']))
     logger.info('%s | Removing downloads belonging to unmonitored TV shows/movies', str(settings_dict['REMOVE_UNMONITORED']))
