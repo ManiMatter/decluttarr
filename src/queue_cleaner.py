@@ -159,13 +159,14 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, deleted_downloads, defec
     for queueItem in queue['records']:
         if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
             downloaded_size = int((queueItem['size'] - queueItem['sizeleft']) / 1000)
-            if  queueItem['status'] != 'completed' and \
+            speed = (downloaded_size - download_sizes[queueItem['downloadId']]) / (settings_dict['REMOVE_TIMER'] * 60)
+            if  queueItem['status'] == 'downloading' and \
                 queueItem['downloadId'] in download_sizes and \
-                (downloaded_size - download_sizes[queueItem['downloadId']]) / (settings_dict['REMOVE_TIMER'] * 60) < settings_dict['MIN_DOWNLOAD_SPEED']:
+                speed < settings_dict['MIN_DOWNLOAD_SPEED']:
                     if queueItem['downloadId'] in protected_downloadIDs:
                         if queueItem['downloadId'] not in already_detected:
                             already_detected.append(queueItem['downloadId'])
-                            logger.verbose('>>> Detected slow download, tagged not to be killed: %s',queueItem['title'])
+                            logger.verbose('>>> Detected slow download, tagged not to be killed: %s (%dKB/s)',queueItem['title'], speed)
                     else:
                         slowItems.append(queueItem)
             try:
