@@ -32,5 +32,5 @@ services:
       - LIDARR_KEY=$LIDARR_API_KEY
       # qBittorrent
       - QBITTORRENT_URL=http://localhost:8080
-      #- QBITTORRENT_USERNAME=Your Name
-      #- QBITTORRENT_PASSWORD=Your Password
+      #- QBITTORRENT_USERNAME=Your name
+      #- QBITTORRENT_PASSWORD=Your password
