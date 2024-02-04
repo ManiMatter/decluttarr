@@ -1,6 +1,6 @@
 #FROM python:3.9-slim-buster
 FROM python:3.10.13-slim
-LABEL org.opencontainers.image.source="https://github.com/ManiMatter/decluttarr"
+LABEL org.opencontainers.image.source="https://github.com/Fxsch/decluttarr"
                                                       
 ENV IS_IN_DOCKER 1
 
