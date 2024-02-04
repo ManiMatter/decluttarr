@@ -1,34 +1,36 @@
-# decluttarr - Keeps radarr and sonarr download queues free of stalled and redundant items
- decluttarr:
-   image: ghcr.io/manimatter/decluttarr:latest   
-   container_name: decluttarr
-   restart: always
-   environment:
-     TZ: Europe/Zurich
-     PUID: 1000
-     PGID: 1000
-     # General
-     LOG_LEVEL: INFO
-     #TEST_RUN: True 
-     # Features 
-     REMOVE_TIMER: 10
-     REMOVE_FAILED: True
-     REMOVE_STALLED: True
-     REMOVE_METADATA_MISSING: True     
-     REMOVE_ORPHANS: True
-     REMOVE_UNMONITORED: True
-     PERMITTED_ATTEMPTS: 3
-     NO_STALLED_REMOVAL_QBIT_TAG: Don't Kill If Stalled
-     # Radarr
-     RADARR_URL: http://radarr:7878
-     RADARR_KEY: $RADARR_API_KEY
-     # Sonarr
-     SONARR_URL: http://sonarr:8989
-     SONARR_KEY: $SONARR_API_KEY
-     # Lidarr
-     LIDARR_URL: http://lidarr:8686
-     LIDARR_KEY: $LIDARR_KEY     
-     # qBitorrent
-     QBITTORRENT_URL: http://qbittorrent:8080
-     #QBITTORRENT_USERNAME: Your Name
-     #QBITTORRENT_PASSWORD: Your Password
+version: "3.3"
+services:
+  decluttarr:
+    image: "ghcr.io/fxsch/decluttarr:latest"   
+    container_name: decluttarr
+    restart: unless-stopped
+    network_mode: "host"
+    environment:
+      - TZ=Europe/Berlin
+      - PUID=1000
+      - PGID=1000
+      # General
+      - LOG_LEVEL=INFO
+      #- TEST_RUN=True 
+      # Features 
+      - REMOVE_TIMER=10
+      - REMOVE_FAILED=True
+      - REMOVE_STALLED=True
+      - REMOVE_METADATA_MISSING=True     
+      - REMOVE_ORPHANS=True
+      - REMOVE_UNMONITORED=True
+      - PERMITTED_ATTEMPTS=3
+      - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill If Stalled
+      # Radarr
+      - RADARR_URL=http://localhost:7878
+      - RADARR_KEY=$RADARR_API_KEY
+      # Sonarr
+      - SONARR_URL=http://localhost:8989
+      - SONARR_KEY=$SONARR_API_KEY
+      # Lidarr
+      - LIDARR_URL=http://localhost:8686
+      - LIDARR_KEY=$LIDARR_API_KEY
+      # qBittorrent
+      - QBITTORRENT_URL=http://localhost:8080
+      #- QBITTORRENT_USERNAME=Your Name
+      #- QBITTORRENT_PASSWORD=Your Password
