@@ -121,5 +121,5 @@ LIDARR_KEY = $LIDARR_API_KEY
 # QBITTORRENT_USERNAME: Optional; not needed if authentication bypassing on qBittorrent is enabled (for instance for local connections)
 # QBITTORRENT_PASSWORD: Optional; same reason as above
 QBITTORRENT_URL      = http://localhost:8080
-QBITTORRENT_USERNAME = Your Name (or empty)
-QBITTORRENT_PASSWORD = Your Password (or empty)
+QBITTORRENT_USERNAME = Your name (or empty)
+QBITTORRENT_PASSWORD = Your password (or empty)
