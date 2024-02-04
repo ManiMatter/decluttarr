@@ -25,6 +25,6 @@ LIDARR_URL                  = http://localhost:8686
 LIDARR_KEY                  = $LIDARR_API_KEY
 
 [qbittorrent]
-QBITTORRENT_URL             = http://qbittorrent:8080
+QBITTORRENT_URL             = http://localhost:8080
 QBITTORRENT_USERNAME        = Your name (or empty)
 QBITTORRENT_PASSWORD        = Your password (or empty)
