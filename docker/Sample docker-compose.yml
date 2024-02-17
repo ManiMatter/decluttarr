@@ -27,8 +27,8 @@
      SONARR_KEY: $SONARR_API_KEY
      # Lidarr
      LIDARR_URL: http://lidarr:8686
-     LIDARR_KEY: $LIDARR_KEY     
+     LIDARR_KEY: $LIDARR_API_KEY     
      # qBitorrent
      QBITTORRENT_URL: http://qbittorrent:8080
-     #QBITTORRENT_USERNAME: Your Name
-     #QBITTORRENT_PASSWORD: Your Password
+     #QBITTORRENT_USERNAME: Your name
+     #QBITTORRENT_PASSWORD: Your password
