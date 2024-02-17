@@ -64,8 +64,10 @@ services:
 
 ## Running manually
 1) Clone the repository with `git clone https://github.com/Fxsch/decluttarr.git`
-2) Tweak the `config.conf` file inside the config folder to your needs (this file is disregarded when running via docker-compose.yml)
-3) Run the script with `python3 main.py`
+2) Rename the `config.conf-Example` inside the config folder to `config.conf`
+3) Tweak `config.conf` to your needs 
+4) Run the script with `python3 main.py`
+Note: The `config.conf` is disregarded when running via docker-compose.yml
 
 ## Explanation of the settings
 **LOG_LEVEL**
