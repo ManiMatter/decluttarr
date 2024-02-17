@@ -5,7 +5,7 @@ from src.utils.rest import (rest_get, rest_delete, rest_post)
 import json
 from src.utils.nest_functions import (add_keys_nested_dict, nested_get)
 import sys, os
-
+import traceback
 class Deleted_Downloads:
     # Keeps track of which downloads have already been deleted (to not double-delete)
     def __init__(self, dict):
@@ -241,6 +241,7 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             logger.warning('>>> Queue cleaning failed on %s. (File: %s / Line: %s / Error Message: %s / Error Type: %s)', NAME, fname, exc_tb.tb_lineno, error, exc_type)
+            logger.debug(traceback.format_exc())
 
 
 
