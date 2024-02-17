@@ -9,6 +9,8 @@ from config.config import settings_dict
 from src.queue_cleaner import queue_cleaner
 #print(json.dumps(settings_dict,indent=4))
 import requests
+import platform
+from packaging import version
 ########### Enabling Logging
 # Set up logging
 log_level_num=logging.getLevelName(settings_dict['LOG_LEVEL'])
@@ -80,18 +82,30 @@ async def main():
         error_occured = False
         try: 
             await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['RADARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['RADARR_KEY']}))
-            logger.info('OK | %s', settings_dict['RADARR_NAME'])
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s ***', settings_dict['RADARR_NAME'], error)
 
+        radarr_version = (await rest_get(settings_dict['RADARR_URL']+'/system/status', settings_dict['RADARR_KEY']))['version']
+        if version.parse(radarr_version) < version.parse('5.3.6.8608'):
+            error_occured = True
+            logger.error('-- | %s *** Error: %s ***', settings_dict['RADARR_NAME'], 'Please update Radarr to at least version 5.3.6.8608. Current version: ' + radarr_version)
+        if not error_occured:
+            logger.info('OK | %s', settings_dict['RADARR_NAME'])
+
     if settings_dict['SONARR_URL']:
         try: 
             await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['SONARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['SONARR_KEY']}))
-            logger.info('OK | %s', settings_dict['SONARR_NAME'])
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s ***', settings_dict['SONARR_NAME'], error)
+
+        sonarr_version = (await rest_get(settings_dict['SONARR_URL']+'/system/status', settings_dict['SONARR_KEY']))['version']
+        if version.parse(sonarr_version) < version.parse('4.0.1.1131'):
+            error_occured = True
+            logger.error('-- | %s *** Error: %s ***', settings_dict['SONARR_NAME'], 'Please update Sonarr to at least version 4.0.1.1131. Current version: ' + sonarr_version)
+        if not error_occured:
+            logger.info('OK | %s', settings_dict['SONARR_NAME'])
 
     if settings_dict['LIDARR_URL']:
         try: 
