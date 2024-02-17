@@ -143,6 +143,22 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads
     logger.debug('remove_unmonitored/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(unmonitoredItems)
 
+async def remove_missing_files(settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker):
+    # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist  
+    queue = await get_queue(BASE_URL, API_KEY)
+    if not queue: return 0    
+    logger.debug('remove_missing_files/queue: %s', str(queue))
+    missing_filesItems = []
+    for queueItem in queue['records']:
+        if 'errorMessage' in queueItem and 'status' in queueItem:
+            if  queueItem['status']        == 'warning' and \
+                queueItem['errorMessage']  == 'DownloadClientQbittorrentTorrentStateMissingFiles':
+                    missing_filesItems.append(queueItem)
+    for queueItem in missing_filesItems:
+        await remove_download(settings_dict, BASE_URL, API_KEY, queueItem['id'], queueItem['title'], queueItem['downloadId'], 'missing files', False, deleted_downloads) 
+    logger.debug('remove_missing_files/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
+    return len(missing_filesItems)
+
 async def remove_slow(settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker, download_sizes):
     # Detects slow downloads and triggers delete. Adds to blocklist
     queue = await get_queue(BASE_URL, API_KEY)
@@ -169,12 +185,10 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, deleted_downloads, defec
                             logger.verbose('>>> Detected slow download, tagged not to be killed: %s (%dKB/s)',queueItem['title'], speed)
                     else:
                         slowItems.append(queueItem)
-            try:
-                logger.verbose(f'{(downloaded_size - download_sizes.dict[queueItem["downloadId"]]) * settings_dict["REMOVE_TIMER"] / 60},  : {queueItem["title"]}')
-            except: pass
             download_sizes.dict[queueItem['downloadId']] = downloaded_size
     await check_permitted_attempts(settings_dict, slowItems, 'slow', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
     queue = await get_queue(BASE_URL, API_KEY) 
+    logger.debug('remove_slow/download_sizes.dict: %s', str(download_sizes.dict))
     logger.debug('remove_slow/queue OUT: %s', str(queue))
     return len(slowItems)
 
@@ -185,14 +199,18 @@ async def check_permitted_attempts(settings_dict, current_defective_items, failT
     for queueItem in current_defective_items:
         current_defective[queueItem['id']] = {'title': queueItem['title'],'downloadId': queueItem['downloadId']}
     logger.debug('check_permitted_attempts/current_defective: %s', str(current_defective))
+    
     # 2. Check if those that were previously defective are no longer defective -> those are recovered
     try:
         recovered_ids = [tracked_id for tracked_id in defective_tracker.dict[BASE_URL][failType] if tracked_id not in current_defective]
     except KeyError:
         recovered_ids = []
+
     logger.debug('check_permitted_attempts/recovered_ids: %s' + str(recovered_ids))
+    
     for recovered_id in recovered_ids:
        del defective_tracker.dict[BASE_URL][failType][recovered_id]
+    
     logger.debug('check_permitted_attempts/defective_tracker.dict IN: %s', str(defective_tracker.dict))
     # 3. For those that are defective, add attempt + 1 if present before, or make attempt = 0. If exceeding number of permitted attempts, delete hem
     download_ids_stuck = []
@@ -221,7 +239,7 @@ async def remove_download(settings_dict, BASE_URL, API_KEY, queueId, queueTitle,
     return
 
 ########### MAIN FUNCTION ###########
-async def queue_cleaner(settings_dict, arr_type, defective_tracker):
+async def queue_cleaner(settings_dict, arr_type, defective_tracker, download_sizes):
     # Read out correct instance depending on radarr/sonarr flag
     run_dict = {}
     if arr_type == 'radarr':
@@ -271,6 +289,9 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
 
         if settings_dict['REMOVE_UNMONITORED']: 
             items_detected += await remove_unmonitored(       settings_dict, BASE_URL, API_KEY, deleted_downloads, arr_type)
+
+        if settings_dict['REMOVE_MISSING_FILES']: 
+            items_detected += await remove_missing_files(     settings_dict, BASE_URL, API_KEY, deleted_downloads, arr_type)
 
         if settings_dict['REMOVE_SLOW']:
             items_detected += await remove_slow(              settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker, download_sizes)

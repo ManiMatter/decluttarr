@@ -86,6 +86,7 @@ REMOVE_STALLED              = get_config_value('REMOVE_STALLED',                
 REMOVE_METADATA_MISSING     = get_config_value('REMOVE_METADATA_MISSING',       'features',     False,  bool,   False)
 REMOVE_ORPHANS              = get_config_value('REMOVE_ORPHANS' ,               'features',     False,  bool,   False)
 REMOVE_UNMONITORED          = get_config_value('REMOVE_UNMONITORED' ,           'features',     False,  bool,   False)
+REMOVE_MISSING_FILES        = get_config_value('REMOVE_MISSING_FILES' ,         'features',     False,  bool,   False)
 REMOVE_SLOW                 = get_config_value('REMOVE_SLOW' ,                  'features',     False,  bool,   False)
 MIN_DOWNLOAD_SPEED          = get_config_value('MIN_DOWNLOAD_SPEED',            'features',     False,  int,    0)
 PERMITTED_ATTEMPTS          = get_config_value('PERMITTED_ATTEMPTS',            'features',     False,  int,    3)

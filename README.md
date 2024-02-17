@@ -13,12 +13,16 @@ Feature overview:
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
 
+## Dependencies
+Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
+Use latest version of qBittorrent.
+
 ## Getting started
 There's two ways to run this:
 - As a docker container with docker-compose
 - By cloning the repository and running the script manually
 
-Both ways are explained below and there's an explanation for the different settings below that
+Both ways are explained below and there's an explanation for the different settings below that.
 
 ## Docker
 1) Make a `docker-compose.yml` file
@@ -67,8 +71,9 @@ services:
 ## Running manually
 1) Clone the repository with `git clone https://github.com/Fxsch/decluttarr.git`
 2) Rename the `config.conf-Example` inside the config folder to `config.conf`
-3) Tweak `config.conf` to your needs 
-4) Run the script with `python3 main.py`
+3) Tweak `config.conf` to your needs
+4) Install the libraries listed in the docker/requirements.txt (pip install -r requirements.txt)
+5) Run the script with `python3 main.py`
 Note: The `config.conf` is disregarded when running via docker-compose.yml
 
 ## Explanation of the settings
@@ -133,6 +138,13 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Note: Will only remove from queue if all TV shows depending on the same download are unmonitored
 - These downloads are not added to the blocklist
 - Note: Since sonarr does not support multi-season packs, if you download one you should protect it with `NO_STALLED_REMOVAL_QBIT_TAG` that is explained further down
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_MISSING_FILES**
+- Steers whether downloads that have the warning "Files Missing" are removed from the queue
+- These downloads are not added to the blocklist
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)

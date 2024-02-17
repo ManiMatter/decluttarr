@@ -159,6 +159,6 @@ if __name__ == '__main__':
                 {settings_dict['SONARR_URL']: {}} if settings_dict['SONARR_URL'] else {} + \
                 {settings_dict['LIDARR_URL']: {}} if settings_dict['LIDARR_URL'] else {} 
     defective_tracker = Defective_Tracker(instances)
-    download_sizes = Download_Sizes()
+    download_sizes = Download_Sizes({})
     asyncio.run(main())
 

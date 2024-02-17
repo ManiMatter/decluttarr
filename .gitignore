@@ -4,3 +4,4 @@ __pycache__/
 config/config.conf
 ToDo 
 snip*.py
+venv
