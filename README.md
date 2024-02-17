@@ -47,16 +47,16 @@ services:
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill If Stalled
       # Radarr
-      - RADARR_URL=http://localhost:7878
+      - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
       # Sonarr
-      - SONARR_URL=http://localhost:8989
+      - SONARR_URL=http://sonarr:8989
       - SONARR_KEY=$SONARR_API_KEY
       # Lidarr
-      - LIDARR_URL=http://localhost:8686
+      - LIDARR_URL=http://lidarr:8686
       - LIDARR_KEY=$LIDARR_API_KEY
       # qBittorrent
-      - QBITTORRENT_URL=http://localhost:8080
+      - QBITTORRENT_URL=http://qbittorrent:8080
       #- QBITTORRENT_USERNAME=Your name
       #- QBITTORRENT_PASSWORD=Your password
 ```
@@ -64,7 +64,7 @@ services:
 
 ## Running manually
 1) Clone the repository with `git clone https://github.com/Fxsch/decluttarr.git`
-2) Tweak the `config.conf` file to your needs
+2) Tweak the `config.conf` file inside the config folder to your needs (this file is disregarded when running via docker-compose.yml)
 3) Run the script with `python3 main.py`
 
 ## Explanation of the settings
@@ -86,7 +86,6 @@ services:
 
 ### **Features settings**
 - Steers which type of cleaning is applied to the downloads queue
-- Requires `QUEUE_CLEANING` to be set to `True` to take effect
 
 **REMOVE_TIMER**
 - Sets the frequency of how often the queue is checked for orphan and stalled downloads
