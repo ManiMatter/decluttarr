@@ -86,8 +86,10 @@ REMOVE_STALLED              = get_config_value('REMOVE_STALLED',                
 REMOVE_METADATA_MISSING     = get_config_value('REMOVE_METADATA_MISSING',       'features',     False,  bool,   False)
 REMOVE_ORPHANS              = get_config_value('REMOVE_ORPHANS' ,               'features',     False,  bool,   False)
 REMOVE_UNMONITORED          = get_config_value('REMOVE_UNMONITORED' ,           'features',     False,  bool,   False)
+REMOVE_SLOW                 = get_config_value('REMOVE_SLOW' ,                  'features',     False,  bool,   False)
+MIN_DOWNLOAD_SPEED          = get_config_value('MIN_DOWNLOAD_SPEED',            'features',     False,  int,    0)
 PERMITTED_ATTEMPTS          = get_config_value('PERMITTED_ATTEMPTS',            'features',     False,  int,    3)
-NO_STALLED_REMOVAL_QBIT_TAG = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'features',     False,  str,   'Don\'t Kill If Stalled')
+NO_STALLED_REMOVAL_QBIT_TAG = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'features',     False,  str,   'Don\'t Kill')
 
 # Radarr
 RADARR_URL                  = get_config_value('RADARR_URL',                    'radarr',       False,  str)

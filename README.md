@@ -44,8 +44,10 @@ services:
       - REMOVE_METADATA_MISSING=True     
       - REMOVE_ORPHANS=True
       - REMOVE_UNMONITORED=True
+      - REMOVE_SLOW=True
+      - MIN_DOWNLOAD_SPEED=100
       - PERMITTED_ATTEMPTS=3
-      - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill If Stalled
+      - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
       # Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
@@ -135,18 +137,34 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**REMOVE_SLOW**
+- Steers whether slow downloads are removed from the queue
+- Slow downloads are added to the blocklist, so that they are not re-requested in the future
+- A new download from another source is automatically added by sonarr/radarr (if available)
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**MIN_DOWNLOAD_SPEED**
+- Sets the minimum download speed for active downloads
+- If the increase in the downloaded file size of a download is less than this value between two consecutive checks, the download is considered slow and is removed if happening more ofthen than the permitted attempts.
+- Type: Integer
+- Unit: KBytes per second
+- Is Mandatory: No (Defaults to 100, but is only enforced when "REMOVE_SLOW" is true)
+
 **PERMITTED_ATTEMPTS**
-- Defines how many times a download has to be caught as stalled or stuck downloading metadata before it is removed
+- Defines how many times a download has to be caught as stalled, slow or stuck downloading metadata before it is removed
 - Type: Integer
 - Unit: Number of scans
 - Is Mandatory: No (Defaults to 3)
 
 **NO_STALLED_REMOVAL_QBIT_TAG**
 - Downloads in qBittorrent tagged with this tag will not be killed even if they are stalled
+- Also protects slow downloads or those stuck downloading meta data
 - Tag is automatically created in qBittorrent (required qBittorrent is reachable on `QBITTORRENT_URL`)
 - Also protects unmonitored downloads from being removed (relevant for multi-season packs)
 - Type: String
-- Is Mandatory: No (Defaults to `Don't Kill If Stalled`)
+- Is Mandatory: No (Defaults to `Don't Kill`)
 
 ---
 

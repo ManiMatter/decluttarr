@@ -9,8 +9,10 @@ REMOVE_STALLED              = True
 REMOVE_METADATA_MISSING     = True
 REMOVE_ORPHANS              = True
 REMOVE_UNMONITORED          = True
+REMOVE_SLOW                 = True
+MIN_DOWNLOAD_SPEED          = 100
 PERMITTED_ATTEMPTS          = 3
-NO_STALLED_REMOVAL_QBIT_TAG = Don't Kill If Stalled
+NO_STALLED_REMOVAL_QBIT_TAG = Don't Kill
 
 [radarr]
 RADARR_URL                  = http://radarr:7878

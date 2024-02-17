@@ -6,6 +6,8 @@ import json
 from src.utils.nest_functions import (add_keys_nested_dict, nested_get)
 import sys, os
 import traceback
+
+
 class Deleted_Downloads:
     # Keeps track of which downloads have already been deleted (to not double-delete)
     def __init__(self, dict):
@@ -141,6 +143,41 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, deleted_downloads
     logger.debug('remove_unmonitored/queue OUT: %s', str(await get_queue(BASE_URL, API_KEY) ))
     return len(unmonitoredItems)
 
+async def remove_slow(settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker, download_sizes):
+    # Detects slow downloads and triggers delete. Adds to blocklist
+    queue = await get_queue(BASE_URL, API_KEY)
+    if not queue: return 0
+    logger.debug('remove_slow/queue: %s', str(queue))
+    if settings_dict['QBITTORRENT_URL']:
+        protected_dowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
+        protected_downloadIDs = [str.upper(item['hash']) for item in protected_dowloadItems]
+    else:
+        protected_downloadIDs = []
+    slowItems = []   
+    already_detected = []
+    
+    for queueItem in queue['records']:
+        if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
+            downloaded_size = int((queueItem['size'] - queueItem['sizeleft']) / 1000)
+            speed = (downloaded_size - download_sizes.dict.get(queueItem['downloadId'], 0)) / (settings_dict['REMOVE_TIMER'] * 60)
+            if  queueItem['status'] == 'downloading' and \
+                queueItem['downloadId'] in download_sizes.dict and \
+                speed < settings_dict['MIN_DOWNLOAD_SPEED']:
+                    if queueItem['downloadId'] in protected_downloadIDs:
+                        if queueItem['downloadId'] not in already_detected:
+                            already_detected.append(queueItem['downloadId'])
+                            logger.verbose('>>> Detected slow download, tagged not to be killed: %s (%dKB/s)',queueItem['title'], speed)
+                    else:
+                        slowItems.append(queueItem)
+            try:
+                logger.verbose(f'{(downloaded_size - download_sizes.dict[queueItem["downloadId"]]) * settings_dict["REMOVE_TIMER"] / 60},  : {queueItem["title"]}')
+            except: pass
+            download_sizes.dict[queueItem['downloadId']] = downloaded_size
+    await check_permitted_attempts(settings_dict, slowItems, 'slow', True, deleted_downloads, BASE_URL, API_KEY, defective_tracker)
+    queue = await get_queue(BASE_URL, API_KEY) 
+    logger.debug('remove_slow/queue OUT: %s', str(queue))
+    return len(slowItems)
+
 async def check_permitted_attempts(settings_dict, current_defective_items, failType, blocklist, deleted_downloads, BASE_URL, API_KEY, defective_tracker):
     # Checks if downloads are repeatedly found as stalled / stuck in metadata and if yes, deletes them
     # 1. Create list of currently defective
@@ -219,7 +256,7 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
         items_detected = 0
 
         #items_detected += await test_remove_ALL(             settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker)
-
+              
         if settings_dict['REMOVE_FAILED']:
             items_detected += await remove_failed(            settings_dict, BASE_URL, API_KEY, deleted_downloads)
         
@@ -234,6 +271,9 @@ async def queue_cleaner(settings_dict, arr_type, defective_tracker):
 
         if settings_dict['REMOVE_UNMONITORED']: 
             items_detected += await remove_unmonitored(       settings_dict, BASE_URL, API_KEY, deleted_downloads, arr_type)
+
+        if settings_dict['REMOVE_SLOW']:
+            items_detected += await remove_slow(              settings_dict, BASE_URL, API_KEY, deleted_downloads, defective_tracker, download_sizes)
 
         if items_detected == 0:
             logger.verbose('>>> Queue is clean.')

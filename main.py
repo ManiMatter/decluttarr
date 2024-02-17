@@ -22,6 +22,10 @@ class Defective_Tracker:
     # Keeps track of which downloads were already caught as stalled previously
     def __init__(self, dict):
         self.dict = dict
+class Download_Sizes:
+    # Keeps track of the file sizes of the downloads
+    def __init__(self, dict):
+        self.dict = dict
 
 # Main function
 async def main():
@@ -52,13 +56,15 @@ async def main():
     logger.info('*** Current Settings ***') 
     logger.info('%s | Removing failed downloads', str(settings_dict['REMOVE_FAILED']))
     logger.info('%s | Removing stalled downloads', str(settings_dict['REMOVE_STALLED']))
+    logger.info('%s | Removing slow downloads', str(settings_dict['REMOVE_SLOW']))
     logger.info('%s | Removing downloads missing metadata', str(settings_dict['REMOVE_METADATA_MISSING']))
     logger.info('%s | Removing orphan downloads', str(settings_dict['REMOVE_ORPHANS']))
     logger.info('%s | Removing downloads belonging to unmonitored TV shows/movies', str(settings_dict['REMOVE_UNMONITORED']))
     
     logger.info('')          
-    logger.info('Running every: %s', fmt.format(rd(minutes=settings_dict['REMOVE_TIMER'])))   
-    logger.info('Permitted number of times before stalled/missing metadata downloads are removed: %s', str(settings_dict['PERMITTED_ATTEMPTS']))      
+    logger.info('Running every: %s', fmt.format(rd(minutes=settings_dict['REMOVE_TIMER'])))  
+    if settings_dict['REMOVE_SLOW']: logger.info('%s | Minimum speed enforced: ', str(settings_dict['MIN_DOWNLOAD_SPEED']) + 'KB/s') 
+    logger.info('Permitted number of times before stalled/missing metadata/slow downloads are removed: %s', str(settings_dict['PERMITTED_ATTEMPTS']))      
     if settings_dict['QBITTORRENT_URL']: logger.info('Downloads with this tag will be skipped: \"%s\"', settings_dict['NO_STALLED_REMOVAL_QBIT_TAG'])                  
     
     logger.info('') 
@@ -140,9 +146,9 @@ async def main():
     # Start application
     while True:
         logger.verbose('-' * 50)
-        if settings_dict['RADARR_URL']: await queue_cleaner(settings_dict, 'radarr', defective_tracker)
-        if settings_dict['SONARR_URL']: await queue_cleaner(settings_dict, 'sonarr', defective_tracker)
-        if settings_dict['LIDARR_URL']: await queue_cleaner(settings_dict, 'lidarr', defective_tracker)
+        if settings_dict['RADARR_URL']: await queue_cleaner(settings_dict, 'radarr', defective_tracker, download_sizes)
+        if settings_dict['SONARR_URL']: await queue_cleaner(settings_dict, 'sonarr', defective_tracker, download_sizes)
+        if settings_dict['LIDARR_URL']: await queue_cleaner(settings_dict, 'lidarr', defective_tracker, download_sizes)
         logger.verbose('')  
         logger.verbose('Queue clean-up complete!')  
         await asyncio.sleep(settings_dict['REMOVE_TIMER']*60)
@@ -153,5 +159,6 @@ if __name__ == '__main__':
                 {settings_dict['SONARR_URL']: {}} if settings_dict['SONARR_URL'] else {} + \
                 {settings_dict['LIDARR_URL']: {}} if settings_dict['LIDARR_URL'] else {} 
     defective_tracker = Defective_Tracker(instances)
+    download_sizes = Download_Sizes()
     asyncio.run(main())
 
