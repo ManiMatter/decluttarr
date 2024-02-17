@@ -8,7 +8,7 @@ Feature overview:
 - Automatically delete failed downloads (& trigger download from another source)
 - Automatically delete downloads belonging to Movies/TV shows/Music requests that have been deleted in the meantime ('Orphan downloads')
 - Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row
-- Automatically delete downloads belonging to Movies/TV shows/Music that are unmonitored
+- Automatically delete downloads belonging to Movies/TV shows/Music requests that are unmonitored
 
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
@@ -27,12 +27,11 @@ Both ways are explained below and there's an explanation for the different setti
 version: "3.3"
 services:
   decluttarr:
-    image: "ghcr.io/fxsch/decluttarr:latest"   
+    image: ghcr.io/manimatter/decluttarr:latest
     container_name: decluttarr
-    restart: unless-stopped
-    network_mode: "host"
+    restart: always
     environment:
-      - TZ=Europe/Berlin
+      - TZ=Europe/Zurich
       - PUID=1000
       - PGID=1000
       # General
@@ -206,11 +205,12 @@ Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else ce
 Use latest version of qBittorrent.
 
 ## Credits
-- ManiMatter for making this, I just forked it to fix some stuff
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner
 - Script to read out config expanded on code by syncarr/syncarr 
 - SONARR/RADARR team & contributors for their great product, API documenation, and guidance in their Discord channel
 - Particular thanks to them for adding an additional flag to their API that allowed this script detect downloads stuck finding metadata
+- craggles17 for arm compatibility
+- Fxsch for improved documentation / ReadMe
 
 ## Disclaimer
 This script comes free of any warranty, and you are using it at your own risk.

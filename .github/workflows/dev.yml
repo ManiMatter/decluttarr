@@ -44,7 +44,7 @@ jobs:
 
       - name: "Build, Tag, and push the Docker image"
         env:
-          IMAGE_NAME: ghcr.io/fxsch/decluttarr
+          IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: dev
         run: |
           docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
