@@ -6,6 +6,7 @@ on:
       - closed
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   # unit-tests: 
@@ -29,8 +30,6 @@ jobs:
   #       python3 -m pytest --import-mode=append tests/
 
   build-main:
-    # if: github.ref == 'refs/heads/main'
-    # needs: unit-tests
     runs-on: ubuntu-latest 
     defaults:
       run:
@@ -38,6 +37,12 @@ jobs:
     steps: 
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@main
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v1
@@ -59,19 +64,17 @@ jobs:
 
       - name: "Build, Tag, and push the Docker image"
         env:
-          IMAGE_NAME: ghcr.io/manimatter/decluttarr
+          IMAGE_NAME: ghcr.io/fxsch/decluttarr
           IMAGE_TAG: ${{ steps.setversion.outputs.new_tag }}
         run: |
-          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
-          docker push $IMAGE_NAME:$IMAGE_TAG
+          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile --push .
 
       - name: "Build, Tag, and push the Docker image"
         env:
-          IMAGE_NAME: ghcr.io/manimatter/decluttarr
+          IMAGE_NAME: ghcr.io/fxsch/decluttarr
           IMAGE_TAG: latest
         run: |
-          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
-          docker push $IMAGE_NAME:$IMAGE_TAG 
+          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile --push .
 
   # build-dev:
   #   if: github.ref == 'refs/heads/dev'
