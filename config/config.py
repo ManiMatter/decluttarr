@@ -6,6 +6,7 @@ import configparser
 ########################################################################################################################
 # Check if in Docker
 IS_IN_DOCKER = os.environ.get('IS_IN_DOCKER')
+IMAGE_TAG = os.environ.get('IMAGE_TAG', 'Local')
 
 ########################################################################################################################
 def config_section_map(section):

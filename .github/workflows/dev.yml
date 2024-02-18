@@ -47,7 +47,7 @@ jobs:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: dev
         run: |
-          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG --label com.decluttarr.version=$IMAGE_TAG .
+          docker build -f docker/Dockerfile -t $IMAGE_NAME:$IMAGE_TAG --label com.decluttarr.version=$IMAGE_TAG --build-arg IMAGE_TAG=$IMAGE_TAG .
           docker push $IMAGE_NAME:$IMAGE_TAG
           
       - name: "Delete untagged versions"
