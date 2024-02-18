@@ -47,12 +47,12 @@ jobs:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: ${{ steps.setversion.outputs.new_tag }}
         run: |
-          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -t $IMAGE_NAME:latest -f docker/Dockerfile --push .
 
-      - name: "Build, Tag, and push the Docker image"
-        env:
-          IMAGE_NAME: ghcr.io/manimatter/decluttarr
-          IMAGE_TAG: latest
-        run: |
-          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile --push .
+      # - name: "Build, Tag, and push the Docker image"
+      #   env:
+      #     IMAGE_NAME: ghcr.io/manimatter/decluttarr
+      #     IMAGE_TAG: latest
+      #   run: |
+      #     docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$IMAGE_TAG -f docker/Dockerfile --push .
 
