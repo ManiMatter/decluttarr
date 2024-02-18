@@ -11,6 +11,8 @@ from src.decluttarr import queueCleaner
 import requests
 import platform
 from packaging import version
+
+
 ########### Enabling Logging
 # Set up logging
 log_level_num=logging.getLevelName(settings_dict['LOG_LEVEL'])
@@ -58,7 +60,9 @@ async def main():
     # Print Settings
     fmt = '{0.days} days {0.hours} hours {0.minutes} minutes'
     logger.info('#' * 50)
-    logger.info('Application Started!')
+    logger.info('Decluttarr - Application Started!')
+    if settings_dict['IS_IN_DOCKER']:  
+        logger.info('Version: %s', get_image_tag())
     logger.info('')      
     logger.info('*** Current Settings ***') 
     logger.info('%s | Removing failed downloads', str(settings_dict['REMOVE_FAILED']))
@@ -216,3 +220,16 @@ if __name__ == '__main__':
     download_sizes_tracker = Download_Sizes_Tracker({})
     asyncio.run(main())
 
+
+import docker
+def get_image_tag():
+    client = docker.from_env()
+
+    try:
+        container_info = client.containers.get('decluttarr')
+        image_tag = container_info.labels.get('decluttarr.version', 'No image tag provided')
+        return image_tag
+    except docker.errors.NotFound:
+        return 'Container not found'
+    except Exception as e:
+        return f'Error retrieving image tag: {e}'
