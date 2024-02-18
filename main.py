@@ -63,6 +63,8 @@ async def main():
     logger.info('')      
     logger.info('*** Current Settings ***') 
     logger.info('Version: %s', settings_dict['IMAGE_TAG']) 
+    logger.info('Commit: %s', settings_dict['SHORT_COMMIT_ID'])    
+    logger.info('')       
     logger.info('%s | Removing failed downloads', str(settings_dict['REMOVE_FAILED']))
     logger.info('%s | Removing downloads missing metadata', str(settings_dict['REMOVE_METADATA_MISSING'])) 
     logger.info('%s | Removing downloads missing files', str(settings_dict['REMOVE_MISSING_FILES']))

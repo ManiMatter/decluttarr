@@ -9,7 +9,7 @@ ARG IMAGE_TAG
 
 # Set an environment variable using the build-time argument
 ENV IMAGE_TAG=$IMAGE_TAG
-
+ENV SHORT_COMMIT_ID=$SHORT_COMMIT_ID
 
 LABEL org.opencontainers.image.source="https://github.com/ManiMatter/decluttarr"
                                                       
