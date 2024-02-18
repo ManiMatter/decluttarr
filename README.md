@@ -13,12 +13,16 @@ Feature overview:
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
 
+## Dependencies
+Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
+Use latest version of qBittorrent.
+
 ## Getting started
 There's two ways to run this:
 - As a docker container with docker-compose
 - By cloning the repository and running the script manually
 
-Both ways are explained below and there's an explanation for the different settings below that
+Both ways are explained below and there's an explanation for the different settings below that.
 
 ## Docker
 1) Make a `docker-compose.yml` file
@@ -40,23 +44,27 @@ services:
       # Features 
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
-      - REMOVE_STALLED=True
-      - REMOVE_METADATA_MISSING=True     
+      - REMOVE_METADATA_MISSING=True
+      - REMOVE_MISSING_FILES=True     
       - REMOVE_ORPHANS=True
+      - REMOVE_SLOW=True
+      - REMOVE_STALLED=True
       - REMOVE_UNMONITORED=True
+      - MIN_DOWNLOAD_SPEED=100
       - PERMITTED_ATTEMPTS=3
-      - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill If Stalled
+      - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
+      - IGNORE_PRIVATE_TRACKERS=True
       # Radarr
-      - RADARR_URL=http://localhost:7878
+      - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
       # Sonarr
-      - SONARR_URL=http://localhost:8989
+      - SONARR_URL=http://sonarr:8989
       - SONARR_KEY=$SONARR_API_KEY
       # Lidarr
-      - LIDARR_URL=http://localhost:8686
+      - LIDARR_URL=http://lidarr:8686
       - LIDARR_KEY=$LIDARR_API_KEY
       # qBittorrent
-      - QBITTORRENT_URL=http://localhost:8080
+      - QBITTORRENT_URL=http://qbittorrent:8080
       #- QBITTORRENT_USERNAME=Your name
       #- QBITTORRENT_PASSWORD=Your password
 ```
@@ -64,14 +72,18 @@ services:
 
 ## Running manually
 1) Clone the repository with `git clone https://github.com/Fxsch/decluttarr.git`
-2) Tweak the `config.conf` file to your needs
-3) Run the script with `python3 main.py`
+2) Rename the `config.conf-Example` inside the config folder to `config.conf`
+3) Tweak `config.conf` to your needs
+4) Install the libraries listed in the docker/requirements.txt (pip install -r requirements.txt)
+5) Run the script with `python3 main.py`
+Note: The `config.conf` is disregarded when running via docker-compose.yml
 
 ## Explanation of the settings
 **LOG_LEVEL**
 - Sets the level at which logging will take place
 - `INFO` will only show changes applied to radarr/sonarr/lidarr
-- `VERBOSE` will show when script runs (even if it results in no change)
+- `VERBOSE` shows each check being performed even if no change is applied
+- `DEBUG` shows very granular information, only required for debugging
 - Type: String
 - Permissible Values: CRITICAL, ERROR, WARNING, INFO, VERBOSE, DEBUG
 - Is Mandatory: No (Defaults to INFO)
@@ -86,7 +98,6 @@ services:
 
 ### **Features settings**
 - Steers which type of cleaning is applied to the downloads queue
-- Requires `QUEUE_CLEANING` to be set to `True` to take effect
 
 **REMOVE_TIMER**
 - Sets the frequency of how often the queue is checked for orphan and stalled downloads
@@ -134,20 +145,51 @@ services:
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**REMOVE_MISSING_FILES**
+- Steers whether downloads that have the warning "Files Missing" are removed from the queue
+- These downloads are not added to the blocklist
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_SLOW**
+- Steers whether slow downloads are removed from the queue
+- Slow downloads are added to the blocklist, so that they are not re-requested in the future
+- A new download from another source is automatically added by sonarr/radarr (if available)
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**MIN_DOWNLOAD_SPEED**
+- Sets the minimum download speed for active downloads
+- If the increase in the downloaded file size of a download is less than this value between two consecutive checks, the download is considered slow and is removed if happening more ofthen than the permitted attempts.
+- Type: Integer
+- Unit: KBytes per second
+- Is Mandatory: No (Defaults to 100, but is only enforced when "REMOVE_SLOW" is true)
+
 **PERMITTED_ATTEMPTS**
-- Defines how many times a download has to be caught as stalled or stuck downloading metadata before it is removed
+- Defines how many times a download has to be caught as stalled, slow or stuck downloading metadata before it is removed
 - Type: Integer
 - Unit: Number of scans
 - Is Mandatory: No (Defaults to 3)
 
 **NO_STALLED_REMOVAL_QBIT_TAG**
-- Downloads in qBittorrent tagged with this tag will not be killed even if they are stalled
+- Downloads in qBittorrent tagged with this tag will not be removed
+- Applies to the following: Slow, Stalled, Unmonitored, Orphans, Metadata Missing
+- These will continue to be removed (since considered broken): Failed, Files Missing
 - Tag is automatically created in qBittorrent (required qBittorrent is reachable on `QBITTORRENT_URL`)
 - Also protects unmonitored downloads from being removed (relevant for multi-season packs)
 - Type: String
-- Is Mandatory: No (Defaults to `Don't Kill If Stalled`)
+- Is Mandatory: No (Defaults to `Don't Kill`)
 
----
+**IGNORE_PRIVATE_TRACKERS**
+- Private torrents in qBittorrent will not be removed from the queue if this is set to true
+- Applies to the following: Slow, Stalled, Unmonitored, Orphans, Metadata Missing
+- These will continue to be removed (since considered broken): Failed, Files Missing
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to True)
+
 
 ### **Radarr section**
 - Defines radarr instance on which download queue should be decluttered
