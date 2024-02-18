@@ -34,6 +34,11 @@ async def queueCleaner(settings_dict, arr_type, defective_tracker, download_size
         API_KEY     = settings_dict['LIDARR_KEY']
         NAME        = settings_dict['LIDARR_NAME']
         full_queue_param = 'includeUnknownArtistItems'
+    elif arr_type == 'readarr':
+        BASE_URL    = settings_dict['READARR_URL']
+        API_KEY     = settings_dict['READARR_KEY']
+        NAME        = settings_dict['READARR_NAME']
+        full_queue_param = 'includeUnknownAuthorItems'        
     else:
         logger.error('Unknown arr_type specified, exiting: %s', str(arr_type))
         sys.exit()
