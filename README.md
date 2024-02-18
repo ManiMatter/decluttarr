@@ -44,11 +44,12 @@ services:
       # Features 
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
-      - REMOVE_STALLED=True
-      - REMOVE_METADATA_MISSING=True     
+      - REMOVE_METADATA_MISSING=True
+      - REMOVE_MISSING_FILES=True     
       - REMOVE_ORPHANS=True
-      - REMOVE_UNMONITORED=True
       - REMOVE_SLOW=True
+      - REMOVE_STALLED=True
+      - REMOVE_UNMONITORED=True
       - MIN_DOWNLOAD_SPEED=100
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill

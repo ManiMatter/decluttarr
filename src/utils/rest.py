@@ -13,9 +13,10 @@ async def rest_get(url, api_key=None, params=None, cookies=None):
         response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(url, params=params, headers=headers, cookies=cookies))
         response.raise_for_status()
         return response.json()
+    except requests.exceptions.HTTPError as e:
+        print("HTTP Error:", e)        
     except RequestException as e:
-        logging.error(f'Error making API request to {url}: {e}')
-        return None
+        return response.text
     except ValueError as e:
         logging.error(f'Error parsing JSON response from {url}: {e}')
         return None

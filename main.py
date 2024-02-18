@@ -118,16 +118,27 @@ async def main():
             logger.error('-- | %s *** Error: %s ***', settings_dict['LIDARR_NAME'], error)
 
     if settings_dict['QBITTORRENT_URL']:
+        # Checking if qbit can be reached, and checking if version is OK
         try: 
             response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(settings_dict['QBITTORRENT_URL']+'/auth/login', data={'username': settings_dict['QBITTORRENT_USERNAME'], 'password': settings_dict['QBITTORRENT_PASSWORD']}, headers={'content-type': 'application/x-www-form-urlencoded'}))
             if response.text == 'Fails.':
                 raise ConnectionError('Login failed.')
             response.raise_for_status()
             settings_dict['QBIT_COOKIE'] = {'SID': response.cookies['SID']} 
-            logger.info('OK | %s', 'qBittorrent')
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s / Reponse: %s ***', 'qBittorrent', error, response.text)
+
+        if not error_occured:
+            qbit_version = await rest_get(settings_dict['QBITTORRENT_URL']+'/app/version',cookies=settings_dict['QBIT_COOKIE'])
+            qbit_version = qbit_version[1:] # version without _v
+            if version.parse(qbit_version) < version.parse('4.6.3'):
+                error_occured = True
+                logger.error('-- | %s *** Error: %s ***', 'qBittorrent', 'Please update qBittorrent to at least version 4.6.0. Current version: ' + qbit_version)
+
+        if not error_occured:
+            logger.info('OK | %s', 'qBittorrent')
+
 
     if error_occured:
         logger.warning('At least one instance was not reachable. Waiting for 60 seconds, then exiting Decluttarr.')      
