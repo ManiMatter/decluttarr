@@ -19,7 +19,9 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, NAME, deleted_dow
             elif arr_type == 'radarr': 
                 isMonitored = (await rest_get(f'{BASE_URL}/movie/{str(queueItem["movieId"])}', API_KEY))['monitored']
             elif arr_type == 'lidarr': 
-                isMonitored = (await rest_get(f'{BASE_URL}/album/{str(queueItem["albumId"])}', API_KEY))['monitored']            
+                isMonitored = (await rest_get(f'{BASE_URL}/album/{str(queueItem["albumId"])}', API_KEY))['monitored']       
+            elif arr_type == 'readarr': 
+                isMonitored = (await rest_get(f'{BASE_URL}/book/{str(queueItem["bookId"])}', API_KEY))['monitored']                            
             if isMonitored:
                 monitoredDownloadIDs.append(queueItem['downloadId'])
 

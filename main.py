@@ -49,6 +49,12 @@ async def main():
     except:
         settings_dict['LIDARR_NAME'] = 'Lidarr'
 
+    try:
+        if settings_dict['READARR_URL']:
+            settings_dict['READARR_NAME'] = (await rest_get(settings_dict['READARR_URL']+'/system/status', settings_dict['READARR_KEY']))['instanceName']
+    except:
+        settings_dict['READARR_NAME'] = 'Readarr'
+
     # Print Settings
     fmt = '{0.days} days {0.hours} hours {0.minutes} minutes'
     logger.info('#' * 50)
@@ -76,6 +82,7 @@ async def main():
     if settings_dict['RADARR_URL']: logger.info('%s: %s', settings_dict['RADARR_NAME'], settings_dict['RADARR_URL'])
     if settings_dict['SONARR_URL']: logger.info('%s: %s', settings_dict['SONARR_NAME'], settings_dict['SONARR_URL'])   
     if settings_dict['LIDARR_URL']: logger.info('%s: %s', settings_dict['LIDARR_NAME'], settings_dict['LIDARR_URL'])    
+    if settings_dict['READARR_URL']: logger.info('%s: %s', settings_dict['READARR_NAME'], settings_dict['READARR_URL'])    
     if settings_dict['QBITTORRENT_URL']: logger.info('qBittorrent: %s', settings_dict['QBITTORRENT_URL'])    
 
     logger.info('') 
@@ -116,6 +123,14 @@ async def main():
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s ***', settings_dict['LIDARR_NAME'], error)
+
+    if settings_dict['READARR_URL']:
+        try: 
+            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['READARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['READARR_KEY']}))
+            logger.info('OK | %s', settings_dict['READARR_NAME'])
+        except Exception as error:
+            error_occured = True
+            logger.error('-- | %s *** Error: %s ***', settings_dict['READARR_NAME'], error)
 
     if settings_dict['QBITTORRENT_URL']:
         # Checking if qbit can be reached, and checking if version is OK
@@ -186,6 +201,7 @@ async def main():
         if settings_dict['RADARR_URL']: await queueCleaner(settings_dict, 'radarr', defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs)
         if settings_dict['SONARR_URL']: await queueCleaner(settings_dict, 'sonarr', defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs)
         if settings_dict['LIDARR_URL']: await queueCleaner(settings_dict, 'lidarr', defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs)
+        if settings_dict['READARR_URL']: await queueCleaner(settings_dict, 'readarr', defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs)
         logger.verbose('')  
         logger.verbose('Queue clean-up complete!')  
         await asyncio.sleep(settings_dict['REMOVE_TIMER']*60)
@@ -194,7 +210,8 @@ async def main():
 if __name__ == '__main__':
     instances = {settings_dict['RADARR_URL']: {}} if settings_dict['RADARR_URL'] else {} + \
                 {settings_dict['SONARR_URL']: {}} if settings_dict['SONARR_URL'] else {} + \
-                {settings_dict['LIDARR_URL']: {}} if settings_dict['LIDARR_URL'] else {} 
+                {settings_dict['LIDARR_URL']: {}} if settings_dict['LIDARR_URL'] else {} + \
+                {settings_dict['READARR_URL']: {}} if settings_dict['READARR_URL'] else {} 
     defective_tracker = Defective_Tracker(instances)
     download_sizes_tracker = Download_Sizes_Tracker({})
     asyncio.run(main())

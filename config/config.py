@@ -108,6 +108,11 @@ LIDARR_URL                  = get_config_value('LIDARR_URL',                    
 LIDARR_KEY                  = None if LIDARR_URL == None else \
                               get_config_value('LIDARR_KEY',                    'lidarr',       True,   str)
 
+# Readarr    
+READARR_URL                 = get_config_value('READARR_URL',                   'readarr',       False,  str)
+READARR_KEY                 = None if READARR_URL == None else \
+                              get_config_value('READARR_KEY',                   'readarr',       True,   str)
+
 # qBittorrent
 QBITTORRENT_URL             = get_config_value('QBITTORRENT_URL',               'qbittorrent',  False,  str,    '')
 QBITTORRENT_USERNAME        = get_config_value('QBITTORRENT_USERNAME',          'qbittorrent',  False,  str,    '')
@@ -115,14 +120,15 @@ QBITTORRENT_PASSWORD        = get_config_value('QBITTORRENT_PASSWORD',          
 
 ########################################################################################################################
 ########### Validate settings
-if not (RADARR_URL or SONARR_URL or LIDARR_URL):
-    print(f'[ ERROR ]: No Radarr/Sonarr/Lidarr URLs specified (nothing to monitor)')
+if not (RADARR_URL or SONARR_URL or LIDARR_URL or READARR_URL):
+    print(f'[ ERROR ]: No Radarr/Sonarr/Lidarr/Readarr URLs specified (nothing to monitor)')
     sys.exit(0)
 
 ########### Enrich setting variables
 if RADARR_URL:      RADARR_URL      += '/api/v3'
 if SONARR_URL:      SONARR_URL      += '/api/v3'
 if LIDARR_URL:      LIDARR_URL      += '/api/v1'
+if READARR_URL:     READARR_URL     += '/api/v1'
 if QBITTORRENT_URL: QBITTORRENT_URL += '/api/v2'
 
 ########### Add Variables to Dictionary
