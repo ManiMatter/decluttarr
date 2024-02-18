@@ -42,11 +42,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
 
+      - name: Store short Commit ID in env variable
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_COMMIT_ID=$calculatedSha" >> $GITHUB_ENV
+
       - name: "Build, Tag, and push the Docker image"
         env:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: ${{ steps.setversion.outputs.new_tag }}
-          SHORT_COMMIT_ID: ${{ github.sha_short }}
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
