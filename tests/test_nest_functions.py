@@ -11,7 +11,7 @@ input_dict =              { 1: {'name': 'Breaking Bad 1', 'data': {'episodes': 3
 
 # @pytest.mark.asyncio
 # async def test_nested_set():
-@pytest.mark
+@pytest
 def test_nested_set():
     expected_output    =  { 1: {'name': 'Breaking Bad 1', 'data': {'episodes': 3, 'year': 1991, 'actors': ['Peter', 'Paul', 'Ppacey']}}, 
                             2: {'name': 'Breaking Bad 2', 'data': {'episodes': 6, 'year': 1994, 'actors': ['Weter', 'Waul', 'Wpacey']}},
@@ -21,7 +21,7 @@ def test_nested_set():
     nested_set(output, [2, 'data' ,'year'], 1994)
     assert expected_output == output
 
-@pytest.mark
+@pytest
 def test_nested_set_conditions():
     input               = { 1: [{'year': 2001, 'rating': 'high'}, {'year': 2002, 'rating': 'high'}, {'year': 2003, 'rating': 'high'}],
                             2: [{'year': 2001, 'rating': 'high'}, {'year': 2002, 'rating': 'high'}, {'year': 2003, 'rating': 'high'}]}
@@ -31,7 +31,7 @@ def test_nested_set_conditions():
     nested_set(output, [2, 'rating'], 'LOW', {'year': 2003})
     assert expected_output == output
 
-@pytest.mark
+@pytest
 def test_nested_set_conditions_multiple():
     input               = { 1: [{'rating': 'high', 'color': 1, 'stack': 1}, {'rating': 'high', 'color': 2, 'stack': 2}, {'rating': 'high', 'color': 2, 'stack': 1}]}
     expected_output     = { 1: [{'rating': 'high', 'color': 1, 'stack': 1}, {'rating': 'high', 'color': 2, 'stack': 2}, {'rating': 'LOW', 'color': 2, 'stack': 1}]}
@@ -39,7 +39,7 @@ def test_nested_set_conditions_multiple():
     nested_set(output, [1, 'rating'], 'LOW', {'color': 2, 'stack': 1})
     assert expected_output == output
 
-@pytest.mark
+@pytest
 def test_add_keys_nested_dict():
     expected_output    =  { 1: {'name': 'Breaking Bad 1', 'data': {'episodes': 3, 'year': 1991, 'actors': ['Peter', 'Paul', 'Ppacey']}}, 
                             2: {'name': 'Breaking Bad 2', 'data': {'episodes': 6, 'year': 1994, 'actors': ['Weter', 'Waul', 'Wpacey'], 'spaceship': True}},
@@ -49,7 +49,7 @@ def test_add_keys_nested_dict():
     assert expected_output == output
 
 
-@pytest.mark
+@pytest
 def test_nested_get():
     input               = { 1: [{'name': 'A', 'color': 1, 'stack': 1}, {'name': 'B', 'color': 2, 'stack': 2}, {'name': 'C', 'color': 2, 'stack': 1}]}
     expected_output     = ['C']
