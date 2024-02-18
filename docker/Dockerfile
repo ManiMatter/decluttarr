@@ -6,6 +6,7 @@ FROM python:3.10.13-slim
 
 # Define a build-time argument for IMAGE_TAG
 ARG IMAGE_TAG
+ARG SHORT_COMMIT_ID
 
 # Set an environment variable using the build-time argument
 ENV IMAGE_TAG=$IMAGE_TAG
