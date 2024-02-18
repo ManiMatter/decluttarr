@@ -8,7 +8,7 @@ FROM python:3.10.13-slim
 ARG IMAGE_TAG
 
 # Set an environment variable using the build-time argument
-ENV IMAGE_TAG_ENV=$IMAGE_TAG
+ENV IMAGE_TAG=$IMAGE_TAG
 
 
 LABEL org.opencontainers.image.source="https://github.com/ManiMatter/decluttarr"
