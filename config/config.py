@@ -80,7 +80,7 @@ LOG_LEVEL                   = get_config_value('LOG_LEVEL',                     
 TEST_RUN                    = get_config_value('TEST_RUN',                      'general',      False,  bool,   False)
 
 # Features
-REMOVE_TIMER                = get_config_value('REMOVE_TIMER',                  'features',     False,  int,    10)
+REMOVE_TIMER                = get_config_value('REMOVE_TIMER',                  'features',     False,  float,  10)
 REMOVE_FAILED               = get_config_value('REMOVE_FAILED',                 'features',     False,  bool,   False)
 REMOVE_STALLED              = get_config_value('REMOVE_STALLED',                'features',     False,  bool,   False)
 REMOVE_METADATA_MISSING     = get_config_value('REMOVE_METADATA_MISSING',       'features',     False,  bool,   False)
@@ -91,6 +91,7 @@ REMOVE_SLOW                 = get_config_value('REMOVE_SLOW' ,                  
 MIN_DOWNLOAD_SPEED          = get_config_value('MIN_DOWNLOAD_SPEED',            'features',     False,  int,    0)
 PERMITTED_ATTEMPTS          = get_config_value('PERMITTED_ATTEMPTS',            'features',     False,  int,    3)
 NO_STALLED_REMOVAL_QBIT_TAG = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'features',     False,  str,   'Don\'t Kill')
+IGNORE_PRIVATE_TRACKERS     = get_config_value('IGNORE_PRIVATE_TRACKERS',       'features',     False,  bool,   True)
 
 # Radarr
 RADARR_URL                  = get_config_value('RADARR_URL',                    'radarr',       False,  str)

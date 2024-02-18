@@ -52,6 +52,7 @@ services:
       - MIN_DOWNLOAD_SPEED=100
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
+      - IGNORE_PRIVATE_TRACKERS=True
       # Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
@@ -80,7 +81,8 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 **LOG_LEVEL**
 - Sets the level at which logging will take place
 - `INFO` will only show changes applied to radarr/sonarr/lidarr
-- `VERBOSE` will show when script runs (even if it results in no change)
+- `VERBOSE` shows each check being performed even if no change is applied
+- `DEBUG` shows very granular information, only required for debugging
 - Type: String
 - Permissible Values: CRITICAL, ERROR, WARNING, INFO, VERBOSE, DEBUG
 - Is Mandatory: No (Defaults to INFO)
@@ -171,14 +173,22 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Is Mandatory: No (Defaults to 3)
 
 **NO_STALLED_REMOVAL_QBIT_TAG**
-- Downloads in qBittorrent tagged with this tag will not be killed even if they are stalled
-- Also protects slow downloads or those stuck downloading meta data
+- Downloads in qBittorrent tagged with this tag will not be removed
+- Applies to the following: Slow, Stalled, Unmonitored, Orphans, Metadata Missing
+- These will continue to be removed (since considered broken): Failed, Files Missing
 - Tag is automatically created in qBittorrent (required qBittorrent is reachable on `QBITTORRENT_URL`)
 - Also protects unmonitored downloads from being removed (relevant for multi-season packs)
 - Type: String
 - Is Mandatory: No (Defaults to `Don't Kill`)
 
----
+**IGNORE_PRIVATE_TRACKERS**
+- Private torrents in qBittorrent will not be removed from the queue if this is set to true
+- Applies to the following: Slow, Stalled, Unmonitored, Orphans, Metadata Missing
+- These will continue to be removed (since considered broken): Failed, Files Missing
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to True)
+
 
 ### **Radarr section**
 - Defines radarr instance on which download queue should be decluttered
