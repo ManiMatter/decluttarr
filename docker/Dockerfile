@@ -1,4 +1,7 @@
 #FROM python:3.9-slim-buster
+# For debugging:
+# sudo docker run --rm -it  --entrypoint sh  ghcr.io/manimatter/decluttarr:dev 
+
 FROM python:3.10.13-slim
 LABEL org.opencontainers.image.source="https://github.com/ManiMatter/decluttarr"
                                                       
