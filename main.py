@@ -53,19 +53,19 @@ async def main():
     fmt = '{0.days} days {0.hours} hours {0.minutes} minutes'
     logger.info('#' * 50)
     logger.info('Application Started!')
-    
     logger.info('')      
     logger.info('*** Current Settings ***') 
     logger.info('%s | Removing failed downloads', str(settings_dict['REMOVE_FAILED']))
-    logger.info('%s | Removing stalled downloads', str(settings_dict['REMOVE_STALLED']))
     logger.info('%s | Removing downloads missing metadata', str(settings_dict['REMOVE_METADATA_MISSING'])) 
-    logger.info('%s | Removing orphan downloads', str(settings_dict['REMOVE_ORPHANS']))  
-    logger.info('%s | Removing downloads belonging to unmonitored TV shows/movies', str(settings_dict['REMOVE_UNMONITORED'])) 
     logger.info('%s | Removing downloads missing files', str(settings_dict['REMOVE_MISSING_FILES']))
+    logger.info('%s | Removing orphan downloads', str(settings_dict['REMOVE_ORPHANS']))  
     logger.info('%s | Removing slow downloads', str(settings_dict['REMOVE_SLOW']))
+    logger.info('%s | Removing stalled downloads', str(settings_dict['REMOVE_STALLED']))
+    logger.info('%s | Removing downloads belonging to unmonitored TV shows/movies', str(settings_dict['REMOVE_UNMONITORED'])) 
     logger.info('')          
     logger.info('Running every: %s', fmt.format(rd(minutes=settings_dict['REMOVE_TIMER'])))  
-    if settings_dict['REMOVE_SLOW']: logger.info('%s | Minimum speed enforced: ', str(settings_dict['MIN_DOWNLOAD_SPEED']) + 'KB/s') 
+    if settings_dict['REMOVE_SLOW']: 
+        logger.info('Minimum speed enforced: %s KB/s', str(settings_dict['MIN_DOWNLOAD_SPEED'])) 
     logger.info('Permitted number of times before stalled/missing metadata/slow downloads are removed: %s', str(settings_dict['PERMITTED_ATTEMPTS']))      
     if settings_dict['QBITTORRENT_URL']: 
         logger.info('Downloads with this tag will be skipped: \"%s\"', settings_dict['NO_STALLED_REMOVAL_QBIT_TAG'])  
