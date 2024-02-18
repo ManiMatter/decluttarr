@@ -12,6 +12,18 @@ import requests
 import platform
 from packaging import version
 
+import docker
+def get_image_tag():
+    # Retrieves the github version tag of the docker image
+    client = docker.from_env()
+    try:
+        container_info = client.containers.get('decluttarr')
+        image_tag = container_info.labels.get('decluttarr.version', 'No image tag provided')
+        return image_tag
+    except docker.errors.NotFound:
+        return 'Container not found'
+    except Exception as e:
+        return f'Error retrieving image tag: {e}'
 
 ########### Enabling Logging
 # Set up logging
@@ -221,15 +233,3 @@ if __name__ == '__main__':
     asyncio.run(main())
 
 
-import docker
-def get_image_tag():
-    client = docker.from_env()
-
-    try:
-        container_info = client.containers.get('decluttarr')
-        image_tag = container_info.labels.get('decluttarr.version', 'No image tag provided')
-        return image_tag
-    except docker.errors.NotFound:
-        return 'Container not found'
-    except Exception as e:
-        return f'Error retrieving image tag: {e}'
