@@ -1,7 +1,6 @@
-requests
-aiohttp
-asyncio
-python-dateutil
-verboselogs
-pytest
-pytest-asyncio
+requests==2.31.0
+asyncio==3.4.3
+python-dateutil==2.8.2
+verboselogs==1.7
+pytest==8.0.1
+pytest-asyncio==0.23.5

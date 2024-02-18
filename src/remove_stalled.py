@@ -7,8 +7,8 @@ async def remove_stalled(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloa
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     try:
         failType = 'stalled'
-        logger.debug('remove_stalled/queue IN: %s', formattedQueueInfo(queue))
         queue = await get_queue(BASE_URL, API_KEY)
+        logger.debug('remove_stalled/queue IN: %s', formattedQueueInfo(queue))
         if not queue: return 0    
         # Find items affected
         affectedItems = []
