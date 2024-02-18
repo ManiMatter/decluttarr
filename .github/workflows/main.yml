@@ -53,7 +53,7 @@ jobs:
             -t $IMAGE_NAME:$IMAGE_TAG \
             -t $IMAGE_NAME:latest \
             --label com.decluttarr.version=$IMAGE_TAG \
-            --label com.decluttarr.commit=$SHORT_COMMIT_ID
+            --label com.decluttarr.commit=$SHORT_COMMIT_ID \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             -f docker/Dockerfile \
