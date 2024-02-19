@@ -1,7 +1,7 @@
 # **Decluttarr**
 
 ## Overview
-Decluttarr keeps the radarr & sonarr & lidarr queue free of stalled / redundant downloads.
+Decluttarr keeps the radarr & sonarr & lidarr & readarr queue free of stalled / redundant downloads.
 
 Feature overview:
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
@@ -230,7 +230,7 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 
 ---
 
-### **-Readarr section**
+### **Readarr section**
 - Defines readarr instance on which download queue should be decluttered
 
 **READARR_URL**
@@ -257,9 +257,6 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Password used to log in to qBittorrent
 - Optional; not needed if authentication bypassing on qBittorrent is enabled (for instance for local connections)
 
-## Dependencies
-Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
-Use latest version of qBittorrent.
 
 ## Credits
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner
