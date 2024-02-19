@@ -29,6 +29,10 @@ SONARR_KEY                  = $SONARR_API_KEY
 LIDARR_URL                  = http://lidarr:8686
 LIDARR_KEY                  = $LIDARR_API_KEY
 
+[readarr]
+READARR_URL                  = http://lidarr:8787
+READARR_KEY                  = $READARR_API_KEY
+
 [qbittorrent]
 QBITTORRENT_URL             = http://qbittorrent:8080
 QBITTORRENT_USERNAME        = Your name (or empty)

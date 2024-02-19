@@ -63,6 +63,9 @@ services:
       # Lidarr
       - LIDARR_URL=http://lidarr:8686
       - LIDARR_KEY=$LIDARR_API_KEY
+      # Readarr
+      - READARR_URL=http://readarr:8787
+      - READARR_KEY=$READARR_API_KEY
       # qBittorrent
       - QBITTORRENT_URL=http://qbittorrent:8080
       #- QBITTORRENT_USERNAME=Your name
@@ -224,6 +227,18 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 
 **LIDARR_KEY**
 - Your API key for lidarr
+
+---
+
+### **-Readarr section**
+- Defines readarr instance on which download queue should be decluttered
+
+**READARR_URL**
+- URL under which the instance can be reached
+- If not defined, this instance will not be monitored
+
+**READARR_KEY**
+- Your API key for readarr
 
 ---
 
