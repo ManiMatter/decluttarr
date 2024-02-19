@@ -54,6 +54,7 @@ jobs:
           IMAGE_TAG: ${{ steps.setversion.outputs.new_tag }}
         run: |
           docker build \
+            --progress plain \
             -t $IMAGE_NAME:$IMAGE_TAG \
             -t $IMAGE_NAME:latest \
             --label com.decluttarr.version=$IMAGE_TAG \
@@ -70,6 +71,7 @@ jobs:
       #   run: |
       #     docker buildx build \                         <<<<<<<<<<<<<<<<<<<<< creates manifest issues... don't know how to solve that
       #       --platform linux/amd64,linux/arm64 \        <<<<<<<<<<<<<<<<<<<<< creates manifest issues... don't know how to solve that
+      #       --progress plain \      
       #       -t $IMAGE_NAME:$IMAGE_TAG \
       #       -t $IMAGE_NAME:latest \
       #       --label com.decluttarr.version=$IMAGE_TAG \
