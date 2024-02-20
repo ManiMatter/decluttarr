@@ -43,7 +43,7 @@ async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker, NA
     try:
         # Determines the speed of download
         # Since Sonarr/Radarr do not update the downlodedSize on realtime, if possible, fetch it directly from qBit
-        if settings_dict['QBITTORRENT_URL']:
+        if settings_dict['QBITTORRENT_URL'] and queueItem['downloadClient'] == 'qBittorrent':
             qbitInfo = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'hashes': queueItem['downloadId']}, cookies=settings_dict['QBIT_COOKIE']  )
             downloadedSize = qbitInfo[0]['completed']
         else:
