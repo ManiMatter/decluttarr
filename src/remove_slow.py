@@ -14,10 +14,6 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads,
         affectedItems = []
         alreadyCheckedDownloadIDs = []
         for queueItem in queue['records']:
-            # Check if download protocol is torrent. If not, skip download
-            if 'protocol' in queueItem:
-                if not queueItem['protocol'] == 'torrent':
-                    continue
             if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
@@ -46,7 +42,7 @@ from src.utils.rest import (rest_get)
 async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker):
     # Determines the speed of download
     # Since Sonarr/Radarr do not update the downlodedSize on realtime, if possible, fetch it directly from qBit
-    if settings_dict['QBITTORRENT_URL']:
+    if settings_dict['QBITTORRENT_URL'] and queueItem['downloadClient'] == 'qBittorrent':
         qbitInfo = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'hashes': queueItem['downloadId']}, cookies=settings_dict['QBIT_COOKIE']  )
         downloadedSize = qbitInfo[0]['completed']
     else:
