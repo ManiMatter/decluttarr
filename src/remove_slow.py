@@ -57,7 +57,7 @@ async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker, NA
             previousSize = None
             increment = None
             speed = None
-    
+
         download_sizes_tracker.dict[queueItem['downloadId']] = downloadedSize     
         return downloadedSize, previousSize, increment, speed
     except Exception as error:
