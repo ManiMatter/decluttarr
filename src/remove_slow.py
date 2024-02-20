@@ -18,7 +18,7 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads,
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
                     # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
-                    downloadedSize, previousSize, increment, speed = await getDownloadedSize(settings_dict, queueItem, download_sizes_tracker)
+                    downloadedSize, previousSize, increment, speed = await getDownloadedSize(settings_dict, queueItem, download_sizes_tracker, NAME)
                     if  queueItem['status'] == 'downloading' and \
                         queueItem['downloadId'] in download_sizes_tracker.dict and \
                         speed is not None:
@@ -39,7 +39,7 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads,
         return 0
 
 from src.utils.rest import (rest_get)
-async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker):
+async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker, NAME):
     try:
         # Determines the speed of download
         # Since Sonarr/Radarr do not update the downlodedSize on realtime, if possible, fetch it directly from qBit
