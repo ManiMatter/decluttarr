@@ -14,6 +14,10 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads,
         affectedItems = []
         alreadyCheckedDownloadIDs = []
         for queueItem in queue['records']:
+            # Check if download protocol is torrent. If not, skip download
+            if 'protocol' in queueItem:
+                if not queueItem['protocol'] == 'torrent':
+                    continue
             if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
