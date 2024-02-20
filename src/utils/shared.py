@@ -87,6 +87,9 @@ def permittedAttemptsCheck(settings_dict, affectedItems, failType, BASE_URL, def
         # If not exceeding the number of permitted times, remove from being affected
         if defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts'] <= settings_dict['PERMITTED_ATTEMPTS']:
             affectedItems.remove(affectedItem)
+        # else:
+        #     # Will be deleted - reset the counter to 0
+        #     del defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]
     logger.debug('permittedAttemptsCheck/defective_tracker.dict OUT: %s', str(defective_tracker.dict))
     return affectedItems
 

@@ -18,7 +18,7 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads,
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
                     # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
-                    downloadedSize, previousSize, increment, speed = await getDownloadedSize(settings_dict, queueItem, download_sizes_tracker)
+                    downloadedSize, previousSize, increment, speed = await getDownloadedSize(settings_dict, queueItem, download_sizes_tracker, NAME)
                     if  queueItem['status'] == 'downloading' and \
                         queueItem['downloadId'] in download_sizes_tracker.dict and \
                         speed is not None:
@@ -39,23 +39,27 @@ async def remove_slow(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads,
         return 0
 
 from src.utils.rest import (rest_get)
-async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker):
-    # Determines the speed of download
-    # Since Sonarr/Radarr do not update the downlodedSize on realtime, if possible, fetch it directly from qBit
-    if settings_dict['QBITTORRENT_URL']:
-        qbitInfo = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'hashes': queueItem['downloadId']}, cookies=settings_dict['QBIT_COOKIE']  )
-        downloadedSize = qbitInfo[0]['completed']
-    else:
-        logger.debug('getDownloadedSize/WARN: Using imprecise method to determine download increments because no direct qBIT query is possible')
-        downloadedSize = queueItem['size'] - queueItem['sizeleft']
-    if queueItem['downloadId'] in download_sizes_tracker.dict:
-        previousSize = download_sizes_tracker.dict.get(queueItem['downloadId'])
-        increment = downloadedSize - previousSize
-        speed = round(increment / 1000 / (settings_dict['REMOVE_TIMER'] * 60),1)
-    else:
-        previousSize = None
-        increment = None
-        speed = None
+async def getDownloadedSize(settings_dict, queueItem, download_sizes_tracker, NAME):
+    try:
+        # Determines the speed of download
+        # Since Sonarr/Radarr do not update the downlodedSize on realtime, if possible, fetch it directly from qBit
+        if settings_dict['QBITTORRENT_URL'] and queueItem['downloadClient'] == 'qBittorrent':
+            qbitInfo = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'hashes': queueItem['downloadId']}, cookies=settings_dict['QBIT_COOKIE']  )
+            downloadedSize = qbitInfo[0]['completed']
+        else:
+            logger.debug('getDownloadedSize/WARN: Using imprecise method to determine download increments because no direct qBIT query is possible')
+            downloadedSize = queueItem['size'] - queueItem['sizeleft']
+        if queueItem['downloadId'] in download_sizes_tracker.dict:
+            previousSize = download_sizes_tracker.dict.get(queueItem['downloadId'])
+            increment = downloadedSize - previousSize
+            speed = round(increment / 1000 / (settings_dict['REMOVE_TIMER'] * 60),1)
+        else:
+            previousSize = None
+            increment = None
+            speed = None
 
-    download_sizes_tracker.dict[queueItem['downloadId']] = downloadedSize     
-    return downloadedSize, previousSize, increment, speed
+        download_sizes_tracker.dict[queueItem['downloadId']] = downloadedSize     
+        return downloadedSize, previousSize, increment, speed
+    except Exception as error:
+        errorDetails(NAME, error)
+        return 
