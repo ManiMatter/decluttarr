@@ -12,6 +12,11 @@ import requests
 import platform
 from packaging import version
 
+# Hide SSL Verification Warnings
+if settings_dict['SSL_VERIFICATION']==False:
+    import warnings
+    warnings.filterwarnings("ignore", message="Unverified HTTPS request")
+
 ########### Enabling Logging
 # Set up logging
 log_level_num=logging.getLevelName(settings_dict['LOG_LEVEL'])
@@ -94,7 +99,7 @@ async def main():
     if settings_dict['RADARR_URL']:
         error_occured = False
         try: 
-            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['RADARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['RADARR_KEY']}))
+            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['RADARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['RADARR_KEY']}, verify=settings_dict['SSL_VERIFICATION']))
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s ***', settings_dict['RADARR_NAME'], error)
@@ -108,7 +113,7 @@ async def main():
 
     if settings_dict['SONARR_URL']:
         try: 
-            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['SONARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['SONARR_KEY']}))
+            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['SONARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['SONARR_KEY']}, verify=settings_dict['SSL_VERIFICATION']))
         except Exception as error:
             error_occured = True
             logger.error('-- | %s *** Error: %s ***', settings_dict['SONARR_NAME'], error)
@@ -122,7 +127,7 @@ async def main():
 
     if settings_dict['LIDARR_URL']:
         try: 
-            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['LIDARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['LIDARR_KEY']}))
+            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['LIDARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['LIDARR_KEY']}, verify=settings_dict['SSL_VERIFICATION']))
             logger.info('OK | %s', settings_dict['LIDARR_NAME'])
         except Exception as error:
             error_occured = True
@@ -130,7 +135,7 @@ async def main():
 
     if settings_dict['READARR_URL']:
         try: 
-            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['READARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['READARR_KEY']}))
+            await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settings_dict['READARR_URL']+'/system/status', params=None, headers={'X-Api-Key': settings_dict['READARR_KEY']}, verify=settings_dict['SSL_VERIFICATION']))
             logger.info('OK | %s', settings_dict['READARR_NAME'])
         except Exception as error:
             error_occured = True
@@ -139,7 +144,7 @@ async def main():
     if settings_dict['QBITTORRENT_URL']:
         # Checking if qbit can be reached, and checking if version is OK
         try: 
-            response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(settings_dict['QBITTORRENT_URL']+'/auth/login', data={'username': settings_dict['QBITTORRENT_USERNAME'], 'password': settings_dict['QBITTORRENT_PASSWORD']}, headers={'content-type': 'application/x-www-form-urlencoded'}))
+            response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.post(settings_dict['QBITTORRENT_URL']+'/auth/login', data={'username': settings_dict['QBITTORRENT_USERNAME'], 'password': settings_dict['QBITTORRENT_PASSWORD']}, headers={'content-type': 'application/x-www-form-urlencoded'}, verify=settings_dict['SSL_VERIFICATION']))
             if response.text == 'Fails.':
                 raise ConnectionError('Login failed.')
             response.raise_for_status()

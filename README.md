@@ -98,6 +98,12 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**SSL_VERIFICATION**
+- Turns SSL certificate verification on or off for all API calls.
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to True)
+
 ---
 
 ### **Features settings**
