@@ -41,7 +41,8 @@ services:
       - PGID=1000
       # General
       - LOG_LEVEL=INFO
-      #- TEST_RUN=True 
+      #- TEST_RUN=True
+      # SSL_VERIFICATION=False
       # Features 
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
