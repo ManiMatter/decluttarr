@@ -14,9 +14,9 @@ You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
 
 ## Dependencies & Hints
-Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
-qBittorrent is recommended but not required. If you don't use qBittorrent, certain features won't work (such as tag-protection)
-If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of sonarr/radarr (Untested: setting by now may also exist in readarr & lidarr))
+- Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
+- qBittorrent is recommended but not required. If you don't use qBittorrent, certain features won't work (such as tag-protection)
+- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
 
 ## Getting started
 There's two ways to run this:
