@@ -100,7 +100,9 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Is Mandatory: No (Defaults to False)
 
 **SSL_VERIFICATION**
-- Turns SSL certificate verification on or off for all API calls.
+- Turns SSL certificate verification on or off for all API calls
+- `True` means that the SSL certificate verification is on
+- Warning: It's important to note that disabling SSL verification can have security implications, as it makes the system vulnerable to man-in-the-middle attacks. It should only be done in a controlled and secure environment where the risks are well understood and mitigated 
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to True)
