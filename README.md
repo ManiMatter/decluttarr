@@ -1,7 +1,15 @@
 # **Decluttarr**
 
+## Table of contents
+- [Overview](#overview)
+- [Dependencies & Hints & FAQ](#dependencies--hints--faq)
+- [Getting started](#getting-started)
+- [Explanation of the settings](#explanation-of-the-settings)
+- [Credits](#credits)
+- [Disclaimer](#disclaimer)
+
 ## Overview
-Decluttarr keeps the radarr & sonarr & lidarr & readarr queue free of stalled / redundant downloads.
+Decluttarr keeps the radarr & sonarr & lidarr & readarr queue free of stalled / redundant downloads
 
 Feature overview:
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
@@ -13,19 +21,22 @@ Feature overview:
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
 
-## Dependencies & Hints
-Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly.
-qBittorrent is recommended but not required. If you don't use qBittorrent, certain features won't work (such as tag-protection)
-If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of sonarr/radarr (Untested: setting by now may also exist in readarr & lidarr))
+## Dependencies & Hints & FAQ
+- Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly
+- qBittorrent is recommended but not required. If you don't use qBittorrent, you will experience the following limitations:
+  - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
+  - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
+- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
+- When broken torrents are removed the files belonging to them are deleted
 
 ## Getting started
 There's two ways to run this:
 - As a docker container with docker-compose
 - By cloning the repository and running the script manually
 
-Both ways are explained below and there's an explanation for the different settings below that.
+Both ways are explained below and there's an explanation for the different settings below that
 
-## Docker
+### Method 1: Docker
 1) Make a `docker-compose.yml` file
 2) Use the following as a base for that and tweak the settings to your needs
 ```
@@ -39,10 +50,11 @@ services:
       - TZ=Europe/Zurich
       - PUID=1000
       - PGID=1000
-      # General
+      ## General
       - LOG_LEVEL=INFO
-      #- TEST_RUN=True 
-      # Features 
+      #- TEST_RUN=True
+      #- SSL_VERIFICATION=False
+      ## Features 
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
       - REMOVE_METADATA_MISSING=True
@@ -55,26 +67,26 @@ services:
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
       - IGNORE_PRIVATE_TRACKERS=True
-      # Radarr
+      ## Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
-      # Sonarr
+      ## Sonarr
       - SONARR_URL=http://sonarr:8989
       - SONARR_KEY=$SONARR_API_KEY
-      # Lidarr
+      ## Lidarr
       - LIDARR_URL=http://lidarr:8686
       - LIDARR_KEY=$LIDARR_API_KEY
-      # Readarr
+      ## Readarr
       - READARR_URL=http://readarr:8787
       - READARR_KEY=$READARR_API_KEY
-      # qBittorrent
+      ## qBittorrent
       - QBITTORRENT_URL=http://qbittorrent:8080
       #- QBITTORRENT_USERNAME=Your name
       #- QBITTORRENT_PASSWORD=Your password
 ```
 3) Run `docker-compose up -d` in the directory where the file is located to create the docker container
 
-## Running manually
+### Method 2: Running manually
 1) Clone the repository with `git clone https://github.com/Fxsch/decluttarr.git`
 2) Rename the `config.conf-Example` inside the config folder to `config.conf`
 3) Tweak `config.conf` to your needs
@@ -83,9 +95,13 @@ services:
 Note: The `config.conf` is disregarded when running via docker-compose.yml
 
 ## Explanation of the settings
+
+### **General settings**
+Configures the general behavior of the application (across all features)
+
 **LOG_LEVEL**
 - Sets the level at which logging will take place
-- `INFO` will only show changes applied to radarr/sonarr/lidarr
+- `INFO` will only show changes applied to radarr/sonarr/lidarr/readarr
 - `VERBOSE` shows each check being performed even if no change is applied
 - `DEBUG` shows very granular information, only required for debugging
 - Type: String
@@ -93,15 +109,23 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Is Mandatory: No (Defaults to INFO)
 
 **TEST_RUN**
-- Allows you to safely try out this tool. If active, downloads will not be removed.
+- Allows you to safely try out this tool. If active, downloads will not be removed
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**SSL_VERIFICATION**
+- Turns SSL certificate verification on or off for all API calls
+- `True` means that the SSL certificate verification is on
+- Warning: It's important to note that disabling SSL verification can have security implications, as it makes the system vulnerable to man-in-the-middle attacks. It should only be done in a controlled and secure environment where the risks are well understood and mitigated 
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to True)
+
 ---
 
 ### **Features settings**
-- Steers which type of cleaning is applied to the downloads queue
+Steers which type of cleaning is applied to the downloads queue
 
 **REMOVE_TIMER**
 - Sets the frequency of how often the queue is checked for orphan and stalled downloads
@@ -119,7 +143,7 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 **REMOVE_STALLED**
 - Steers whether stalled downloads with no connections are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested in the future
-- A new download from another source is automatically added by radarr/sonarr/lidarr (if available)
+- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -127,14 +151,14 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 **REMOVE_METADATA_MISSING**
 - Steers whether downloads stuck obtaining metadata are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested
-- A new download from another source is automatically added by radarr/sonarr/lidarr (if available)
+- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_ORPHANS**
 - Steers whether orphan downloads are removed from the queue
-- Orphan downloads are those that do not belong to any requested media anymore (Since the media was removed from radarr/sonarr/lidarr after the download started)
+- Orphan downloads are those that do not belong to any requested media anymore (Since the media was removed from radarr/sonarr/lidarr/readarr after the download started)
 - These downloads are not added to the blocklist
 - Type: Boolean
 - Permissible Values: True, False
@@ -159,14 +183,14 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 **REMOVE_SLOW**
 - Steers whether slow downloads are removed from the queue
 - Slow downloads are added to the blocklist, so that they are not re-requested in the future
-- A new download from another source is automatically added by sonarr/radarr (if available)
+- A new download from another source is automatically added by sonarr/radarr/readarr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
 **MIN_DOWNLOAD_SPEED**
 - Sets the minimum download speed for active downloads
-- If the increase in the downloaded file size of a download is less than this value between two consecutive checks, the download is considered slow and is removed if happening more ofthen than the permitted attempts.
+- If the increase in the downloaded file size of a download is less than this value between two consecutive checks, the download is considered slow and is removed if happening more ofthen than the permitted attempts
 - Type: Integer
 - Unit: KBytes per second
 - Is Mandatory: No (Defaults to 100, but is only enforced when "REMOVE_SLOW" is true)
@@ -194,9 +218,10 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to True)
 
+---
 
 ### **Radarr section**
-- Defines radarr instance on which download queue should be decluttered
+Defines radarr instance on which download queue should be decluttered
 
 **RADARR_URL**
 - URL under which the instance can be reached
@@ -208,7 +233,7 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 ---
 
 ### **Sonarr section**
-- Defines sonarr instance on which download queue should be decluttered
+Defines sonarr instance on which download queue should be decluttered
 
 **SONARR_URL**
 - URL under which the instance can be reached
@@ -220,7 +245,7 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 ---
 
 ### **Lidarr section**
-- Defines lidarr instance on which download queue should be decluttered
+Defines lidarr instance on which download queue should be decluttered
 
 **LIDARR_URL**
 - URL under which the instance can be reached
@@ -232,7 +257,7 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 ---
 
 ### **Readarr section**
-- Defines readarr instance on which download queue should be decluttered
+Defines readarr instance on which download queue should be decluttered
 
 **READARR_URL**
 - URL under which the instance can be reached
@@ -244,7 +269,7 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 ---
 
 ### **qBittorrent section**
-- Defines settings to connect with qBittorrent
+Defines settings to connect with qBittorrent
 
 **QBITTORRENT_URL**
 - URL under which the instance can be reached
@@ -258,7 +283,6 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Password used to log in to qBittorrent
 - Optional; not needed if authentication bypassing on qBittorrent is enabled (for instance for local connections)
 
-
 ## Credits
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner
 - Script to read out config expanded on code by syncarr/syncarr 
@@ -268,4 +292,4 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 - Fxsch for improved documentation / ReadMe
 
 ## Disclaimer
-This script comes free of any warranty, and you are using it at your own risk.
+This script comes free of any warranty, and you are using it at your own risk

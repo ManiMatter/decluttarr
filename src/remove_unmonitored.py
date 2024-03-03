@@ -10,7 +10,7 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, NAME, deleted_dow
         failType = 'unmonitored'
         queue = await get_queue(BASE_URL, API_KEY)
         logger.debug('remove_unmonitored/queue IN: %s', formattedQueueInfo(queue))
-        if not queue: return 0    
+        if not queue: return 0
         # Find items affected
         monitoredDownloadIDs = []
         for queueItem in queue['records']: 

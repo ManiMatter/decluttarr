@@ -9,7 +9,7 @@ async def remove_stalled(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloa
         failType = 'stalled'
         queue = await get_queue(BASE_URL, API_KEY)
         logger.debug('remove_stalled/queue IN: %s', formattedQueueInfo(queue))
-        if not queue: return 0    
+        if not queue: return 0
         # Find items affected
         affectedItems = []
         for queueItem in queue['records']: 

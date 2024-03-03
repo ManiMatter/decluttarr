@@ -3,6 +3,9 @@ name: Unit Tests & Dev Deployment
 on:
   push:
     branches: [ "dev" ]
+    paths:
+      - '**/*'
+      - '!README.md'    
 
 jobs:
   unit-tests: 

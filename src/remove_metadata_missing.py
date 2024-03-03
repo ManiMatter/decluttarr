@@ -8,8 +8,8 @@ async def remove_metadata_missing(settings_dict, BASE_URL, API_KEY, NAME, delete
     try:
         failType = 'missing metadata'
         queue = await get_queue(BASE_URL, API_KEY)
-        if not queue: return 0           
         logger.debug('remove_metadata_missing/queue IN: %s', formattedQueueInfo(queue))
+        if not queue: return 0
         # Find items affected
         affectedItems = []
         for queueItem in queue['records']: 

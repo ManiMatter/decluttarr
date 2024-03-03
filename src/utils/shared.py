@@ -75,6 +75,7 @@ def permittedAttemptsCheck(settings_dict, affectedItems, failType, BASE_URL, def
     logger.debug('permittedAttemptsCheck/recoveredDownloadIDs: %s', str(recoveredDownloadIDs)) 
     for recoveredDownloadID in recoveredDownloadIDs:
        del defective_tracker.dict[BASE_URL][failType][recoveredDownloadID]
+       logger.info('>>> Detected %s download has recovered: %s', failType, affectedItem['title'])
     logger.debug('permittedAttemptsCheck/defective_tracker.dict IN: %s', str(defective_tracker.dict))
 
     # 3. For those that are defective, add attempt + 1 if present before, or make attempt = 1. 
@@ -82,14 +83,17 @@ def permittedAttemptsCheck(settings_dict, affectedItems, failType, BASE_URL, def
         try: 
             defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts'] += 1
         except KeyError:
-            add_keys_nested_dict(defective_tracker.dict,[BASE_URL, failType, affectedItem['downloadId']], {'title': affectedItem['title'], 'Attempts': 1})
-        logger.info('>>> Detected %s download (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts']), str(settings_dict['PERMITTED_ATTEMPTS']), affectedItem['title'])
+            add_keys_nested_dict(defective_tracker.dict,[BASE_URL, failType, affectedItem['downloadId']], {'title': affectedItem['title'], 'Attempts': 1})      
+        attempts_left = settings_dict['PERMITTED_ATTEMPTS'] - defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts']   
         # If not exceeding the number of permitted times, remove from being affected
-        if defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts'] <= settings_dict['PERMITTED_ATTEMPTS']:
+        if attempts_left >= 0: # Still got attempts left
+            logger.info('>>> Detected %s download (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts']), str(settings_dict['PERMITTED_ATTEMPTS']), affectedItem['title'])
             affectedItems.remove(affectedItem)
-        # else:
-        #     # Will be deleted - reset the counter to 0
-        #     del defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]
+        if attempts_left <= -1: # Too many attempts
+            logger.info('>>> Detected %s download too many times (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts']), str(settings_dict['PERMITTED_ATTEMPTS']), affectedItem['title'])       
+        if attempts_left < -2: # Too many attempts and should already have been removed
+        # If supposedly deleted item keeps coming back, print out guidance for "Reject Blocklisted Torrent Hashes While Grabbing" 
+            logger.verbose('>>> [Tip!] Since this download should already have been removed in a previous iteration but keeps coming back, this indicates the blocking of the torrent does not work correctly. Consider turning on the option "Reject Blocklisted Torrent Hashes While Grabbing" on the indexer in the *arr app: %s', affectedItem['title'])       
     logger.debug('permittedAttemptsCheck/defective_tracker.dict OUT: %s', str(defective_tracker.dict))
     return affectedItems
 
@@ -114,17 +118,22 @@ def errorDetails(NAME, error):
     return    
 
 def formattedQueueInfo(queue):
-    # Returns queueID, title, and downloadID
-    formatted_list = []
-    for record in queue['records']:
-        download_id = record['downloadId']
-        title = record['title']
-        item_id = record['id']
-        # Check if there is an entry with the same download_id and title
-        existing_entry = next((item for item in formatted_list if item['downloadId'] == download_id), None)
-        if existing_entry:
-            existing_entry['IDs'].append(item_id)
-        else:
-            new_entry = {'downloadId': download_id, 'downloadTitle': title, 'IDs': [item_id]}
-            formatted_list.append(new_entry)
-    return(formatted_list)
+    try:
+        # Returns queueID, title, and downloadID
+        if not queue: return 'empty'
+        formatted_list = []
+        for record in queue['records']:
+            download_id = record['downloadId']
+            title = record['title']
+            item_id = record['id']
+            # Check if there is an entry with the same download_id and title
+            existing_entry = next((item for item in formatted_list if item['downloadId'] == download_id), None)
+            if existing_entry:
+                existing_entry['IDs'].append(item_id)
+            else:
+                new_entry = {'downloadId': download_id, 'downloadTitle': title, 'IDs': [item_id]}
+                formatted_list.append(new_entry)
+        return(formatted_list)
+    except Exception as error:
+        errorDetails('formattedQueueInfo', error)
+        return 'error'

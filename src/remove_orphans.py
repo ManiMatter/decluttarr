@@ -8,9 +8,9 @@ async def remove_orphans(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloa
     try:
         failType = 'orphan'
         full_queue = await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})
-        if not full_queue: return 0 # By now the queue may be empty 
         queue = await get_queue(BASE_URL, API_KEY) 
         logger.debug('remove_orphans/full queue IN: %s', str(full_queue)) 
+        if not full_queue: return 0 # By now the queue may be empty 
         logger.debug('remove_orphans/queue IN: %s', str(queue))
 
         # Find items affected
