@@ -75,6 +75,7 @@ def permittedAttemptsCheck(settings_dict, affectedItems, failType, BASE_URL, def
     logger.debug('permittedAttemptsCheck/recoveredDownloadIDs: %s', str(recoveredDownloadIDs)) 
     for recoveredDownloadID in recoveredDownloadIDs:
        del defective_tracker.dict[BASE_URL][failType][recoveredDownloadID]
+       logger.info('>>> Detected %s download has recovered: %s', failType, affectedItem['title'])
     logger.debug('permittedAttemptsCheck/defective_tracker.dict IN: %s', str(defective_tracker.dict))
 
     # 3. For those that are defective, add attempt + 1 if present before, or make attempt = 1. 
