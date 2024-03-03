@@ -39,11 +39,11 @@ services:
       - TZ=Europe/Zurich
       - PUID=1000
       - PGID=1000
-      # General
+      ## General
       - LOG_LEVEL=INFO
       #- TEST_RUN=True
       #- SSL_VERIFICATION=False
-      # Features 
+      ## Features 
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
       - REMOVE_METADATA_MISSING=True
@@ -56,19 +56,19 @@ services:
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
       - IGNORE_PRIVATE_TRACKERS=True
-      # Radarr
+      ## Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
-      # Sonarr
+      ## Sonarr
       - SONARR_URL=http://sonarr:8989
       - SONARR_KEY=$SONARR_API_KEY
-      # Lidarr
+      ## Lidarr
       - LIDARR_URL=http://lidarr:8686
       - LIDARR_KEY=$LIDARR_API_KEY
-      # Readarr
+      ## Readarr
       - READARR_URL=http://readarr:8787
       - READARR_KEY=$READARR_API_KEY
-      # qBittorrent
+      ## qBittorrent
       - QBITTORRENT_URL=http://qbittorrent:8080
       #- QBITTORRENT_USERNAME=Your name
       #- QBITTORRENT_PASSWORD=Your password
