@@ -74,8 +74,8 @@ def permittedAttemptsCheck(settings_dict, affectedItems, failType, BASE_URL, def
         recoveredDownloadIDs = []
     logger.debug('permittedAttemptsCheck/recoveredDownloadIDs: %s', str(recoveredDownloadIDs)) 
     for recoveredDownloadID in recoveredDownloadIDs:
-       del defective_tracker.dict[BASE_URL][failType][recoveredDownloadID]
-    #    logger.info('>>> Detected %s download has recovered: %s', failType, affectedItem['title'])  # Need to find title - afecteditem doesnt hold it sine recovered. also need to deal if this one has been delted already
+        logger.info('>>> Download no longer marked as %s: %s', failType, defective_tracker.dict[BASE_URL][failType][recoveredDownloadID]['title'])  
+        del defective_tracker.dict[BASE_URL][failType][recoveredDownloadID]
     logger.debug('permittedAttemptsCheck/defective_tracker.dict IN: %s', str(defective_tracker.dict))
 
     # 3. For those that are defective, add attempt + 1 if present before, or make attempt = 1. 
@@ -91,7 +91,7 @@ def permittedAttemptsCheck(settings_dict, affectedItems, failType, BASE_URL, def
             affectedItems.remove(affectedItem)
         if attempts_left <= -1: # Too many attempts
             logger.info('>>> Detected %s download too many times (%s out of %s permitted times): %s', failType, str(defective_tracker.dict[BASE_URL][failType][affectedItem['downloadId']]['Attempts']), str(settings_dict['PERMITTED_ATTEMPTS']), affectedItem['title'])       
-        if attempts_left < -2: # Too many attempts and should already have been removed
+        if attempts_left <= -2: # Too many attempts and should already have been removed
         # If supposedly deleted item keeps coming back, print out guidance for "Reject Blocklisted Torrent Hashes While Grabbing" 
             logger.verbose('>>> [Tip!] Since this download should already have been removed in a previous iteration but keeps coming back, this indicates the blocking of the torrent does not work correctly. Consider turning on the option "Reject Blocklisted Torrent Hashes While Grabbing" on the indexer in the *arr app: %s', affectedItem['title'])       
     logger.debug('permittedAttemptsCheck/defective_tracker.dict OUT: %s', str(defective_tracker.dict))
