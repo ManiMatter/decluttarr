@@ -87,7 +87,7 @@ services:
 3) Run `docker-compose up -d` in the directory where the file is located to create the docker container
 
 ### Method 2: Running manually
-1) Clone the repository with `git clone https://github.com/Fxsch/decluttarr.git`
+1) Clone the repository with `git clone https://github.com/ManiMatter/decluttarr.git`
 2) Rename the `config.conf-Example` inside the config folder to `config.conf`
 3) Tweak `config.conf` to your needs
 4) Install the libraries listed in the docker/requirements.txt (pip install -r requirements.txt)
