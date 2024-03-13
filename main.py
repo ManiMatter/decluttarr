@@ -156,9 +156,9 @@ async def main():
         if not error_occured:
             qbit_version = await rest_get(settings_dict['QBITTORRENT_URL']+'/app/version',cookies=settings_dict['QBIT_COOKIE'])
             qbit_version = qbit_version[1:] # version without _v
-            if version.parse(qbit_version) < version.parse('4.6.3'):
+            if version.parse(qbit_version) < version.parse('4.3.0'):
                 error_occured = True
-                logger.error('-- | %s *** Error: %s ***', 'qBittorrent', 'Please update qBittorrent to at least version 4.6.0. Current version: ' + qbit_version)
+                logger.error('-- | %s *** Error: %s ***', 'qBittorrent', 'Please update qBittorrent to at least version 4.3.0. Current version: ' + qbit_version)
 
         if not error_occured:
             logger.info('OK | %s', 'qBittorrent')
