@@ -202,6 +202,7 @@ async def main():
         privateDowloadIDs = []
         if settings_dict['QBITTORRENT_URL']:
             protectedDowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settings_dict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settings_dict['QBIT_COOKIE']  )
+            logger.debug('main/protectedDowloadItems: %s', str(protectedDowloadItems))
             protectedDownloadIDs = [str.upper(item['hash']) for item in protectedDowloadItems]
             if settings_dict['IGNORE_PRIVATE_TRACKERS']:
                 privateDowloadItems = await rest_get(settings_dict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settings_dict['QBIT_COOKIE']  )
