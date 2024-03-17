@@ -87,6 +87,7 @@ services:
       #- QBITTORRENT_PASSWORD=Your password
 ```
 3) Run `docker-compose up -d` in the directory where the file is located to create the docker container
+Note: Always pull the "**latest**" version. The "dev" version is for testing only, and should only be pulled when contributing code or supporting with bug fixes
 
 ### Method 2: Running manually
 1) Clone the repository with `git clone https://github.com/ManiMatter/decluttarr.git`
