@@ -14,9 +14,10 @@ Decluttarr keeps the radarr & sonarr & lidarr & readarr queue free of stalled / 
 Feature overview:
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
 - Automatically delete failed downloads (& trigger download from another source)
-- Automatically delete downloads belonging to Movies/TV shows/Music requests that have been deleted in the meantime ('Orphan downloads')
-- Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row
-- Automatically delete downloads belonging to Movies/TV shows/Music requests that are unmonitored
+- Automatically delete downloads belonging to radarr/sonarr/etc. items that have been deleted in the meantime ('Orphan downloads')
+- Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row (& trigger download from another source)
+- Automatically delete slow downloads, after they have been found to be slow multiple times in a row (& trigger download from another source)
+- Automatically delete downloads belonging to radarr/sonarr/etc. items that are unmonitored
 
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
