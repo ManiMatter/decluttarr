@@ -20,8 +20,8 @@ async def remove_missing_files(settings_dict, BASE_URL, API_KEY, NAME, deleted_d
                     affectedItems.append(queueItem)
         affectedItems = await execute_checks(settings_dict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = False, 
-                                            doPrivateTrackerCheck = False, 
-                                            doProtectedDownloadCheck = False, 
+                                            doPrivateTrackerCheck = True, 
+                                            doProtectedDownloadCheck = True, 
                                             doPermittedAttemptsCheck = False)
         return len(affectedItems)
     except Exception as error:
