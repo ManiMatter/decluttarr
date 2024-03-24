@@ -61,7 +61,7 @@ jobs:
         env:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: dev
-         run: |
+        run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 -f docker/Dockerfile . \
             --progress plain \
