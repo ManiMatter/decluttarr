@@ -23,9 +23,11 @@ def privateTrackerCheck(settings_dict, affectedItems, failType, privateDowloadID
 
 def protectedDownloadCheck(settings_dict, affectedItems, failType, protectedDownloadIDs):
     # Checks if torrent is protected and skips
+    logger.debug('protectedDownloadCheck/protectedDownloadIDs (failType: %s): %s', failType, str(protectedDownloadIDs))
     for affectedItem in reversed(affectedItems):
         if affectedItem['downloadId'] in protectedDownloadIDs:
             logger.verbose('>>> Detected %s download, tagged not to be killed: %s',failType, affectedItem['title'])
+            logger.debug('>>> DownloadID of above %s download (%s): %s',failType, affectedItem['title'], affectedItem['downloadId'])
             affectedItems.remove(affectedItem)
     return affectedItems
 

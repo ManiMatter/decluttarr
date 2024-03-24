@@ -14,9 +14,10 @@ Decluttarr keeps the radarr & sonarr & lidarr & readarr queue free of stalled / 
 Feature overview:
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
 - Automatically delete failed downloads (& trigger download from another source)
-- Automatically delete downloads belonging to Movies/TV shows/Music requests that have been deleted in the meantime ('Orphan downloads')
-- Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row
-- Automatically delete downloads belonging to Movies/TV shows/Music requests that are unmonitored
+- Automatically delete downloads belonging to radarr/sonarr/etc. items that have been deleted in the meantime ('Orphan downloads')
+- Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row (& trigger download from another source)
+- Automatically delete slow downloads, after they have been found to be slow multiple times in a row (& trigger download from another source)
+- Automatically delete downloads belonging to radarr/sonarr/etc. items that are unmonitored
 
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
@@ -26,8 +27,11 @@ You can find a sample docker-compose.yml in the docker folder.
 - qBittorrent is recommended but not required. If you don't use qBittorrent, you will experience the following limitations:
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
+  - The feature that ignores private trackers does not work ()
 - If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
 - When broken torrents are removed the files belonging to them are deleted
+- Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
+- If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
 
 ## Getting started
 There's two ways to run this:
@@ -85,6 +89,7 @@ services:
       #- QBITTORRENT_PASSWORD=Your password
 ```
 3) Run `docker-compose up -d` in the directory where the file is located to create the docker container
+Note: Always pull the "**latest**" version. The "dev" version is for testing only, and should only be pulled when contributing code or supporting with bug fixes
 
 ### Method 2: Running manually
 1) Clone the repository with `git clone https://github.com/ManiMatter/decluttarr.git`
@@ -136,6 +141,7 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_FAILED**
 - Steers whether failed downloads with no connections are removed from the queue
 - These downloads are not added to the blocklist
+- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -143,7 +149,6 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_STALLED**
 - Steers whether stalled downloads with no connections are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested in the future
-- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -183,7 +188,6 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_SLOW**
 - Steers whether slow downloads are removed from the queue
 - Slow downloads are added to the blocklist, so that they are not re-requested in the future
-- A new download from another source is automatically added by sonarr/radarr/readarr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -203,17 +207,19 @@ Steers which type of cleaning is applied to the downloads queue
 
 **NO_STALLED_REMOVAL_QBIT_TAG**
 - Downloads in qBittorrent tagged with this tag will not be removed
-- Applies to the following: Slow, Stalled, Unmonitored, Orphans, Metadata Missing
-- These will continue to be removed (since considered broken): Failed, Files Missing
+- Feature is not available when not using qBittorrent as torrent manager
+- Applies to all types of removal (ie. nothing will be removed automatically by decluttarr)
+- Note: You may want to try "force recheck" to get your stuck torrents manually back up and running
 - Tag is automatically created in qBittorrent (required qBittorrent is reachable on `QBITTORRENT_URL`)
-- Also protects unmonitored downloads from being removed (relevant for multi-season packs)
+- Important: Also protects unmonitored downloads from being removed (relevant for multi-season packs)
 - Type: String
 - Is Mandatory: No (Defaults to `Don't Kill`)
 
 **IGNORE_PRIVATE_TRACKERS**
 - Private torrents in qBittorrent will not be removed from the queue if this is set to true
-- Applies to the following: Slow, Stalled, Unmonitored, Orphans, Metadata Missing
-- These will continue to be removed (since considered broken): Failed, Files Missing
+- Only works if qBittorrent is used (does not work with transmission etc.)
+- Applies to all types of removal (ie. nothing will be removed automatically by decluttarr)
+- Note: You may want to try "force recheck" to get your stuck torrents manually back up and running
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to True)
