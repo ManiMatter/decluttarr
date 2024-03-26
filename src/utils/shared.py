@@ -138,4 +138,5 @@ def formattedQueueInfo(queue):
         return(formatted_list)
     except Exception as error:
         errorDetails('formattedQueueInfo', error)
+        logger.debug('formattedQueueInfo/queue for debug: %s', str(queue)) 
         return 'error'
