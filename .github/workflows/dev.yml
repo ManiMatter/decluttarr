@@ -72,11 +72,12 @@ jobs:
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             --push \
+            --each "docker tag {{.ImageID}} $IMAGE_NAME:$IMAGE_TAG-{{.TargetPlatform.Architecture}}"
    
 
-      # - name: "Delete untagged versions"
-      #   uses: actions/delete-package-versions@v4
-      #   with: 
-      #     package-name: 'decluttarr'
-      #     package-type: 'container'
-      #     delete-only-untagged-versions: 'true'
+      - name: "Delete untagged versions"
+        uses: actions/delete-package-versions@v5
+        with: 
+          package-name: 'decluttarr'
+          package-type: 'container'
+          delete-only-untagged-versions: 'true'
