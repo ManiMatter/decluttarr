@@ -135,8 +135,8 @@ if READARR_URL:     READARR_URL     += '/api/v1'
 if QBITTORRENT_URL: QBITTORRENT_URL += '/api/v2'
 
 ########### Add Variables to Dictionary
-settings_dict = {}
+settingsDict = {}
 for var_name in dir():
     if var_name.isupper():
-        settings_dict[var_name] = locals()[var_name]
+        settingsDict[var_name] = locals()[var_name]
 

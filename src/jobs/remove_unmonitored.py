@@ -4,7 +4,7 @@ import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 from src.utils.rest import rest_get
 
-async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, arr_type):
+async def remove_unmonitored(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, arr_type):
     # Removes downloads belonging to movies/tv shows that are not monitored. Does not add to blocklist   
     try:
         failType = 'unmonitored'
@@ -14,13 +14,13 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, NAME, deleted_dow
         # Find items affected
         monitoredDownloadIDs = []
         for queueItem in queue['records']: 
-            if arr_type == 'sonarr': 
+            if arr_type == 'SONARR': 
                 isMonitored = (await rest_get(f'{BASE_URL}/episode/{str(queueItem["episodeId"])}', API_KEY))['monitored']
-            elif arr_type == 'radarr': 
+            elif arr_type == 'RADARR': 
                 isMonitored = (await rest_get(f'{BASE_URL}/movie/{str(queueItem["movieId"])}', API_KEY))['monitored']
-            elif arr_type == 'lidarr': 
+            elif arr_type == 'LIDARR': 
                 isMonitored = (await rest_get(f'{BASE_URL}/album/{str(queueItem["albumId"])}', API_KEY))['monitored']       
-            elif arr_type == 'readarr': 
+            elif arr_type == 'READARR': 
                 isMonitored = (await rest_get(f'{BASE_URL}/book/{str(queueItem["bookId"])}', API_KEY))['monitored']                            
             if isMonitored:
                 monitoredDownloadIDs.append(queueItem['downloadId'])
@@ -30,7 +30,7 @@ async def remove_unmonitored(settings_dict, BASE_URL, API_KEY, NAME, deleted_dow
             if queueItem['downloadId'] not in monitoredDownloadIDs:
                 affectedItems.append(queueItem) # One downloadID may be shared by multiple queueItems. Only removes it if ALL queueitems are unmonitored
 
-        affectedItems = await execute_checks(settings_dict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
+        affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = False, 
                                             doPrivateTrackerCheck = True, 
                                             doProtectedDownloadCheck = True, 

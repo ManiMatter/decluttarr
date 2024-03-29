@@ -3,7 +3,7 @@ import sys, os, traceback
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 
-async def remove_metadata_missing(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs):
+async def remove_metadata_missing(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs):
     # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist   
     try:
         failType = 'missing metadata'
@@ -16,7 +16,7 @@ async def remove_metadata_missing(settings_dict, BASE_URL, API_KEY, NAME, delete
             if 'errorMessage' in queueItem and 'status' in queueItem:
                 if  queueItem['status'] == 'queued' and queueItem['errorMessage'] == 'qBittorrent is downloading metadata':
                     affectedItems.append(queueItem)
-        affectedItems = await execute_checks(settings_dict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
+        affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = True, 
                                             doPrivateTrackerCheck = True, 
                                             doProtectedDownloadCheck = True, 

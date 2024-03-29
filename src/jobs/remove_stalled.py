@@ -3,7 +3,7 @@ import sys, os, traceback
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 
-async def remove_stalled(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs):
+async def remove_stalled(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs):
     # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist   
     try:
         failType = 'stalled'
@@ -16,7 +16,7 @@ async def remove_stalled(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloa
             if 'errorMessage' in queueItem and 'status' in queueItem:
                 if  queueItem['status'] == 'warning' and queueItem['errorMessage'] == 'The download is stalled with no connections':
                     affectedItems.append(queueItem)
-        affectedItems = await execute_checks(settings_dict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
+        affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = True, 
                                             doPrivateTrackerCheck = True, 
                                             doProtectedDownloadCheck = True, 
