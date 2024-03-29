@@ -61,7 +61,7 @@ jobs:
       - name: Add architecture-specific labels
         run: |
           # Get the manifest digest for the image
-          manifest_digest_amd64=$(docker manifest inspect $IMAGE_NAME:$IMAGE_TAG | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
+          manifest_digest_amd64=$(docker manifest inspect "$IMAGE_NAME:$IMAGE_TAG" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
           echo "Manifest digest for amd64: $manifest_digest_amd64"
           # manifest_digest_arm64=$(docker manifest inspect $IMAGE_NAME:$IMAGE_TAG | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
           # echo "Manifest digest for arm64: $manifest_digest_arm64"
