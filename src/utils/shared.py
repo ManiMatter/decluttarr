@@ -12,6 +12,22 @@ async def get_queue(BASE_URL, API_KEY, params = {}):
     if totalRecords == 0:
         return None
     queue = await rest_get(f'{BASE_URL}/queue', API_KEY, {'page': '1', 'pageSize': totalRecords}|params) 
+    queue = filterOutDelayedQueueItems(queue)
+    return queue
+
+def filterOutDelayedQueueItems(queue):
+    # Ignores delayed queue items
+    if queue is None:
+        return None
+    filtered_records = []
+    for record in queue['records']:
+        if record['status'] == 'delay':
+            logger.debug('>>> Delayed queue item ignored: %s', record['title'])
+        else:
+            filtered_records.append(record)
+    if not filtered_records:
+        return None
+    queue['records'] = filtered_records
     return queue
 
 def privateTrackerCheck(settingsDict, affectedItems, failType, privateDowloadIDs):
