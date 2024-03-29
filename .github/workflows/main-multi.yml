@@ -44,9 +44,9 @@ jobs:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: maintest
         run: |
-          docker buildx create --use    --name $IMAGE_TAG node-amd64 \
-          docker buildx create --append --name $IMAGE_TAG node-arm64 \
-          docker buildx build --platform linux/amd64,linux/arm64 \
+          docker buildx create --use    --name $IMAGE_TAG node-amd64 
+          docker buildx create --append --name $IMAGE_TAG node-arm64 
+          docker buildx build --platform linux/amd64,linux/arm64 
    
 
 
