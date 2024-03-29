@@ -67,6 +67,8 @@ jobs:
 
       - name: Tag and push amd64 image
         run: |
+          docker images --format "{{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}" | sort -rk4
+
           # Retrieve Docker image ID
           IMAGE_ID=$(docker images --filter=reference="$IMAGE_NAME:$IMAGE_TAG" --quiet)
           echo "Docker Image ID: $IMAGE_ID"        
