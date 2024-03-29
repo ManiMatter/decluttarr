@@ -64,15 +64,15 @@ jobs:
 
           # Add label for amd64
           if [ ! -z "$manifest_digest_amd64" ]; then
-            docker manifest annotate $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-amd64 --os=linux --arch=amd64 $manifest_digest_amd64 || true
+            docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-amd64" --os=linux --arch=amd64 "$manifest_digest_amd64" || true
           fi
 
           # Add label for arm64
           if [ ! -z "$manifest_digest_arm64" ]; then
-            docker manifest annotate $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-arm64 --os=linux --arch=arm64 $manifest_digest_arm64 || true
+            docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-arm64" --os=linux --arch=arm64 "$manifest_digest_arm64" || true
           fi
 
           # Add label for unknown architectures
           if [ ! -z "$manifest_digest_unknown" ]; then
-            docker manifest annotate $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-unknown --os=linux --arch=unknown $manifest_digest_unknown || true
+            docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-unknown" --os=linux --arch=unknown "$manifest_digest_unknown" || true
           fi
