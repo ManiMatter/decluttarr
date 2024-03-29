@@ -54,7 +54,7 @@ jobs:
             -t $IMAGE_NAME:$IMAGE_TAG \
             --label com.decluttarr.version=$IMAGE_TAG \
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
-            --annotate "$IMAGE_NAME:$IMAGE_TAG-amd64" \
+            --annotation "$IMAGE_TAG-amd64" \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             --push \
