@@ -65,7 +65,7 @@ jobs:
           echo "Manifest digest for amd64: $manifest_digest_amd64"
 
           # Add label for amd64
-          docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-amd64" --os=linux --arch=amd64 "$manifest_digest_amd64" || true
+          docker manifest annotate "ghcr.io/manimatter/decluttarr:maintestx@sha256:8d1241bb519fd2da264ff5e7c3e16380bbad2b9fb9ededff7bb0e46bde416df6" "$IMAGE_NAME:$IMAGE_TAG-amd64" --os=linux --arch=amd64  
 
 
 
