@@ -54,6 +54,7 @@ jobs:
             --build-arg ARCH=amd64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
+            -f docker/Dockerfile \
             --push .
 
           # Build the arm64 image
@@ -65,6 +66,7 @@ jobs:
             --build-arg ARCH=arm64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
+            -f docker/Dockerfile \
             --push .
 
           # Create and push the manifest list
