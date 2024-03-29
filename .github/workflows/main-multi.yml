@@ -43,7 +43,6 @@ jobs:
         env:
           IMAGE_NAME: ghcr.io/manimatter/decluttarr
           IMAGE_TAG: maintest
-          SHORT_COMMIT_ID: 9ae733d
         run: |
           # Build the amd64 image
           docker build \
@@ -54,8 +53,11 @@ jobs:
             --build-arg ARCH=amd64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-            -f docker/Dockerfile \
-            --push .
+            -f docker/Dockerfile-amd64 \
+            .
+
+          # Push the amd64 image
+          docker push $IMAGE_NAME:$IMAGE_TAG-amd64
 
           # Build the arm64 image
           docker build \
@@ -66,15 +68,17 @@ jobs:
             --build-arg ARCH=arm64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-            -f docker/Dockerfile \
-            --push .
+            -f docker/Dockerfile-arm64 \
+            .
+
+          # Push the arm64 image
+          docker push $IMAGE_NAME:$IMAGE_TAG-arm64
 
           # Create and push the manifest list
           docker manifest create $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-amd64 $IMAGE_NAME:$IMAGE_TAG-arm64
           docker manifest annotate $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-arm64 --os linux --arch arm64
           docker manifest annotate $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:$IMAGE_TAG-amd64 --os linux --arch amd64
           docker manifest push $IMAGE_NAME:$IMAGE_TAG
-   
 
 
 #    $ docker buildx create --use --name mybuild node-amd64
