@@ -45,30 +45,26 @@ jobs:
           IMAGE_TAG: maintest
           SHORT_COMMIT_ID: 9ae733d
         run: |
-          # Create a builder instance for amd64 architecture
-          docker buildx create --use --name amd64-builder
-
           # Build the amd64 image
-          docker buildx build --platform linux/amd64 \
+          docker build \
+            --progress plain \
             -t $IMAGE_NAME:$IMAGE_TAG-amd64 \
             --label com.decluttarr.version=$IMAGE_TAG \
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
+            --build-arg ARCH=amd64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-            -f docker/Dockerfile \
             --push .
 
-          # Create a builder instance for arm64 architecture
-          docker buildx create --use --name arm64-builder
-
           # Build the arm64 image
-          docker buildx build --platform linux/arm64 \
+          docker build \
+            --progress plain \
             -t $IMAGE_NAME:$IMAGE_TAG-arm64 \
             --label com.decluttarr.version=$IMAGE_TAG \
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
+            --build-arg ARCH=arm64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-            -f docker/Dockerfile \
             --push .
 
           # Create and push the manifest list
