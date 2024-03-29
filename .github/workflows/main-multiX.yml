@@ -59,14 +59,16 @@ jobs:
       #       --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
       #       --push \
 
-      - name: Add architecture-specific labels
-        run: |
-          # # Get the manifest digest for the image
-          # manifest_digest_amd64=$(docker manifest inspect "$IMAGE_NAME:$IMAGE_TAG" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
-          # echo "Manifest digest for amd64: $manifest_digest_amd64"
+      # - name: Add architecture-specific labels
+      #   run: |
+      #     # # Get the manifest digest for the image
+      #     # manifest_digest_amd64=$(docker manifest inspect "$IMAGE_NAME:$IMAGE_TAG" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
+      #     # echo "Manifest digest for amd64: $manifest_digest_amd64"
 
-          # Add tag
+      - name: Tag and push amd64 image
+        run: |
           docker tag ghcr.io/manimatter/decluttarr:maintestx@sha256:389494656cd076f532bcd59bc459e024295ea88cb450237f3f91243df3412282 ghcr.io/manimatter/decluttarr:maintestx-amd64
+          docker push ghcr.io/manimatter/decluttarr:maintestx-amd64
 
       #     # Add label for amd64
       #     docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-amd64" --os=linux --arch=amd64 
