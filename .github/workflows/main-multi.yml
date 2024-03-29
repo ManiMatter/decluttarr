@@ -1,12 +1,12 @@
 name: Test for creating multi arch packages without buildx
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - '**/*'
-      - '!README.md'  
-      - '!CONTRIBUTE.md'  
+  # push:
+  #   branches: [ "main" ]
+  #   paths:
+  #     - '**/*'
+  #     - '!README.md'  
+  #     - '!CONTRIBUTE.md'  
   workflow_dispatch:
 
 
