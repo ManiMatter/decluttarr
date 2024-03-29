@@ -1,4 +1,4 @@
-name: Test for creating multi arch packages without buildx
+name: BUILDX TEST
 
 on:
   push:
@@ -49,7 +49,6 @@ jobs:
             -f docker/Dockerfile . \
             --progress plain \
             -t $IMAGE_NAME:$IMAGE_TAG \
-            -t $IMAGE_NAME:latest \
             --label com.decluttarr.version=$IMAGE_TAG \
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
@@ -57,45 +56,3 @@ jobs:
             --push \
 
 
-
-
-#    $ docker buildx create --use --name mybuild node-amd64
-# mybuild
-# $ docker buildx create --append --name mybuild node-arm64
-# $ docker buildx build --platform linux/amd64,linux/arm64 .
-
-
-        # run: |
-        #   docker buildx build \
-        #     --platform linux/amd64,linux/arm64 -f docker/Dockerfile . \
-        #     --progress plain \
-        #     -t $IMAGE_NAME:$IMAGE_TAG \
-        #     --label com.decluttarr.version=$IMAGE_TAG \
-        #     --label com.decluttarr.commit=$SHORT_COMMIT_ID \
-        #     --build-arg IMAGE_TAG=$IMAGE_TAG \
-        #     --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-        #     --push \
-
-      #  - name: "Build, Tag, and push the Docker image"
-      #   env:
-      #     IMAGE_NAME: ghcr.io/manimatter/decluttarr
-      #     IMAGE_TAG: dev
-      #   run: |
-      #     docker build \
-      #       --progress plain \
-      #       -t $IMAGE_NAME:$IMAGE_TAG \
-      #       --label com.decluttarr.version=$IMAGE_TAG \
-      #       --label com.decluttarr.commit=$SHORT_COMMIT_ID \
-      #       --build-arg IMAGE_TAG=$IMAGE_TAG \
-      #       --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-      #       -f docker/Dockerfile \
-      #       --push .
-
-
-
-      # - name: "Delete untagged versions"
-      #   uses: actions/delete-package-versions@v4
-      #   with: 
-      #     package-name: 'decluttarr'
-      #     package-type: 'container'
-      #     delete-only-untagged-versions: 'true'
