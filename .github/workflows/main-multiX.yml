@@ -13,9 +13,15 @@ on:
 jobs:
   build-main:
     runs-on: ubuntu-latest 
+    
     defaults:
       run:
         working-directory: '.'
+
+    env:
+      IMAGE_NAME: ghcr.io/manimatter/decluttarr
+      IMAGE_TAG: maintestX
+
     steps: 
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@main
@@ -40,9 +46,6 @@ jobs:
           echo "SHORT_COMMIT_ID=$calculatedSha" >> $GITHUB_ENV
 
       - name: "Build, Tag, and push the Docker image"
-        env:
-          IMAGE_NAME: ghcr.io/manimatter/decluttarr
-          IMAGE_TAG: maintestX
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
