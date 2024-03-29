@@ -63,15 +63,10 @@ jobs:
           # Get the manifest digest for the image
           manifest_digest_amd64=$(docker manifest inspect "$IMAGE_NAME:$IMAGE_TAG" | jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest')
           echo "Manifest digest for amd64: $manifest_digest_amd64"
-          # manifest_digest_arm64=$(docker manifest inspect $IMAGE_NAME:$IMAGE_TAG | jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest')
-          # echo "Manifest digest for arm64: $manifest_digest_arm64"
-          # manifest_digest_unknown=$(docker manifest inspect $IMAGE_NAME:$IMAGE_TAG | jq -r '.manifests[] | select(.platform.architecture!="amd64" and .platform.architecture!="arm64") | .digest')
-          # echo "Manifest digest for unknown: $manifest_digest_unknown"
 
           # Add label for amd64
-          if [ ! -z "$manifest_digest_amd64" ]; then
-            docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-amd64" --os=linux --arch=amd64 "$manifest_digest_amd64" || true
-          fi
+          docker manifest annotate "$IMAGE_NAME:$IMAGE_TAG" "$IMAGE_NAME:$IMAGE_TAG-amd64" --os=linux --arch=amd64 "$manifest_digest_amd64" || true
+
 
 
   
