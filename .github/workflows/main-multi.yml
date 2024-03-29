@@ -42,10 +42,10 @@ jobs:
           docker build \
             --progress plain \
             -t $IMAGE_NAME:$IMAGE_TAG-amd64 \
-            --label com.decluttarr.version=$IMAGE_TAG \
+            --label com.decluttarr.version=$IMAGE_TAG-amd64 \
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
             --build-arg ARCH=amd64 \
-            --build-arg IMAGE_TAG=$IMAGE_TAG \
+            --build-arg IMAGE_TAG=$IMAGE_TAG-amd64 \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             -f docker/Dockerfile \
             --push .
@@ -54,10 +54,10 @@ jobs:
           docker build \
             --progress plain \
             -t $IMAGE_NAME:$IMAGE_TAG-arm64 \
-            --label com.decluttarr.version=$IMAGE_TAG \
+            --label com.decluttarr.version=$IMAGE_TAG-arm64 \
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
             --build-arg ARCH=arm64 \
-            --build-arg IMAGE_TAG=$IMAGE_TAG \
+            --build-arg IMAGE_TAG=$IMAGE_TAG-arm64 \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             -f docker/Dockerfile \
             --push .
