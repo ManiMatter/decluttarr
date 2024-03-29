@@ -44,7 +44,7 @@ def showSettings(settingsDict):
     logger.info('%s | Removing orphan downloads', str(settingsDict['REMOVE_ORPHANS']))  
     logger.info('%s | Removing slow downloads', str(settingsDict['REMOVE_SLOW']))
     logger.info('%s | Removing stalled downloads', str(settingsDict['REMOVE_STALLED']))
-    logger.info('%s | Removing downloads belonging to unmonitored TV shows/movies', str(settingsDict['REMOVE_UNMONITORED'])) 
+    logger.info('%s | Removing downloads belonging to unmonitored items', str(settingsDict['REMOVE_UNMONITORED'])) 
     logger.info('')          
     logger.info('Running every: %s', fmt.format(rd(minutes=settingsDict['REMOVE_TIMER'])))  
     if settingsDict['REMOVE_SLOW']: 
