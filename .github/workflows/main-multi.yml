@@ -53,7 +53,7 @@ jobs:
             --build-arg ARCH=amd64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-            -f docker/Dockerfile-amd64 \
+            -f docker/Dockerfile \
             .
 
           # Push the amd64 image
@@ -67,8 +67,8 @@ jobs:
             --label com.decluttarr.commit=$SHORT_COMMIT_ID \
             --build-arg ARCH=arm64 \
             --build-arg IMAGE_TAG=$IMAGE_TAG \
-            --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
-            -f docker/Dockerfile-arm64 \
+            --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \ 
+            -f docker/Dockerfile \
             .
 
           # Push the arm64 image
