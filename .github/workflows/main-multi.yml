@@ -1,0 +1,58 @@
+name: Test for creating multi arch packages without buildx
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**/*'
+      - '!README.md'  
+      - '!CONTRIBUTE.md'  
+  workflow_dispatch:
+
+
+
+  build-main:
+    runs-on: ubuntu-latest 
+    defaults:
+      run:
+        working-directory: '.'
+    steps: 
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@main
+
+      - name: 'Login to GitHub Container Registry'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Store short Commit ID in env variable
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_COMMIT_ID=$calculatedSha" >> $GITHUB_ENV
+
+      - name: "Build, Tag, and push the Docker image"
+        env:
+          IMAGE_NAME: ghcr.io/manimatter/decluttarr
+          IMAGE_TAG: maintest
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 -f docker/Dockerfile . \
+            --progress plain \
+            -t $IMAGE_NAME:$IMAGE_TAG \
+            --label com.decluttarr.version=$IMAGE_TAG \
+            --label com.decluttarr.commit=$SHORT_COMMIT_ID \
+            --annotations "org.opencontainers.image.description=$IMAGE_TAG" \
+            --build-arg IMAGE_TAG=$IMAGE_TAG \
+            --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
+            --push \
+   
+
+      # - name: "Delete untagged versions"
+      #   uses: actions/delete-package-versions@v4
+      #   with: 
+      #     package-name: 'decluttarr'
+      #     package-type: 'container'
+      #     delete-only-untagged-versions: 'true'
