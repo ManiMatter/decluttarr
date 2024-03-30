@@ -19,10 +19,14 @@ def filterOutDelayedQueueItems(queue):
     # Ignores delayed queue items
     if queue is None:
         return None
+    seen_combinations = set()
     filtered_records = []
     for record in queue['records']:
+        combination = (record['title'], record['indexer'])   
         if record['status'] == 'delay':
-            logger.debug('>>> Delayed queue item ignored: %s', record['title'])
+            if combination not in seen_combinations:
+                seen_combinations.add(combination)
+                logger.debug('>>> Delayed queue item ignored: %s (Indexer: %s)', record['title'],  record['indexer'])
         else:
             filtered_records.append(record)
     if not filtered_records:
