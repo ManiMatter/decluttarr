@@ -3,7 +3,7 @@ import sys, os, traceback
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 
-async def remove_orphans(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, full_queue_param):
+async def remove_orphans(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, full_queue_param):
     # Removes downloads belonging to movies/tv shows that have been deleted in the meantime. Does not add to blocklist
     try:
         failType = 'orphan'
@@ -22,7 +22,7 @@ async def remove_orphans(settings_dict, BASE_URL, API_KEY, NAME, deleted_downloa
             if queueItem['id'] not in queueIDs:
                 affectedItems.append(queueItem)
 
-        affectedItems = await execute_checks(settings_dict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
+        affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = False, 
                                             doPrivateTrackerCheck = True, 
                                             doProtectedDownloadCheck = True, 

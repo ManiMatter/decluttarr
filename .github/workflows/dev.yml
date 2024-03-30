@@ -73,6 +73,7 @@ jobs:
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             --push \
    
+  #  "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
 
       # - name: "Delete untagged versions"
       #   uses: actions/delete-package-versions@v4
