@@ -80,9 +80,9 @@ async def instanceChecks(settingsDict):
                 error_occured = True
                 logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
                 logger.error(error)
-            if not error_occured:
+            if not error_occured:                
+                current_version = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['version']
                 if settingsDict[instance + '_MIN_VERSION']:
-                    current_version = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['version']
                     if version.parse(current_version) < version.parse(settingsDict[instance + '_MIN_VERSION']):
                         error_occured = True
                         logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
