@@ -24,11 +24,12 @@ def filterOutDelayedQueueItems(queue):
     for record in queue['records']:
         # Use get() method with default value "No indexer" if 'indexer' key does not exist
         indexer = record.get('indexer', 'No indexer')
+        protocol = record.get('protocol', 'No protocol')
         combination = (record['title'], indexer)
         if record['status'] == 'delay':
             if combination not in seen_combinations:
                 seen_combinations.add(combination)
-                logger.debug('>>> Delayed queue item ignored: %s (Indexer: %s)', record['title'],  indexer)
+                logger.debug('>>> Delayed queue item ignored: %s (Protocol: %s, Indexer: %s)', record['title'], protocol, indexer)
         else:
             filtered_records.append(record)
     if not filtered_records:
