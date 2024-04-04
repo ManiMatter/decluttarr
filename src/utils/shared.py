@@ -22,17 +22,20 @@ def filterOutDelayedQueueItems(queue):
     seen_combinations = set()
     filtered_records = []
     for record in queue['records']:
-        combination = (record['title'], record['indexer'])   
+        # Use get() method with default value "No indexer" if 'indexer' key does not exist
+        indexer = record.get('indexer', 'No indexer')
+        combination = (record['title'], indexer)
         if record['status'] == 'delay':
             if combination not in seen_combinations:
                 seen_combinations.add(combination)
-                logger.debug('>>> Delayed queue item ignored: %s (Indexer: %s)', record['title'],  record['indexer'])
+                logger.debug('>>> Delayed queue item ignored: %s (Indexer: %s)', record['title'],  indexer)
         else:
             filtered_records.append(record)
     if not filtered_records:
         return None
     queue['records'] = filtered_records
     return queue
+
 
 def privateTrackerCheck(settingsDict, affectedItems, failType, privateDowloadIDs):
     # Ignores private tracker items (if setting is turned on)
