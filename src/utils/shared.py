@@ -25,7 +25,7 @@ def filterOutDelayedQueueItems(queue):
         # Use get() method with default value "No indexer" if 'indexer' key does not exist
         indexer = record.get('indexer', 'No indexer')
         protocol = record.get('protocol', 'No protocol')
-        combination = (record['title'], indexer)
+        combination = (record['title'], protocol, indexer)
         if record['status'] == 'delay':
             if combination not in seen_combinations:
                 seen_combinations.add(combination)
