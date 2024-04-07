@@ -41,6 +41,7 @@ def showSettings(settingsDict):
     logger.info('%s | Removing failed downloads', str(settingsDict['REMOVE_FAILED']))
     logger.info('%s | Removing downloads missing metadata', str(settingsDict['REMOVE_METADATA_MISSING'])) 
     logger.info('%s | Removing downloads missing files', str(settingsDict['REMOVE_MISSING_FILES']))
+    logger.info('%s | Removing downloads that fail on import (no format upgrade)', str(settingsDict['REMOVE_NO_FORMAT_UPGRADE']))
     logger.info('%s | Removing orphan downloads', str(settingsDict['REMOVE_ORPHANS']))  
     logger.info('%s | Removing slow downloads', str(settingsDict['REMOVE_SLOW']))
     logger.info('%s | Removing stalled downloads', str(settingsDict['REMOVE_STALLED']))

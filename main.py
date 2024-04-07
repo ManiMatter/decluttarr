@@ -29,6 +29,20 @@ class Download_Sizes_Tracker:
 
 # Main function
 async def main(settingsDict):
+    # Adds to settings Dict the instances that are actually configures
+    arrApplications  = ['RADARR', 'SONARR', 'LIDARR', 'READARR']
+    settingsDict['INSTANCES'] = []
+    for arrApplication in arrApplications:
+        if settingsDict[arrApplication + '_URL']:
+            settingsDict['INSTANCES'].append(arrApplication)
+
+    # Pre-populates the dictionaries (in classes) that track the items that were already caught as having problems or removed
+    defectiveTrackingInstances = {} 
+    for instance in settingsDict['INSTANCES']:
+        defectiveTrackingInstances[instance] = {}
+    defective_tracker = Defective_Tracker(defectiveTrackingInstances)
+    download_sizes_tracker = Download_Sizes_Tracker({})
+
     # Get name of arr-instances
     for instance in settingsDict['INSTANCES']:
         settingsDict = await getArrInstanceName(settingsDict, instance)
@@ -75,16 +89,6 @@ async def main(settingsDict):
     return
 
 if __name__ == '__main__':
-    arrApplications  = ['RADARR', 'SONARR', 'LIDARR', 'READARR']
-    defectiveTrackingInstances = {} 
-    settingsDict['INSTANCES'] = []
-    for arrApplication in arrApplications:
-        if settingsDict[arrApplication + '_URL']:
-            settingsDict['INSTANCES'].append(arrApplication)
-            defectiveTrackingInstances[arrApplication] = {}
-    
-    defective_tracker = Defective_Tracker(defectiveTrackingInstances)
-    download_sizes_tracker = Download_Sizes_Tracker({})
     asyncio.run(main(settingsDict))
 
 

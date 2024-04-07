@@ -5,6 +5,7 @@ from src.utils.shared import (errorDetails, get_queue)
 from src.jobs.remove_failed import remove_failed
 from src.jobs.remove_metadata_missing import remove_metadata_missing
 from src.jobs.remove_missing_files import remove_missing_files
+from src.jobs.remove_no_format_upgrade import remove_no_format_upgrade
 from src.jobs.remove_orphans import remove_orphans
 from src.jobs.remove_slow import remove_slow
 from src.jobs.remove_stalled import remove_stalled
@@ -50,30 +51,36 @@ async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes
     if not full_queue: 
         logger.verbose('>>> Queue is empty.')
         return
+    else:
+        logger.debug('queueCleaner/full_queue at start:')
+        logger.debug(full_queue)        
         
     deleted_downloads = Deleted_Downloads([])
     items_detected = 0
     try:    
         if settingsDict['REMOVE_FAILED']:
             items_detected += await remove_failed(            settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
-        
-        if settingsDict['REMOVE_STALLED']: 
-            items_detected += await remove_stalled(           settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
         if settingsDict['REMOVE_METADATA_MISSING']: 
             items_detected += await remove_metadata_missing(  settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
-        if settingsDict['REMOVE_ORPHANS']: 
-            items_detected += await remove_orphans(           settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, full_queue_param)
-
-        if settingsDict['REMOVE_UNMONITORED']: 
-            items_detected += await remove_unmonitored(       settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, arr_type)
-
         if settingsDict['REMOVE_MISSING_FILES']: 
             items_detected += await remove_missing_files(     settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
+        if settingsDict['REMOVE_NO_FORMAT_UPGRADE']: 
+            items_detected += await remove_no_format_upgrade( settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
+
+        if settingsDict['REMOVE_ORPHANS']: 
+            items_detected += await remove_orphans(           settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, full_queue_param)
+
         if settingsDict['REMOVE_SLOW']:
             items_detected += await remove_slow(              settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, download_sizes_tracker)
+
+        if settingsDict['REMOVE_STALLED']: 
+            items_detected += await remove_stalled(           settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
+
+        if settingsDict['REMOVE_UNMONITORED']: 
+            items_detected += await remove_unmonitored(       settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, arr_type)
 
         if items_detected == 0:
             logger.verbose('>>> Queue is clean.')

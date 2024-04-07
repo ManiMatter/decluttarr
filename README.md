@@ -18,6 +18,7 @@ Feature overview:
 - Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row (& trigger download from another source)
 - Automatically delete slow downloads, after they have been found to be slow multiple times in a row (& trigger download from another source)
 - Automatically delete downloads belonging to radarr/sonarr/etc. items that are unmonitored
+- Automatically delete downloads that failed importing since they are not a format upgrade (i.e. a better version is already present)
 
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
@@ -63,6 +64,7 @@ services:
       - REMOVE_FAILED=True
       - REMOVE_METADATA_MISSING=True
       - REMOVE_MISSING_FILES=True     
+      - REMOVE_NO_FORMAT_UPGRADE=True
       - REMOVE_ORPHANS=True
       - REMOVE_SLOW=True
       - REMOVE_STALLED=True
@@ -146,17 +148,25 @@ Steers which type of cleaning is applied to the downloads queue
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
-**REMOVE_STALLED**
-- Steers whether stalled downloads with no connections are removed from the queue
-- These downloads are added to the blocklist, so that they are not re-requested in the future
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
 **REMOVE_METADATA_MISSING**
 - Steers whether downloads stuck obtaining metadata are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested
 - A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_MISSING_FILES**
+- Steers whether downloads that have the warning "Files Missing" are removed from the queue
+- These downloads are not added to the blocklist
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_NO_FORMAT_UPGRADE**
+- Steers whether downloads that failed importing since they are not a format upgrade are removed from the queue
+- This occurs when a better version is already present
+- These downloads are added to the blocklist
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -169,25 +179,25 @@ Steers which type of cleaning is applied to the downloads queue
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**REMOVE_SLOW**
+- Steers whether slow downloads are removed from the queue
+- Slow downloads are added to the blocklist, so that they are not re-requested in the future
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_STALLED**
+- Steers whether stalled downloads with no connections are removed from the queue
+- These downloads are added to the blocklist, so that they are not re-requested in the future
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
 **REMOVE_UNMONITORED**
 - Steers whether downloads belonging to unmonitored media are removed from the queue
 - Note: Will only remove from queue if all TV shows depending on the same download are unmonitored
 - These downloads are not added to the blocklist
 - Note: Since sonarr does not support multi-season packs, if you download one you should protect it with `NO_STALLED_REMOVAL_QBIT_TAG` that is explained further down
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
-**REMOVE_MISSING_FILES**
-- Steers whether downloads that have the warning "Files Missing" are removed from the queue
-- These downloads are not added to the blocklist
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
-**REMOVE_SLOW**
-- Steers whether slow downloads are removed from the queue
-- Slow downloads are added to the blocklist, so that they are not re-requested in the future
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)

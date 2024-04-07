@@ -7,6 +7,7 @@ REMOVE_TIMER                = 10
 REMOVE_FAILED               = True
 REMOVE_METADATA_MISSING     = True
 REMOVE_MISSING_FILES        = True
+REMOVE_NO_FORMAT_UPGRADE    = True
 REMOVE_ORPHANS              = True
 REMOVE_SLOW                 = True
 REMOVE_STALLED              = True
