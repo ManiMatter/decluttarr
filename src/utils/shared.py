@@ -75,14 +75,14 @@ async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KE
         if doPermittedAttemptsCheck:
             affectedItems = permittedAttemptsCheck(settingsDict, affectedItems, failType, BASE_URL, defective_tracker)
             
-        # Checks whether when removing the queue item from the *arr app the torrent should be kept
-        removeFromClient = True
-        if 'keepTorrentForPrivateTrackers' in extraParameters:
-            if settingsDict['IGNORE_PRIVATE_TRACKERS'] and affectedItem['downloadId'] in privateDowloadIDs:
-                removeFromClient = False
-
         # Deletes all downloads that have not survived the checks
         for affectedItem in affectedItems:
+            # Checks whether when removing the queue item from the *arr app the torrent should be kept
+            removeFromClient = True
+            if 'keepTorrentForPrivateTrackers' in extraParameters:
+                if settingsDict['IGNORE_PRIVATE_TRACKERS'] and affectedItem['downloadId'] in privateDowloadIDs:
+                    removeFromClient = False
+            # Removes the queue item
             await remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failType, addToBlocklist, deleted_downloads, removeFromClient)
         # Exit Logs
         if settingsDict['LOG_LEVEL'] == 'DEBUG':
