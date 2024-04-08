@@ -29,9 +29,11 @@ async def remove_no_format_upgrade(settingsDict, BASE_URL, API_KEY, NAME, delete
 
         affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = True, 
-                                            doPrivateTrackerCheck = True, 
+                                            doPrivateTrackerCheck = False, 
                                             doProtectedDownloadCheck = True, 
-                                            doPermittedAttemptsCheck = True)
+                                            doPermittedAttemptsCheck = False,
+                                            extraParameters = ['keepTorrentForPrivateTrackers']
+                                            )
         return len(affectedItems)
     except Exception as error:
         errorDetails(NAME, error)

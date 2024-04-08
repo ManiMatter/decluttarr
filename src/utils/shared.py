@@ -56,7 +56,7 @@ def protectedDownloadCheck(settingsDict, affectedItems, failType, protectedDownl
     return affectedItems
 
 
-async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck):
+async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck, extraParameters = []):
     # Goes over the affected items and performs the checks that are parametrized
     try:
         # De-duplicates the affected items (one downloadid may be shared by multiple affected items)
@@ -74,9 +74,16 @@ async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KE
         # Checks if failing more often than permitted 
         if doPermittedAttemptsCheck:
             affectedItems = permittedAttemptsCheck(settingsDict, affectedItems, failType, BASE_URL, defective_tracker)
+            
+        # Checks whether when removing the queue item from the *arr app the torrent should be kept
+        removeFromClient = True
+        if 'keepTorrentForPrivateTrackers' in extraParameters:
+            if settingsDict['IGNORE_PRIVATE_TRACKERS'] and affectedItem['downloadId'] in privateDowloadIDs:
+                removeFromClient = False
+
         # Deletes all downloads that have not survived the checks
         for affectedItem in affectedItems:
-            await remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failType, addToBlocklist, deleted_downloads)
+            await remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failType, addToBlocklist, deleted_downloads, removeFromClient)
         # Exit Logs
         if settingsDict['LOG_LEVEL'] == 'DEBUG':
             queue = await get_queue(BASE_URL, API_KEY)      
@@ -123,18 +130,20 @@ def permittedAttemptsCheck(settingsDict, affectedItems, failType, BASE_URL, defe
     logger.debug('permittedAttemptsCheck/defective_tracker.dict OUT: %s', str(defective_tracker.dict))
     return affectedItems
 
-async def remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failType, addToBlocklist, deleted_downloads):
+async def remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failType, addToBlocklist, deleted_downloads, removeFromClient):
     # Removes downloads and creates log entry
     logger.debug('remove_download/deleted_downloads.dict IN: %s', str(deleted_downloads.dict)) 
     if affectedItem['downloadId'] not in deleted_downloads.dict:
-        logger.info('>>> Removing %s download: %s', failType, affectedItem['title'])
+        if removeFromClient:
+            logger.info('>>> Removing %s download: %s', failType, affectedItem['title'])
+        else:
+            logger.info('>>> Removing %s download (without removing torrent): %s', failType, affectedItem['title'])            
         if not settingsDict['TEST_RUN']: 
-            await rest_delete(f'{BASE_URL}/queue/{affectedItem["id"]}', API_KEY, {'removeFromClient': True, 'blocklist': addToBlocklist}) 
+            await rest_delete(f'{BASE_URL}/queue/{affectedItem["id"]}', API_KEY, {'removeFromClient': removeFromClient, 'blocklist': addToBlocklist}) 
         deleted_downloads.dict.append(affectedItem['downloadId'])   
     
     logger.debug('remove_download/deleted_downloads.dict OUT: %s', str(deleted_downloads.dict)) 
     return
-
 
 def errorDetails(NAME, error):
     exc_type, exc_obj, exc_tb = sys.exc_info()

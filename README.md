@@ -167,6 +167,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Steers whether downloads that failed importing since they are not a format upgrade are removed from the queue
 - This occurs when a better version is already present
 - These downloads are added to the blocklist
+- If the setting IGNORE_PRIVATE_TRACKERS is true, and the affected torrent is a private tracker, the queue item will still be removed, but the torrent files will be kept
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -228,7 +229,7 @@ Steers which type of cleaning is applied to the downloads queue
 **IGNORE_PRIVATE_TRACKERS**
 - Private torrents in qBittorrent will not be removed from the queue if this is set to true
 - Only works if qBittorrent is used (does not work with transmission etc.)
-- Applies to all types of removal (ie. nothing will be removed automatically by decluttarr)
+- Applies to all types of removal (ie. nothing will be removed automatically by decluttarr); only exception to this is REMOVE_NO_FORMAT_UPGRADE, where for private trackers the queue item is removed (but the torrent files are kept)
 - Note: You may want to try "force recheck" to get your stuck torrents manually back up and running
 - Type: Boolean
 - Permissible Values: True, False
