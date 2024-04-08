@@ -23,7 +23,7 @@ async def remove_no_format_upgrade(settingsDict, BASE_URL, API_KEY, NAME, delete
                     and queueItem['trackedDownloadState'] == 'importPending':
                     
                     for status_message in queueItem['statusMessages']:
-                        if any(message.startswith("Not a Custom Format upgrade for existing") for message in status_message.get('messages', [])):
+                        if any(message.startswith("Not a Custom Format upgrade for existing") or message.startswith("Not an upgrade for existing") for message in status_message.get('messages', [])):
                             affectedItems.append(queueItem)
                             break
 
