@@ -77,6 +77,9 @@ async def main(settingsDict):
             if settingsDict['IGNORE_PRIVATE_TRACKERS']:
                 privateDowloadItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settingsDict['QBIT_COOKIE']  )
                 privateDowloadIDs = [str.upper(item['hash']) for item in privateDowloadItems if item.get('is_private', False)]
+        
+        logger.debug('main/protectedDownloadIDs: %s', str(protectedDownloadIDs))
+        logger.debug('main/privateDowloadIDs: %s', str(privateDowloadIDs))    
 
         # Run script for each instance
         for instance in settingsDict['INSTANCES']:

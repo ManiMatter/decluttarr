@@ -58,7 +58,6 @@ def protectedDownloadCheck(settingsDict, affectedItems, failType, protectedDownl
 async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck, extraParameters = []):
     # Goes over the affected items and performs the checks that are parametrized
     try:
-        logger.debug('execute_checks/extraParameters (failType: %s): %s', failType, str(extraParameters))
         # De-duplicates the affected items (one downloadid may be shared by multiple affected items)
         downloadIDs = []
         for affectedItem in reversed(affectedItems):
@@ -67,10 +66,8 @@ async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KE
             else:
                 affectedItems.remove(affectedItem)
         # Skips protected items
-        logger.debug('execute_checks/protectedDownloadIDs (failType: %s): %s', failType, str(protectedDownloadIDs))
         if doPrivateTrackerCheck:
             affectedItems = privateTrackerCheck(settingsDict, affectedItems, failType, privateDowloadIDs)
-        logger.debug('execute_checks/privateDowloadIDs (failType: %s): %s', failType, str(privateDowloadIDs))    
         if doProtectedDownloadCheck:
             affectedItems = protectedDownloadCheck(settingsDict, affectedItems, failType, protectedDownloadIDs)
         # Checks if failing more often than permitted 
