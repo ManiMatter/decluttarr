@@ -79,9 +79,7 @@ async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KE
             # Checks whether when removing the queue item from the *arr app the torrent should be kept
             removeFromClient = True
             if 'keepTorrentForPrivateTrackers' in extraParameters:
-                logger.debug('OK 1')
                 if settingsDict['IGNORE_PRIVATE_TRACKERS'] and affectedItem['downloadId'] in privateDowloadIDs:
-                    logger.debug('OK 2')
                     removeFromClient = False
             # Removes the queue item
             await remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failType, addToBlocklist, deleted_downloads, removeFromClient)
