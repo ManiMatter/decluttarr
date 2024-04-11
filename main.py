@@ -2,7 +2,7 @@
 import asyncio 
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
-
+import json
 ########### Import Functions
 from config.config import settingsDict
 from src.utils.loadScripts import *
@@ -70,17 +70,21 @@ async def main(settingsDict):
         # Cache protected (via Tag) and private torrents 
         protectedDownloadIDs = []
         privateDowloadIDs = []
+        logger.debug('TEST 0')
         if settingsDict['QBITTORRENT_URL']:
             protectedDowloadItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={'tag': settingsDict['NO_STALLED_REMOVAL_QBIT_TAG']}, cookies=settingsDict['QBIT_COOKIE']  )
-            logger.debug('main/protectedDowloadItems: %s', str(protectedDowloadItems))
+            logger.debug('TEST1')
             protectedDownloadIDs = [str.upper(item['hash']) for item in protectedDowloadItems]
             if settingsDict['IGNORE_PRIVATE_TRACKERS']:
+                logger.debug('TEST2')
                 privateDowloadItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settingsDict['QBIT_COOKIE']  )
+                logger.debug('qbit queue:')
+                logger.debug(json.dumps(privateDowloadItems,indent=3))
                 privateDowloadIDs = [str.upper(item['hash']) for item in privateDowloadItems if item.get('is_private', False)]
         
         logger.debug('main/protectedDownloadIDs: %s', str(protectedDownloadIDs))
         logger.debug('main/privateDowloadIDs: %s', str(privateDowloadIDs))    
-
+        exit()
         # Run script for each instance
         for instance in settingsDict['INSTANCES']:
             await queueCleaner(settingsDict, instance, defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs)
