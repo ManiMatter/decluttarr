@@ -19,4 +19,4 @@ jobs:
         run: npm install
 
       - name: Run the script
-        run: node .github/workflows/checkVersions.js
+        run: node checkVersions.js
