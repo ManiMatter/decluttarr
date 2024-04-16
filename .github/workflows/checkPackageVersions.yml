@@ -1,0 +1,25 @@
+name: Check Package Versions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install @octokit/rest rxjs @octokit/plugin-rest-endpoint-methods
+
+      - name: Run script
+        run: node path/to/your/script.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.inputs.package-name }} ${{ github.event.inputs.package-type }}
+        env:
+          GITHUB_API_URL: 'https://api.github.com'
