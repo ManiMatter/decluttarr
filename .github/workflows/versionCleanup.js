@@ -5,14 +5,14 @@ function execute(command) {
   return execSync(command, { encoding: 'utf-8' });
 }
 
-// Get all package versions
-const packageVersions = execute('npm show decluttarr versions');
+// Get all package versions from GitHub Packages registry
+const packageVersions = execute('npm show @ManiMatter/decluttarr versions --registry=https://npm.pkg.github.com');
 
 // Get all tagged versions
 const taggedVersions = execute('git tag').split('\n');
 
 // Get all referenced versions
-const referencedVersions = execute('npm view decluttarr dependencies --json');
+const referencedVersions = execute('npm view @ManiMatter/decluttarr dependencies --json --registry=https://npm.pkg.github.com');
 
 // Logic to find untagged and unreferenced versions
 const untaggedAndUnreferencedVersions = packageVersions.filter(version => {
