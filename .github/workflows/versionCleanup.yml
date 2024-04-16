@@ -19,4 +19,4 @@ jobs:
         run: npm install
 
       - name: Run the script
-        run: node checkVersions.js
+        run: node .github/workflows/versionCleanup.js
