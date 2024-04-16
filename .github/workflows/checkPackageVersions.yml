@@ -1,19 +1,10 @@
-name: Check Package Versions
+name: Fetch Package Versions
 
 on:
   workflow_dispatch:
-    inputs:
-      package-name:
-        description: 'Package Name'
-        required: true
-        default: 'decluttarr'
-      package-type:
-        description: 'Package Type'
-        required: true
-        default: 'container'
 
 jobs:
-  execute-script:
+  fetch-versions:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,14 +17,41 @@ jobs:
           node-version: '14'
 
       - name: Install dependencies
-        run: npm install @octokit/rest rxjs @octokit/plugin-rest-endpoint-methods typescript
-
-      - name: Compile TypeScript
-        run: npx tsc .github/workflows/get-versions.ts
+        run: npm install @octokit/rest rxjs @octokit/plugin-rest-endpoint-methods
 
       - name: Run script
-        run: node .github/workflows/get-versions.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.inputs.package-name }} ${{ github.event.inputs.package-type }}
+        run: |
+          node -e "
+            const { Octokit } = require('@octokit/rest');
+            const { from, throwError } = require('rxjs');
+            const { catchError, map } = require('rxjs/operators');
+
+            const octokit = new Octokit();
+
+            const owner = 'YOUR_GITHUB_USERNAME';
+            const packageName = 'decluttarr';
+            const packageType = 'container';
+            const numVersions = 10; // Number of versions to fetch
+            const page = 1; // Page number
+            const token = process.env.GITHUB_TOKEN;
+
+            const packageVersions$ = from(
+              octokit.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
+                package_type: packageType,
+                package_name: packageName,
+                username: owner,
+                per_page: numVersions,
+                page
+              })
+            ).pipe(
+              catchError(err => throwError('Failed to fetch package versions: ' + err.message)),
+              map(response => response.data)
+            );
+
+            packageVersions$.subscribe(
+              resp => console.log('Response:', resp),
+              error => console.error('Error:', error)
+            );
+          "
         env:
-          GITHUB_API_URL: 'https://api.github.com'
-          PACKAGE_NAME: ${{ github.event.inputs.package-name }}
-          PACKAGE_TYPE: ${{ github.event.inputs.package-type }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
