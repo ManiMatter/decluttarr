@@ -28,7 +28,7 @@ You can find a sample docker-compose.yml in the docker folder.
 - qBittorrent is recommended but not required. If you don't use qBittorrent, you will experience the following limitations:
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
-  - The feature that ignores private trackers does not work ()
+  - The feature that ignores private trackers does not work
 - If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
@@ -287,6 +287,7 @@ Defines readarr instance on which download queue should be decluttered
 
 ### **qBittorrent section**
 Defines settings to connect with qBittorrent
+If a different torrent manager is used, comment out this section (see above the limitations in functionality that arises from this)
 
 **QBITTORRENT_URL**
 - URL under which the instance can be reached
