@@ -2,6 +2,15 @@ name: Check Package Versions
 
 on:
   workflow_dispatch:
+    inputs:
+      package-name:
+        description: 'Package Name'
+        required: true
+        default: 'decluttarr'
+      package-type:
+        description: 'Package Type'
+        required: true
+        default: 'container'
 
 jobs:
   execute-script:
@@ -26,3 +35,5 @@ jobs:
         run: node .github/workflows/get-versions.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.inputs.package-name }} ${{ github.event.inputs.package-type }}
         env:
           GITHUB_API_URL: 'https://api.github.com'
+          PACKAGE_NAME: ${{ github.event.inputs.package-name }}
+          PACKAGE_TYPE: ${{ github.event.inputs.package-type }}
