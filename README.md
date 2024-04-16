@@ -18,6 +18,7 @@ Feature overview:
 - Automatically delete stalled downloads, after they have been found to be stalled multiple times in a row (& trigger download from another source)
 - Automatically delete slow downloads, after they have been found to be slow multiple times in a row (& trigger download from another source)
 - Automatically delete downloads belonging to radarr/sonarr/etc. items that are unmonitored
+- Automatically delete downloads that failed importing since they are not a format upgrade (i.e. a better version is already present)
 
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
@@ -27,7 +28,7 @@ You can find a sample docker-compose.yml in the docker folder.
 - qBittorrent is recommended but not required. If you don't use qBittorrent, you will experience the following limitations:
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
-  - The feature that ignores private trackers does not work ()
+  - The feature that ignores private trackers does not work
 - If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
@@ -63,6 +64,7 @@ services:
       - REMOVE_FAILED=True
       - REMOVE_METADATA_MISSING=True
       - REMOVE_MISSING_FILES=True     
+      - REMOVE_NO_FORMAT_UPGRADE=True
       - REMOVE_ORPHANS=True
       - REMOVE_SLOW=True
       - REMOVE_STALLED=True
@@ -146,17 +148,26 @@ Steers which type of cleaning is applied to the downloads queue
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
-**REMOVE_STALLED**
-- Steers whether stalled downloads with no connections are removed from the queue
-- These downloads are added to the blocklist, so that they are not re-requested in the future
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
 **REMOVE_METADATA_MISSING**
 - Steers whether downloads stuck obtaining metadata are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested
 - A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_MISSING_FILES**
+- Steers whether downloads that have the warning "Files Missing" are removed from the queue
+- These downloads are not added to the blocklist
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_NO_FORMAT_UPGRADE**
+- Steers whether downloads that failed importing since they are not a format upgrade are removed from the queue
+- This occurs when a better version is already present
+- These downloads are added to the blocklist
+- If the setting IGNORE_PRIVATE_TRACKERS is true, and the affected torrent is a private tracker, the queue item will still be removed, but the torrent files will be kept
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -169,25 +180,25 @@ Steers which type of cleaning is applied to the downloads queue
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**REMOVE_SLOW**
+- Steers whether slow downloads are removed from the queue
+- Slow downloads are added to the blocklist, so that they are not re-requested in the future
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_STALLED**
+- Steers whether stalled downloads with no connections are removed from the queue
+- These downloads are added to the blocklist, so that they are not re-requested in the future
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
 **REMOVE_UNMONITORED**
 - Steers whether downloads belonging to unmonitored media are removed from the queue
 - Note: Will only remove from queue if all TV shows depending on the same download are unmonitored
 - These downloads are not added to the blocklist
 - Note: Since sonarr does not support multi-season packs, if you download one you should protect it with `NO_STALLED_REMOVAL_QBIT_TAG` that is explained further down
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
-**REMOVE_MISSING_FILES**
-- Steers whether downloads that have the warning "Files Missing" are removed from the queue
-- These downloads are not added to the blocklist
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
-**REMOVE_SLOW**
-- Steers whether slow downloads are removed from the queue
-- Slow downloads are added to the blocklist, so that they are not re-requested in the future
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -218,7 +229,7 @@ Steers which type of cleaning is applied to the downloads queue
 **IGNORE_PRIVATE_TRACKERS**
 - Private torrents in qBittorrent will not be removed from the queue if this is set to true
 - Only works if qBittorrent is used (does not work with transmission etc.)
-- Applies to all types of removal (ie. nothing will be removed automatically by decluttarr)
+- Applies to all types of removal (ie. nothing will be removed automatically by decluttarr); only exception to this is REMOVE_NO_FORMAT_UPGRADE, where for private trackers the queue item is removed (but the torrent files are kept)
 - Note: You may want to try "force recheck" to get your stuck torrents manually back up and running
 - Type: Boolean
 - Permissible Values: True, False
@@ -276,6 +287,7 @@ Defines readarr instance on which download queue should be decluttered
 
 ### **qBittorrent section**
 Defines settings to connect with qBittorrent
+If a different torrent manager is used, comment out this section (see above the limitations in functionality that arises from this)
 
 **QBITTORRENT_URL**
 - URL under which the instance can be reached
