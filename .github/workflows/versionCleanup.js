@@ -6,13 +6,13 @@ function execute(command) {
 }
 
 // Get all package versions
-const packageVersions = execute('npm show <your-package-name> versions');
+const packageVersions = execute('npm show decluttarr versions');
 
 // Get all tagged versions
 const taggedVersions = execute('git tag').split('\n');
 
 // Get all referenced versions
-const referencedVersions = execute('npm view <your-package-name> dependencies --json');
+const referencedVersions = execute('npm view decluttarr dependencies --json');
 
 // Logic to find untagged and unreferenced versions
 const untaggedAndUnreferencedVersions = packageVersions.filter(version => {
