@@ -7,7 +7,6 @@ on:
       - '**/*'
       - '!README.md'  
       - '!CONTRIBUTE.md'  
-      - 'versionCleanup.js'
   workflow_dispatch:
 
 jobs:
@@ -74,11 +73,3 @@ jobs:
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             --push \
    
-  #  "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
-
-      # - name: "Delete untagged versions"
-      #   uses: actions/delete-package-versions@v4
-      #   with: 
-      #     package-name: 'decluttarr'
-      #     package-type: 'container'
-      #     delete-only-untagged-versions: 'true'
