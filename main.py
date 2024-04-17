@@ -51,7 +51,7 @@ async def getProtectedAndPrivateFromQbit(settingsDict):
     logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "tags": item["tags"], "is_private": item.get("is_private", None)} for item in qbitItems]))
     logger.debug('main/getProtectedAndPrivateFromQbit/protectedDownloadIDs: %s', str(protectedDownloadIDs))
     logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))   
-    exit()
+
     return protectedDownloadIDs, privateDowloadIDs
         
 # Main function
