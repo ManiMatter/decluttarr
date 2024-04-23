@@ -51,9 +51,9 @@ async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes
     if not full_queue: 
         logger.verbose('>>> Queue is empty.')
         return
-    else:
-        logger.debug('queueCleaner/full_queue at start:')
-        logger.debug(full_queue)        
+    # else:
+    #     logger.debug('queueCleaner/full_queue at start:')
+    #     logger.debug(full_queue)        
         
     deleted_downloads = Deleted_Downloads([])
     items_detected = 0

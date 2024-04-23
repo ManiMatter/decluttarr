@@ -9,9 +9,9 @@ async def remove_orphans(settingsDict, BASE_URL, API_KEY, NAME, deleted_download
         failType = 'orphan'
         full_queue = await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})
         queue = await get_queue(BASE_URL, API_KEY) 
-        logger.debug('remove_orphans/full queue IN: %s', str(full_queue)) 
+        logger.debug('remove_orphans/full queue IN: %s', formattedQueueInfo(full_queue)) 
         if not full_queue: return 0 # By now the queue may be empty 
-        logger.debug('remove_orphans/queue IN: %s', str(queue))
+        logger.debug('remove_orphans/queue IN: %s', formattedQueueInfo(queue))
 
         # Find items affected
         # 1. create a list of the "known" queue items
@@ -27,7 +27,7 @@ async def remove_orphans(settingsDict, BASE_URL, API_KEY, NAME, deleted_download
                                             doPrivateTrackerCheck = True, 
                                             doProtectedDownloadCheck = True, 
                                             doPermittedAttemptsCheck = False)
-        logger.debug('remove_orphans/full queue OUT: %s', str(await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})))
+        logger.debug('remove_orphans/full queue OUT: %s', formattedQueueInfo(await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})))
         return len(affectedItems)
     except Exception as error:
         errorDetails(NAME, error)
