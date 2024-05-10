@@ -14,9 +14,9 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
         affectedItems = []
         alreadyCheckedDownloadIDs = []
         for queueItem in queue['records']:
-            if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
-                #  either size left isn't 0 OR it is 0 and so is size (a torrent/download that never started)
-                if queueItem['downloadId'] not in alreadyCheckedDownloadIDs and (queueItem['sizeleft'] != 0 or queueItem['size'] == 0):
+            if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem and 'protocol' in queueItem:
+                #  either size left isn't 0 OR it is 0 and so issize (a torrent/download that never started)
+                if queueItem['downloadId'] not in alreadyCheckedDownloadIDs and queueItem['protocol'] == 'torrent':
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
                     # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
                     downloadedSize, previousSize, increment, speed = await getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME)
