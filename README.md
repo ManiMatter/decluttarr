@@ -191,6 +191,7 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_STALLED**
 - Steers whether stalled downloads with no connections are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested in the future
+- Important: This only works with qbit
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
