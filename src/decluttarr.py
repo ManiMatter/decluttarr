@@ -18,6 +18,12 @@ class Deleted_Downloads:
 
 
 async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs):
+    try:
+        response = requests.get("http://www.google.com")
+        logger.verbose("Internet is working")
+    except requests.ConnectionError:
+        logger.verbose("No internet connection, skipping %s", arr_type)
+        return
     # Read out correct instance depending on radarr/sonarr flag
     run_dict = {}
     if arr_type == 'RADARR':
