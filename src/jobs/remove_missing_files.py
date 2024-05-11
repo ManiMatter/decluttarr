@@ -13,11 +13,19 @@ async def remove_missing_files(settingsDict, BASE_URL, API_KEY, NAME, deleted_do
         # Find items affected
         affectedItems = []
         for queueItem in queue['records']: 
-            if 'errorMessage' in queueItem and 'status' in queueItem:
-                if (queueItem['status']        == 'warning' and 
-                    (queueItem['errorMessage']  == 'DownloadClientQbittorrentTorrentStateMissingFiles' or
+            if 'status' in queueItem:
+                # case to check for failed torrents
+                if (queueItem['status'] == 'warning' and 'errorMessage' in queueItem and 
+                    (queueItem['errorMessage'] == 'DownloadClientQbittorrentTorrentStateMissingFiles' or
                     queueItem['errorMessage'] == 'The download is missing files')):
                     affectedItems.append(queueItem)
+                # case to check for failed nzb's/bad files/empty directory
+                if queueItem['status'] == 'completed' and 'statusMessages' in queueItem:
+                    for statusMessage in queueItem['statusMessages']:
+                        if 'messages' in statusMessage:
+                            for message in statusMessage['messages']:
+                                if message.startswith("No files found are eligible for import in"):
+                                    affectedItems.append(queueItem)
         affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = False, 
                                             doPrivateTrackerCheck = True, 
