@@ -17,7 +17,7 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
         if settingsDict['QBITTORRENT_URL']:
             qBitConnectionStatus = await rest_get(settingsDict['QBITTORRENT_URL']+'/sync/maindata', cookies=settingsDict['QBIT_COOKIE'])['server_state']['connection_status']
             if qBitConnectionStatus == 'disconnected':
-                logger.warning('>>> qBittorrent is disconnected. Skipping %s queue cleaning failed on %s.',failType)
+                logger.warning('>>> qBittorrent is disconnected. Skipping %s queue cleaning failed on %s.',failType, NAME)
                 return 0
 
         for queueItem in queue['records']:
