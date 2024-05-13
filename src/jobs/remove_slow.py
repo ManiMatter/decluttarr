@@ -1,6 +1,7 @@
 from src.utils.shared import (errorDetails, formattedQueueInfo, get_queue, privateTrackerCheck, protectedDownloadCheck, execute_checks, permittedAttemptsCheck, remove_download)
 import sys, os, traceback
 import logging, verboselogs
+from src.utils.rest import (rest_get)
 logger = verboselogs.VerboseLogger(__name__)
 
 async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, download_sizes_tracker):
@@ -45,7 +46,6 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
         errorDetails(NAME, error)
         return 0
 
-from src.utils.rest import (rest_get)
 async def getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME):
     try:
         # Determines the speed of download
