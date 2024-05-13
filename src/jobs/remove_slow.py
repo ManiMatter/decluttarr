@@ -28,7 +28,7 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                     if queueItem['protocol'] == 'usenet': # No need to check for speed for usenet, since there users pay for speed
                         continue
                     if queueItem['sizeleft'] == 0: # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
-                        logger.debug('remove_slow/skipping completed item marked as downloading (most likely moving): %s', queueItem['title'])    
+                        logger.info('>>> Detected %s download that has completed downloading - skipping from %s  (likely moving): %s',failType, failType, queueItem['title'])    
                         continue
                     # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
                     downloadedSize, previousSize, increment, speed = await getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME)
