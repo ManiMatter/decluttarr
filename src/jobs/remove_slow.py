@@ -24,6 +24,8 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
             if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
+                    if queueItem['usenet']: # No need to check for speed for usenet, since there users pay for speed
+                        continue
                     if queueItem['sizeleft'] == 0: # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
                         logger.debug('remove_slow/skipping completed item marked as downloading: %s (Speed: %d KB/s, KB now: %s, KB previous: %s, Diff: %s, In Minutes: %s', \
                             queueItem['title'], speed, downloadedSize, previousSize, increment, settingsDict['REMOVE_TIMER'])    
