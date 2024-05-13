@@ -184,6 +184,7 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_SLOW**
 - Steers whether slow downloads are removed from the queue
 - Slow downloads are added to the blocklist, so that they are not re-requested in the future
+- Note: Does not apply to usenet downloads (since there users pay for certain speed, slowness should not occurr)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
