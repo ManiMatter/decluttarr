@@ -89,7 +89,7 @@ async def instanceChecks(settingsDict):
                         logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
                         logger.error('Please update %s to at least version %s. Current version: %s',  settingsDict[instance + 'MIN_VERSION'],current_version)
             if not error_occured:
-                logger.info('OK  | %s', settingsDict[instance + '_NAME'])     
+                logger.info('OK | %s', settingsDict[instance + '_NAME'])     
                 logger.debug('Current version of %s: %s', instance, current_version)  
 
     # Check Bittorrent
