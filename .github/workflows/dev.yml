@@ -74,7 +74,7 @@ jobs:
             --push \
    
       - name: "Clean up docker images"
-        uses: dataaxiom/ghcr-cleanup-action@v1.0.1
+        uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           keep-n-tagged: 10
           exclude-tags: dev
