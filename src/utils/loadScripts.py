@@ -34,6 +34,9 @@ def showSettings(settingsDict):
     logger.info('#' * 50)
     logger.info('Decluttarr - Application Started!')
     logger.info('')      
+    logger.info('Like this app? Thanks for giving it a ⭐️ on GitHub!')      
+    logger.info('https://github.com/ManiMatter/decluttarr/')   
+    logger.info('')      
     logger.info('*** Current Settings ***') 
     logger.info('Version: %s', settingsDict['IMAGE_TAG']) 
     logger.info('Commit: %s', settingsDict['SHORT_COMMIT_ID'])    
@@ -89,7 +92,7 @@ async def instanceChecks(settingsDict):
                         logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
                         logger.error('Please update %s to at least version %s. Current version: %s',  settingsDict[instance + 'MIN_VERSION'],current_version)
             if not error_occured:
-                logger.info('OK  | %s', settingsDict[instance + '_NAME'])     
+                logger.info('OK | %s', settingsDict[instance + '_NAME'])     
                 logger.debug('Current version of %s: %s', instance, current_version)  
 
     # Check Bittorrent

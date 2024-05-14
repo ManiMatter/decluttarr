@@ -1,6 +1,7 @@
 from src.utils.shared import (errorDetails, formattedQueueInfo, get_queue, privateTrackerCheck, protectedDownloadCheck, execute_checks, permittedAttemptsCheck, remove_download)
 import sys, os, traceback
 import logging, verboselogs
+from src.utils.rest import (rest_get)
 logger = verboselogs.VerboseLogger(__name__)
 
 async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, download_sizes_tracker):
@@ -13,19 +14,30 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
         # Find items affected
         affectedItems = []
         alreadyCheckedDownloadIDs = []
+
+        if settingsDict['QBITTORRENT_URL']:
+            qBitConnectionStatus = (await rest_get(settingsDict['QBITTORRENT_URL']+'/sync/maindata', cookies=settingsDict['QBIT_COOKIE']))['server_state']['connection_status']
+            if qBitConnectionStatus == 'disconnected':
+                logger.warning('>>> qBittorrent is disconnected. Skipping %s queue cleaning failed on %s.',failType, NAME)
+                return 0
+
         for queueItem in queue['records']:
             if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
-                    # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
-                    downloadedSize, previousSize, increment, speed = await getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME)
-                    if  queueItem['status'] == 'downloading' and \
-                        queueItem['downloadId'] in download_sizes_tracker.dict and \
-                        speed is not None:
-                        if speed < settingsDict['MIN_DOWNLOAD_SPEED']:
-                            affectedItems.append(queueItem)
-                            logger.debug('remove_slow/slow speed detected: %s (Speed: %d KB/s, KB now: %s, KB previous: %s, Diff: %s, In Minutes: %s', \
-                                queueItem['title'], speed, downloadedSize, previousSize, increment, settingsDict['REMOVE_TIMER'])
+                    if queueItem['protocol'] == 'usenet': # No need to check for speed for usenet, since there users pay for speed
+                        continue
+                    if queueItem['status'] == 'downloading':
+                        if queueItem['sizeleft'] == 0: # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
+                            logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
+                            continue
+                        # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
+                        downloadedSize, previousSize, increment, speed = await getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME)
+                        if queueItem['downloadId'] in download_sizes_tracker.dict and speed is not None:
+                            if speed < settingsDict['MIN_DOWNLOAD_SPEED']:
+                                affectedItems.append(queueItem)
+                                logger.debug('remove_slow/slow speed detected: %s (Speed: %d KB/s, KB now: %s, KB previous: %s, Diff: %s, In Minutes: %s', \
+                                    queueItem['title'], speed, downloadedSize, previousSize, increment, settingsDict['REMOVE_TIMER'])
 
 
         affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
@@ -38,7 +50,6 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
         errorDetails(NAME, error)
         return 0
 
-from src.utils.rest import (rest_get)
 async def getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME):
     try:
         # Determines the speed of download

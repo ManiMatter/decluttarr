@@ -18,8 +18,8 @@ ENV IS_IN_DOCKER 1
 
 WORKDIR /app
 
-COPY . .
+COPY ./docker/requirements.txt ./docker/requirements.txt
 RUN pip install --no-cache-dir -r docker/requirements.txt
-
+COPY . .
 
 CMD ["python", "main.py"]
