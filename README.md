@@ -29,7 +29,7 @@ You can find a sample docker-compose.yml in the docker folder.
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
   - The feature that ignores private trackers does not work
-- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
+- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing". On nightly Radarr/Sonarr/Readarr/Lidarr, the option is located under settings/indexers in the advanced options of each indexer, on Prowlarr it is under settings/apps and then the advanced settings of the respective app 
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
 - If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
@@ -95,7 +95,7 @@ services:
 Note: Always pull the "**latest**" version. The "dev" version is for testing only, and should only be pulled when contributing code or supporting with bug fixes
 
 ### Method 2: Running manually
-1) Clone the repository with `git clone https://github.com/ManiMatter/decluttarr.git`
+1) Clone the repository with `git clone -b main https://github.com/ManiMatter/decluttarr.git`
 2) Rename the `config.conf-Example` inside the config folder to `config.conf`
 3) Tweak `config.conf` to your needs
 4) Install the libraries listed in the docker/requirements.txt (pip install -r requirements.txt)
