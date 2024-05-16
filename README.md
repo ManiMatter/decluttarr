@@ -1,3 +1,5 @@
+*Like this app? Thanks for giving it a* ⭐️
+
 # **Decluttarr**
 
 ## Table of contents
