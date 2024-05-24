@@ -38,7 +38,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             sys.exit(0)
         else:
             # return default_value
-            print(f'The default value used for [{config_section}]: {key} is "{default_value}"')
+            print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value)})')
             config_value = default_value
 
     else:
