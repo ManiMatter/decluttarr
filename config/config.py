@@ -30,7 +30,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
     if IS_IN_DOCKER:
         config_value = os.environ.get(key)
         if config_value is not None: 
-            print(f'The value retrieved for [{config_section}]: {key} is "{config_value}"')
+            # print(f'The value retrieved for [{config_section}]: {key} is "{config_value}"')
             config_value = config_value
             # return config_value
         elif is_mandatory:
@@ -38,7 +38,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             sys.exit(0)
         else:
             # return default_value
-            print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
+            # print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
             config_value = default_value
 
     else:
@@ -55,7 +55,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             sys.exit(0)
         else:
             # return default_value 
-            print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
+            # print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
             config_value = default_value
 
     # Apply data type
@@ -103,10 +103,8 @@ MIN_DOWNLOAD_SPEED              = get_config_value('MIN_DOWNLOAD_SPEED',        
 PERMITTED_ATTEMPTS              = get_config_value('PERMITTED_ATTEMPTS',            'features',     False,  int,    3)
 NO_STALLED_REMOVAL_QBIT_TAG     = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'features',     False,  str,   'Don\'t Kill')
 IGNORE_PRIVATE_TRACKERS         = get_config_value('IGNORE_PRIVATE_TRACKERS',       'features',     False,  bool,   True)
-FAILED_IMPORT_MESSAGE_PATTERNS  = get_config_value('FAILED_IMPORT_MESSAGE_PATTERNS','features',     False,  list,   [])
-print(FAILED_IMPORT_MESSAGE_PATTERNS)
-print(type(FAILED_IMPORT_MESSAGE_PATTERNS))
-exit()
+FAILED_IMPORT_MESSAGE_PATTERNS  = get_config_value('FAILED_IMPORT_MESSAGE_PATTERNS','features',     False,  list,   '[]')
+
 # Radarr
 RADARR_URL                      = get_config_value('RADARR_URL',                    'radarr',       False,  str)
 RADARR_KEY                      = None if RADARR_URL == None else \
