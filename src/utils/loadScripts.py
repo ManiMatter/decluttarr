@@ -44,7 +44,7 @@ def showSettings(settingsDict):
     logger.info('%s | Removing failed downloads (%s)', str(settingsDict['REMOVE_FAILED']), 'REMOVE_FAILED')
     logger.info('%s | Removing failed imports (%s)', str(settingsDict['REMOVE_FAILED_IMPORTS']), 'REMOVE_FAILED_IMPORTS')
     if settingsDict['REMOVE_FAILED_IMPORTS'] and not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
-        logger.verbose ('> Any imports with a warning flag are considered failed. No message patterns specified (%s).', 'FAILED_IMPORT_MESSAGE_PATTERNS')
+        logger.verbose ('> Any imports with a warning flag are considered failed, as no patterns specified (%s).', 'FAILED_IMPORT_MESSAGE_PATTERNS')
     elif settingsDict['REMOVE_FAILED_IMPORTS'] and settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
         logger.verbose ('> Imports with a warning flag are considered failed if the status message contains any of the following patterns:')
         for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']: 

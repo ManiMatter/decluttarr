@@ -76,7 +76,10 @@ services:
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
       - IGNORE_PRIVATE_TRACKERS=True
-      - FAILED_IMPORT_MESSAGE_PATTERNS  = '["Not a Custom Format upgrade for existing", "Not an upgrade for existing"]'
+      - FAILED_IMPORT_MESSAGE_PATTERNS: '[
+                                            "Not a Custom Format upgrade for existing", 
+                                            "Not an upgrade for existing"
+                                         ]'
       ## Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
@@ -243,11 +246,11 @@ Steers which type of cleaning is applied to the downloads queue
 
 **FAILED_IMPORT_MESSAGE_PATTERNS**
 - Works in together with REMOVE_FAILED_IMPORTS (only relevant if this setting is true)
-- Defines the patterns based on which the tool decides if a import with a warning should be considered failed
-- Queue items are considered failed, if any of the specified patterns is contained in one of the messages of the queue item
-- Note: If left empty, any import with a warning is considered failed
+- Defines the patterns based on which the tool decides if a completed download that has warnings on import should be considered failed
+- Queue items are considered failed if any of the specified patterns is contained in one of the messages of the queue item
+- Note: If left empty (or not specified), any such pending import with warning is considered failed
 - Type: List
-- Suggested values: ["Not a Custom Format upgrade for existing", "Not an upgrade for existing"]
+- Recommended values: ["Not a Custom Format upgrade for existing", "Not an upgrade for existing"]
 - Is Mandatory: No (Defaults to [], which means all messages are failures)
 
 ---
