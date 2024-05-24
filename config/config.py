@@ -30,7 +30,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
     if IS_IN_DOCKER:
         config_value = os.environ.get(key)
         if config_value is not None: 
-            # print(f'The value retrieved for [{config_section}]: {key} is "{config_value}"')
+            print(f'The value retrieved for [{config_section}]: {key} is "{config_value}"')
             config_value = config_value
             # return config_value
         elif is_mandatory:
@@ -38,6 +38,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             sys.exit(0)
         else:
             # return default_value
+            print(f'The default value used for [{config_section}]: {key} is "{config_value}"')
             config_value = default_value
 
     else:
