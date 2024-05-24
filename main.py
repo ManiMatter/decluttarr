@@ -74,9 +74,12 @@ async def main(settingsDict):
     for instance in settingsDict['INSTANCES']:
         settingsDict = await getArrInstanceName(settingsDict, instance)
 
+    # Check outdated
+    upgradeChecks(settingsDict)
+
     # Display current settings when loading script
     showSettings(settingsDict)
-
+    
     # Check Minimum Version and if instances are reachable and retrieve qbit cookie
     settingsDict['RADARR_MIN_VERSION']   = '5.3.6.8608'
     settingsDict['SONARR_MIN_VERSION']   = '4.0.1.1131'
