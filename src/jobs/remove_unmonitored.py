@@ -21,7 +21,9 @@ async def remove_unmonitored(settingsDict, BASE_URL, API_KEY, NAME, deleted_down
             elif arr_type == 'LIDARR': 
                 isMonitored = (await rest_get(f'{BASE_URL}/album/{str(queueItem["albumId"])}', API_KEY))['monitored']       
             elif arr_type == 'READARR': 
-                isMonitored = (await rest_get(f'{BASE_URL}/book/{str(queueItem["bookId"])}', API_KEY))['monitored']                            
+                isMonitored = (await rest_get(f'{BASE_URL}/book/{str(queueItem["bookId"])}', API_KEY))['monitored']    
+            elif arr_type == 'WHISPARR': 
+                isMonitored = (await rest_get(f'{BASE_URL}/episode/{str(queueItem["episodeId"])}', API_KEY))['monitored']                         
             if isMonitored:
                 monitoredDownloadIDs.append(queueItem['downloadId'])
 
