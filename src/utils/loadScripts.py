@@ -41,14 +41,20 @@ def showSettings(settingsDict):
     logger.info('Version: %s', settingsDict['IMAGE_TAG']) 
     logger.info('Commit: %s', settingsDict['SHORT_COMMIT_ID'])    
     logger.info('')       
-    logger.info('%s | Removing failed downloads', str(settingsDict['REMOVE_FAILED']))
-    logger.info('%s | Removing downloads missing metadata', str(settingsDict['REMOVE_METADATA_MISSING'])) 
-    logger.info('%s | Removing downloads missing files', str(settingsDict['REMOVE_MISSING_FILES']))
-    logger.info('%s | Removing downloads that fail on import (no format upgrade)', str(settingsDict['REMOVE_NO_FORMAT_UPGRADE']))
-    logger.info('%s | Removing orphan downloads', str(settingsDict['REMOVE_ORPHANS']))  
-    logger.info('%s | Removing slow downloads', str(settingsDict['REMOVE_SLOW']))
-    logger.info('%s | Removing stalled downloads', str(settingsDict['REMOVE_STALLED']))
-    logger.info('%s | Removing downloads belonging to unmonitored items', str(settingsDict['REMOVE_UNMONITORED'])) 
+    logger.info('%s | Removing failed downloads (%s)', str(settingsDict['REMOVE_FAILED']), 'REMOVE_FAILED')
+    logger.info('%s | Removing failed imports (%s)', str(settingsDict['REMOVE_FAILED_IMPORTS']), 'REMOVE_FAILED_IMPORTS')
+    if settingsDict['REMOVE_FAILED_IMPORTS'] and not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
+        logger.verbose ('Any imports with a warning flag are considered failed. No message patterns specified (%s).', 'FAILED_IMPORT_MESSAGE_PATTERNS')
+    elif settingsDict['REMOVE_FAILED_IMPORTS'] and settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
+        logger.verbose ('Imports with a warning flag are considered failed if the status message contains any of the following patterns:')
+        for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']: 
+            logger.verbose (pattern)
+    logger.info('%s | Removing downloads missing metadata (%s)', str(settingsDict['REMOVE_METADATA_MISSING']), 'REMOVE_METADATA_MISSING') 
+    logger.info('%s | Removing downloads missing files (%s)', str(settingsDict['REMOVE_MISSING_FILES']), 'REMOVE_MISSING_FILES')
+    logger.info('%s | Removing orphan downloads (%s)', str(settingsDict['REMOVE_ORPHANS']), 'REMOVE_ORPHANS')  
+    logger.info('%s | Removing slow downloads (%s)', str(settingsDict['REMOVE_SLOW']), 'REMOVE_SLOW')
+    logger.info('%s | Removing stalled downloads (%s)', str(settingsDict['REMOVE_STALLED']), 'REMOVE_STALLED')
+    logger.info('%s | Removing downloads belonging to unmonitored items (%s)', str(settingsDict['REMOVE_UNMONITORED']), 'REMOVE_UNMONITORED') 
     logger.info('')          
     logger.info('Running every: %s', fmt.format(rd(minutes=settingsDict['REMOVE_TIMER'])))  
     if settingsDict['REMOVE_SLOW']: 
