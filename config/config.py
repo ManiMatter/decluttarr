@@ -62,7 +62,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
         if datatype == bool:
             config_value = eval(str(config_value).capitalize())
         elif datatype == list:
-            config_value = json.loads(eval(str(config_value)))
+            config_value = json.loads(config_value)
         elif config_value is not None: 
             config_value = cast(config_value, datatype)
     except:
@@ -102,7 +102,9 @@ PERMITTED_ATTEMPTS              = get_config_value('PERMITTED_ATTEMPTS',        
 NO_STALLED_REMOVAL_QBIT_TAG     = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'features',     False,  str,   'Don\'t Kill')
 IGNORE_PRIVATE_TRACKERS         = get_config_value('IGNORE_PRIVATE_TRACKERS',       'features',     False,  bool,   True)
 FAILED_IMPORT_MESSAGE_PATTERNS  = get_config_value('FAILED_IMPORT_MESSAGE_PATTERNS','features',     False,  list,   [])
-
+print(FAILED_IMPORT_MESSAGE_PATTERNS)
+print(type(FAILED_IMPORT_MESSAGE_PATTERNS))
+exit()
 # Radarr
 RADARR_URL                      = get_config_value('RADARR_URL',                    'radarr',       False,  str)
 RADARR_KEY                      = None if RADARR_URL == None else \
