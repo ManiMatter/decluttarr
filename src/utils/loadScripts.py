@@ -78,9 +78,13 @@ def showSettings(settingsDict):
 
 def upgradeChecks(settingsDict):
     if settingsDict['REMOVE_NO_FORMAT_UPGRADE']:
-        logger.warn('#' * 16 + 'OUTDATED SETTINGS' + '#' * 16 )
-        logger.warn("%s was replaced with %s. Please check the ReadMe and update your settings.", 'REMOVE_NO_FORMAT_UPGRADE', 'REMOVE_FAILED_IMPORTS')
-        logger.warn('#' * 50)
+        logger.warn('❗️' * 10 + ' OUTDATED SETTINGS ' + '❗️' * 10 )
+        logger.warn('')        
+        logger.warn("❗️ %s was replaced with %s.", 'REMOVE_NO_FORMAT_UPGRADE', 'REMOVE_FAILED_IMPORTS')
+        logger.warn("❗️ Please check the ReadMe and update your settings.")
+        logger.warn('')
+        logger.warn('❗️' * 29)
+        logger.warn('')
     return
 
 async def instanceChecks(settingsDict):
