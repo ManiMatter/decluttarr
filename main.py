@@ -4,7 +4,7 @@ import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 import json
 # Import Functions
-from config.config import settingsDict
+from config.definitions import settingsDict
 from src.utils.loadScripts import *
 from src.decluttarr import queueCleaner
 from src.utils.rest import rest_get, rest_post 

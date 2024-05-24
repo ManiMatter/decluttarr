@@ -4,7 +4,7 @@ import asyncio
 import requests
 from requests.exceptions import RequestException
 import json
-from config.config import settingsDict
+from config.definitions import settingsDict
 
 # GET
 async def rest_get(url, api_key=None, params=None, cookies=None):
