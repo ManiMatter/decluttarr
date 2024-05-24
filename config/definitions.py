@@ -22,7 +22,7 @@ MIN_DOWNLOAD_SPEED              = get_config_value('MIN_DOWNLOAD_SPEED',        
 PERMITTED_ATTEMPTS              = get_config_value('PERMITTED_ATTEMPTS',            'features',     False,  int,    3)
 NO_STALLED_REMOVAL_QBIT_TAG     = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'features',     False,  str,   'Don\'t Kill')
 IGNORE_PRIVATE_TRACKERS         = get_config_value('IGNORE_PRIVATE_TRACKERS',       'features',     False,  bool,   True)
-FAILED_IMPORT_MESSAGE_PATTERNS  = get_config_value('FAILED_IMPORT_MESSAGE_PATTERNS','features',     False,  list,   '[]')
+FAILED_IMPORT_MESSAGE_PATTERNS  = get_config_value('FAILED_IMPORT_MESSAGE_PATTERNS','features',     False,  list,   [])
 
 # Radarr
 RADARR_URL                      = get_config_value('RADARR_URL',                    'radarr',       False,  str)

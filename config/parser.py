@@ -67,7 +67,8 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
         if datatype == bool:
             config_value = eval(str(config_value).capitalize())
         elif datatype == list:
-            config_value = json.loads(config_value)
+            if type(config_value) != list: # Default value is already a list, doesn't need to be pushed through json.loads
+                config_value = json.loads(config_value)
         elif config_value is not None: 
             config_value = cast(config_value, datatype)
     except Exception as e: 
