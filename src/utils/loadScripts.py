@@ -44,11 +44,11 @@ def showSettings(settingsDict):
     logger.info('%s | Removing failed downloads (%s)', str(settingsDict['REMOVE_FAILED']), 'REMOVE_FAILED')
     logger.info('%s | Removing failed imports (%s)', str(settingsDict['REMOVE_FAILED_IMPORTS']), 'REMOVE_FAILED_IMPORTS')
     if settingsDict['REMOVE_FAILED_IMPORTS'] and not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
-        logger.verbose ('Any imports with a warning flag are considered failed. No message patterns specified (%s).', 'FAILED_IMPORT_MESSAGE_PATTERNS')
+        logger.verbose ('> Any imports with a warning flag are considered failed. No message patterns specified (%s).', 'FAILED_IMPORT_MESSAGE_PATTERNS')
     elif settingsDict['REMOVE_FAILED_IMPORTS'] and settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
-        logger.verbose ('Imports with a warning flag are considered failed if the status message contains any of the following patterns:')
+        logger.verbose ('> Imports with a warning flag are considered failed if the status message contains any of the following patterns:')
         for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']: 
-            logger.verbose (pattern)
+            logger.verbose('  - "%s"', pattern)
     logger.info('%s | Removing downloads missing metadata (%s)', str(settingsDict['REMOVE_METADATA_MISSING']), 'REMOVE_METADATA_MISSING') 
     logger.info('%s | Removing downloads missing files (%s)', str(settingsDict['REMOVE_MISSING_FILES']), 'REMOVE_MISSING_FILES')
     logger.info('%s | Removing orphan downloads (%s)', str(settingsDict['REMOVE_ORPHANS']), 'REMOVE_ORPHANS')  
@@ -76,6 +76,12 @@ def showSettings(settingsDict):
     logger.info('') 
     return   
 
+def upgradeChecks(settingsDict):
+    if settingsDict['REMOVE_NO_FORMAT_UPGRADE']:
+        logger.warn('#' * 16 + 'OUTDATED SETTINGS' + '#' * 16 )
+        logger.warn("%s was replaced with %s. Please check the ReadMe and update your settings.", 'REMOVE_NO_FORMAT_UPGRADE', 'REMOVE_FAILED_IMPORTS')
+        logger.warn('#' * 50)
+    return
 
 async def instanceChecks(settingsDict):
     # Checks if the arr and qbit instances are reachable, and returns the settings dictionary with the qbit cookie 

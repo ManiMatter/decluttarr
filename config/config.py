@@ -2,7 +2,7 @@
 import sys
 import os
 import configparser
-
+import json
 ########################################################################################################################
 # Check if in Docker
 IS_IN_DOCKER = os.environ.get('IS_IN_DOCKER')
@@ -61,7 +61,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
         if datatype == bool:
             config_value = eval(str(config_value).capitalize())
         elif datatype == list:
-            config_value = config_value
+            config_value = json.loads(config_value)
         elif config_value is not None: 
             config_value = cast(config_value, datatype)
     except:
@@ -91,6 +91,7 @@ REMOVE_FAILED                   = get_config_value('REMOVE_FAILED',             
 REMOVE_FAILED_IMPORTS           = get_config_value('REMOVE_FAILED_IMPORTS' ,        'features',     False,  bool,   False)
 REMOVE_METADATA_MISSING         = get_config_value('REMOVE_METADATA_MISSING',       'features',     False,  bool,   False)
 REMOVE_MISSING_FILES            = get_config_value('REMOVE_MISSING_FILES' ,         'features',     False,  bool,   False)
+REMOVE_NO_FORMAT_UPGRADE        = get_config_value('REMOVE_NO_FORMAT_UPGRADE' ,     'features',     False,  bool,   False) # OUTDATED - WILL RETURN WARNING
 REMOVE_ORPHANS                  = get_config_value('REMOVE_ORPHANS' ,               'features',     False,  bool,   False)
 REMOVE_SLOW                     = get_config_value('REMOVE_SLOW' ,                  'features',     False,  bool,   False)
 REMOVE_STALLED                  = get_config_value('REMOVE_STALLED',                'features',     False,  bool,   False)
