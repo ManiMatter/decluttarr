@@ -76,7 +76,10 @@ services:
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
       - IGNORE_PRIVATE_TRACKERS=True
-      - FAILED_IMPORT_MESSAGE_PATTERNS  = '["Not a Custom Format upgrade for existing", "Not an upgrade for existing"]'
+      - FAILED_IMPORT_MESSAGE_PATTERNS: '[
+                                            "Not a Custom Format upgrade for existing", 
+                                            "Not an upgrade for existing"
+                                         ]'
       ## Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY

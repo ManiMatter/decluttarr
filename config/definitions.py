@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from config.parser import get_config_value
 from config.env_vars import *
-
 # Define data types and default values for settingsDict variables
 # General   
 LOG_LEVEL                       = get_config_value('LOG_LEVEL',                     'general',      False,  str,    'INFO')
@@ -54,7 +53,7 @@ QBITTORRENT_PASSWORD            = get_config_value('QBITTORRENT_PASSWORD',      
 ########### Validate settings
 if not (RADARR_URL or SONARR_URL or LIDARR_URL or READARR_URL):
     print(f'[ ERROR ]: No Radarr/Sonarr/Lidarr/Readarr URLs specified (nothing to monitor)')
-    sys.exit(0)
+    exit()
 
 ########### Enrich setting variables
 if RADARR_URL:      RADARR_URL      += '/api/v3'
