@@ -73,10 +73,10 @@ jobs:
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             --push \
    
-      - name: "Clean up docker images"
-        uses: dataaxiom/ghcr-cleanup-action@main
-        with:
-          keep-n-tagged: 10
-          exclude-tags: dev
-          dry-run: true
-          token: ${{secrets.GITHUB_TOKEN}}
+      # - name: "Clean up docker images"
+      #   uses: dataaxiom/ghcr-cleanup-action@main
+      #   with:
+      #     keep-n-tagged: 10
+      #     exclude-tags: dev
+      #     dry-run: true
+      #     token: ${{secrets.GITHUB_TOKEN}}
