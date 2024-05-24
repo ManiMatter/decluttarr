@@ -22,8 +22,8 @@ async def remove_failed_imports(settingsDict, BASE_URL, API_KEY, NAME, deleted_d
                     and queueItem['trackedDownloadStatus'] == 'warning' \
                     and queueItem['trackedDownloadState'] == 'importPending':
                     
-                    for status_message in queueItem['statusMessages']:
-                        if not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS'] or any(any(pattern in message for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']) for message in messages):
+                    for statusMessage in queueItem['statusMessages']:
+                        if not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS'] or any(any(pattern in message for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']) for message in statusMessage.get('messages', [])):
                             affectedItems.append(queueItem)
                             break
 
