@@ -38,7 +38,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             sys.exit(0)
         else:
             # return default_value
-            print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value)})')
+            print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
             config_value = default_value
 
     else:
@@ -55,6 +55,7 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             sys.exit(0)
         else:
             # return default_value 
+            print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
             config_value = default_value
 
     # Apply data type
@@ -65,8 +66,9 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value 
             config_value = json.loads(config_value)
         elif config_value is not None: 
             config_value = cast(config_value, datatype)
-    except:
+    except Exception as e: 
         print(f'[ ERROR ]: The value retrieved for [{config_section}]: {key} is "{config_value}" and cannot be converted to data type {datatype}')
+        print(e)
         sys.exit(0)
     return config_value    
 
