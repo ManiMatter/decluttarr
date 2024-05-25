@@ -11,7 +11,7 @@
 - [Disclaimer](#disclaimer)
 
 ## Overview
-Decluttarr keeps the radarr & sonarr & lidarr & readarr queue free of stalled / redundant downloads
+Decluttarr keeps the radarr & sonarr & lidarr & readarr & whisparr queue free of stalled / redundant downloads
 
 Feature overview:
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
@@ -31,9 +31,9 @@ You can find a sample docker-compose.yml in the docker folder.
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
   - The feature that ignores private trackers does not work
-- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing". On nightly Radarr/Sonarr/Readarr/Lidarr, the option is located under settings/indexers in the advanced options of each indexer, on Prowlarr it is under settings/apps and then the advanced settings of the respective app 
+- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing". On nightly Radarr/Sonarr/Readarr/Lidarr/Whisparr, the option is located under settings/indexers in the advanced options of each indexer, on Prowlarr it is under settings/apps and then the advanced settings of the respective app 
 - When broken torrents are removed the files belonging to them are deleted
-- Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
+- Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
 - If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
 - Currently, “*Arr” apps are only supported in English. Refer to issue https://github.com/ManiMatter/decluttarr/issues/92 for more details.
 
@@ -92,6 +92,9 @@ services:
       ## Readarr
       - READARR_URL=http://readarr:8787
       - READARR_KEY=$READARR_API_KEY
+      ## Whisparr
+      - WHISPARR_URL=http://whisparr:6969
+      - WHISPARR_KEY=$WHISPARR_API_KEY
       ## qBittorrent
       - QBITTORRENT_URL=http://qbittorrent:8080
       #- QBITTORRENT_USERNAME=Your name
@@ -115,7 +118,7 @@ Configures the general behavior of the application (across all features)
 
 **LOG_LEVEL**
 - Sets the level at which logging will take place
-- `INFO` will only show changes applied to radarr/sonarr/lidarr/readarr
+- `INFO` will only show changes applied to radarr/sonarr/lidarr/readarr/whisparr
 - `VERBOSE` shows each check being performed even if no change is applied
 - `DEBUG` shows very granular information, only required for debugging
 - Type: String
@@ -150,7 +153,7 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_FAILED**
 - Steers whether failed downloads with no connections are removed from the queue
 - These downloads are not added to the blocklist
-- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
+- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -168,7 +171,7 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_METADATA_MISSING**
 - Steers whether downloads stuck obtaining metadata are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested
-- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
+- A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -182,7 +185,7 @@ Steers which type of cleaning is applied to the downloads queue
 
 **REMOVE_ORPHANS**
 - Steers whether orphan downloads are removed from the queue
-- Orphan downloads are those that do not belong to any requested media anymore (Since the media was removed from radarr/sonarr/lidarr/readarr after the download started)
+- Orphan downloads are those that do not belong to any requested media anymore (Since the media was removed from radarr/sonarr/lidarr/readarr/whisparr after the download started)
 - These downloads are not added to the blocklist
 - Type: Boolean
 - Permissible Values: True, False
@@ -300,6 +303,18 @@ Defines readarr instance on which download queue should be decluttered
 
 **READARR_KEY**
 - Your API key for readarr
+
+---
+
+### **Whisparr section**
+Defines whisparr instance on which download queue should be decluttered
+
+**WHISPARR_URL**
+- URL under which the instance can be reached
+- If not defined, this instance will not be monitored
+
+**WHISPARR_KEY**
+- Your API key for whisparr
 
 ---
 
