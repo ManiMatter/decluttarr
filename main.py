@@ -57,7 +57,7 @@ async def getProtectedAndPrivateFromQbit(settingsDict):
 # Main function
 async def main(settingsDict):
 # Adds to settings Dict the instances that are actually configures
-    arrApplications  = ['RADARR', 'SONARR', 'LIDARR', 'READARR']
+    arrApplications  = ['RADARR', 'SONARR', 'LIDARR', 'READARR', 'WHISPARR']
     settingsDict['INSTANCES'] = []
     for arrApplication in arrApplications:
         if settingsDict[arrApplication + '_URL']:
@@ -85,6 +85,7 @@ async def main(settingsDict):
     settingsDict['SONARR_MIN_VERSION']   = '4.0.1.1131'
     settingsDict['LIDARR_MIN_VERSION']   = None
     settingsDict['READARR_MIN_VERSION']  = None
+    settingsDict['WHISPARR_MIN_VERSION'] = '2.0.0.548'
     settingsDict['QBITTORRENT_MIN_VERSION']  = '4.3.0'
     settingsDict = await instanceChecks(settingsDict)
 

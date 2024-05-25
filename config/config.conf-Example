@@ -34,6 +34,10 @@ LIDARR_KEY                  = $LIDARR_API_KEY
 READARR_URL                  = http://lidarr:8787
 READARR_KEY                  = $READARR_API_KEY
 
+[whisparr]
+WHISPARR_URL                = http://whisparr:6969
+WHISPARR_KEY                = $WHISPARR_API_KEY
+
 [qbittorrent]
 QBITTORRENT_URL             = http://qbittorrent:8080
 QBITTORRENT_USERNAME        = Your name (or empty)
