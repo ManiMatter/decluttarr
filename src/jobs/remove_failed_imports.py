@@ -3,12 +3,12 @@ import sys, os, traceback
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 
-async def remove_no_format_upgrade(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs):
+async def remove_failed_imports(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs):
     # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist   
     try:
-        failType = 'no format upgrade'
+        failType = 'failed import'
         queue = await get_queue(BASE_URL, API_KEY)
-        logger.debug('remove_no_format_upgrade/queue IN: %s', formattedQueueInfo(queue))
+        logger.debug('remove_failed_imports/queue IN: %s', formattedQueueInfo(queue))
         if not queue: return 0
         # Find items affected
         affectedItems = []
@@ -22,8 +22,8 @@ async def remove_no_format_upgrade(settingsDict, BASE_URL, API_KEY, NAME, delete
                     and queueItem['trackedDownloadStatus'] == 'warning' \
                     and queueItem['trackedDownloadState'] == 'importPending':
                     
-                    for status_message in queueItem['statusMessages']:
-                        if any(message.startswith("Not a Custom Format upgrade for existing") or message.startswith("Not an upgrade for existing") for message in status_message.get('messages', [])):
+                    for statusMessage in queueItem['statusMessages']:
+                        if not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS'] or any(any(pattern in message for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']) for message in statusMessage.get('messages', [])):
                             affectedItems.append(queueItem)
                             break
 

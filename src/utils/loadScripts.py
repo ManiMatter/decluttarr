@@ -41,14 +41,20 @@ def showSettings(settingsDict):
     logger.info('Version: %s', settingsDict['IMAGE_TAG']) 
     logger.info('Commit: %s', settingsDict['SHORT_COMMIT_ID'])    
     logger.info('')       
-    logger.info('%s | Removing failed downloads', str(settingsDict['REMOVE_FAILED']))
-    logger.info('%s | Removing downloads missing metadata', str(settingsDict['REMOVE_METADATA_MISSING'])) 
-    logger.info('%s | Removing downloads missing files', str(settingsDict['REMOVE_MISSING_FILES']))
-    logger.info('%s | Removing downloads that fail on import (no format upgrade)', str(settingsDict['REMOVE_NO_FORMAT_UPGRADE']))
-    logger.info('%s | Removing orphan downloads', str(settingsDict['REMOVE_ORPHANS']))  
-    logger.info('%s | Removing slow downloads', str(settingsDict['REMOVE_SLOW']))
-    logger.info('%s | Removing stalled downloads', str(settingsDict['REMOVE_STALLED']))
-    logger.info('%s | Removing downloads belonging to unmonitored items', str(settingsDict['REMOVE_UNMONITORED'])) 
+    logger.info('%s | Removing failed downloads (%s)', str(settingsDict['REMOVE_FAILED']), 'REMOVE_FAILED')
+    logger.info('%s | Removing failed imports (%s)', str(settingsDict['REMOVE_FAILED_IMPORTS']), 'REMOVE_FAILED_IMPORTS')
+    if settingsDict['REMOVE_FAILED_IMPORTS'] and not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
+        logger.verbose ('> Any imports with a warning flag are considered failed, as no patterns specified (%s).', 'FAILED_IMPORT_MESSAGE_PATTERNS')
+    elif settingsDict['REMOVE_FAILED_IMPORTS'] and settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']:
+        logger.verbose ('> Imports with a warning flag are considered failed if the status message contains any of the following patterns:')
+        for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']: 
+            logger.verbose('  - "%s"', pattern)
+    logger.info('%s | Removing downloads missing metadata (%s)', str(settingsDict['REMOVE_METADATA_MISSING']), 'REMOVE_METADATA_MISSING') 
+    logger.info('%s | Removing downloads missing files (%s)', str(settingsDict['REMOVE_MISSING_FILES']), 'REMOVE_MISSING_FILES')
+    logger.info('%s | Removing orphan downloads (%s)', str(settingsDict['REMOVE_ORPHANS']), 'REMOVE_ORPHANS')  
+    logger.info('%s | Removing slow downloads (%s)', str(settingsDict['REMOVE_SLOW']), 'REMOVE_SLOW')
+    logger.info('%s | Removing stalled downloads (%s)', str(settingsDict['REMOVE_STALLED']), 'REMOVE_STALLED')
+    logger.info('%s | Removing downloads belonging to unmonitored items (%s)', str(settingsDict['REMOVE_UNMONITORED']), 'REMOVE_UNMONITORED') 
     logger.info('')          
     logger.info('Running every: %s', fmt.format(rd(minutes=settingsDict['REMOVE_TIMER'])))  
     if settingsDict['REMOVE_SLOW']: 
@@ -70,6 +76,17 @@ def showSettings(settingsDict):
     logger.info('') 
     return   
 
+def upgradeChecks(settingsDict):
+    if settingsDict['REMOVE_NO_FORMAT_UPGRADE']:
+        logger.warn('❗️' * 10 + ' OUTDATED SETTINGS ' + '❗️' * 10 )
+        logger.warn('')        
+        logger.warn("❗️ %s was replaced with %s.", 'REMOVE_NO_FORMAT_UPGRADE', 'REMOVE_FAILED_IMPORTS')        
+        logger.warn("❗️ Please check the ReadMe and update your settings.")
+        logger.warn("❗️ Specifically read the section on %s.", 'FAILED_IMPORT_MESSAGE_PATTERNS')
+        logger.warn('')
+        logger.warn('❗️' * 29)
+        logger.warn('')
+    return
 
 async def instanceChecks(settingsDict):
     # Checks if the arr and qbit instances are reachable, and returns the settings dictionary with the qbit cookie 

@@ -1,3 +1,5 @@
+*Like this app? Thanks for giving it a* ⭐️
+
 # **Decluttarr**
 
 ## Table of contents
@@ -29,7 +31,7 @@ You can find a sample docker-compose.yml in the docker folder.
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
   - The feature that ignores private trackers does not work
-- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing" on indexer-level (available in the nightly versions of the *arr apps)
+- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing". On nightly Radarr/Sonarr/Readarr/Lidarr, the option is located under settings/indexers in the advanced options of each indexer, on Prowlarr it is under settings/apps and then the advanced settings of the respective app 
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr (if available)
 - If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
@@ -63,9 +65,9 @@ services:
       ## Features 
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
+      - REMOVE_FAILED_IMPORTS=True
       - REMOVE_METADATA_MISSING=True
       - REMOVE_MISSING_FILES=True     
-      - REMOVE_NO_FORMAT_UPGRADE=True
       - REMOVE_ORPHANS=True
       - REMOVE_SLOW=True
       - REMOVE_STALLED=True
@@ -74,6 +76,10 @@ services:
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
       - IGNORE_PRIVATE_TRACKERS=True
+      - FAILED_IMPORT_MESSAGE_PATTERNS: '[
+                                            "Not a Custom Format upgrade for existing", 
+                                            "Not an upgrade for existing"
+                                         ]'
       ## Radarr
       - RADARR_URL=http://radarr:7878
       - RADARR_KEY=$RADARR_API_KEY
@@ -95,7 +101,7 @@ services:
 Note: Always pull the "**latest**" version. The "dev" version is for testing only, and should only be pulled when contributing code or supporting with bug fixes
 
 ### Method 2: Running manually
-1) Clone the repository with `git clone https://github.com/ManiMatter/decluttarr.git`
+1) Clone the repository with `git clone -b main https://github.com/ManiMatter/decluttarr.git`
 2) Rename the `config.conf-Example` inside the config folder to `config.conf`
 3) Tweak `config.conf` to your needs
 4) Install the libraries listed in the docker/requirements.txt (pip install -r requirements.txt)
@@ -149,6 +155,16 @@ Steers which type of cleaning is applied to the downloads queue
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
+**REMOVE_FAILED_IMPORTS**
+- Steers whether downloads that failed importing are removed from the queue
+- This can happen, for example, when a better version is already present
+- Note: Only considers an import failed if the import message contains a warning that is listed on FAILED_IMPORT_MESSAGE_PATTERNS (see below)
+- These downloads are added to the blocklist
+- If the setting IGNORE_PRIVATE_TRACKERS is true, and the affected torrent is a private tracker, the queue item will be removed, but the torrent files will be kept
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
 **REMOVE_METADATA_MISSING**
 - Steers whether downloads stuck obtaining metadata are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested
@@ -160,15 +176,6 @@ Steers which type of cleaning is applied to the downloads queue
 **REMOVE_MISSING_FILES**
 - Steers whether downloads that have the warning "Files Missing" are removed from the queue
 - These downloads are not added to the blocklist
-- Type: Boolean
-- Permissible Values: True, False
-- Is Mandatory: No (Defaults to False)
-
-**REMOVE_NO_FORMAT_UPGRADE**
-- Steers whether downloads that failed importing since they are not a format upgrade are removed from the queue
-- This occurs when a better version is already present
-- These downloads are added to the blocklist
-- If the setting IGNORE_PRIVATE_TRACKERS is true, and the affected torrent is a private tracker, the queue item will still be removed, but the torrent files will be kept
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
@@ -236,6 +243,15 @@ Steers which type of cleaning is applied to the downloads queue
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to True)
+
+**FAILED_IMPORT_MESSAGE_PATTERNS**
+- Works in together with REMOVE_FAILED_IMPORTS (only relevant if this setting is true)
+- Defines the patterns based on which the tool decides if a completed download that has warnings on import should be considered failed
+- Queue items are considered failed if any of the specified patterns is contained in one of the messages of the queue item
+- Note: If left empty (or not specified), any such pending import with warning is considered failed
+- Type: List
+- Recommended values: ["Not a Custom Format upgrade for existing", "Not an upgrade for existing"]
+- Is Mandatory: No (Defaults to [], which means all messages are failures)
 
 ---
 

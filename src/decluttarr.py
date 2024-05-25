@@ -3,9 +3,9 @@ import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 from src.utils.shared import (errorDetails, get_queue)
 from src.jobs.remove_failed import remove_failed
+from src.jobs.remove_failed_imports import remove_failed_imports
 from src.jobs.remove_metadata_missing import remove_metadata_missing
 from src.jobs.remove_missing_files import remove_missing_files
-from src.jobs.remove_no_format_upgrade import remove_no_format_upgrade
 from src.jobs.remove_orphans import remove_orphans
 from src.jobs.remove_slow import remove_slow
 from src.jobs.remove_stalled import remove_stalled
@@ -61,14 +61,14 @@ async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes
         if settingsDict['REMOVE_FAILED']:
             items_detected += await remove_failed(            settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
+        if settingsDict['REMOVE_FAILED_IMPORTS']: 
+            items_detected += await remove_failed_imports(    settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
+
         if settingsDict['REMOVE_METADATA_MISSING']: 
             items_detected += await remove_metadata_missing(  settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
         if settingsDict['REMOVE_MISSING_FILES']: 
             items_detected += await remove_missing_files(     settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
-
-        if settingsDict['REMOVE_NO_FORMAT_UPGRADE']: 
-            items_detected += await remove_no_format_upgrade( settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
         if settingsDict['REMOVE_ORPHANS']: 
             items_detected += await remove_orphans(           settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs, full_queue_param)

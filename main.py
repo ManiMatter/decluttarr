@@ -4,7 +4,7 @@ import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 import json
 # Import Functions
-from config.config import settingsDict
+from config.definitions import settingsDict
 from src.utils.loadScripts import *
 from src.decluttarr import queueCleaner
 from src.utils.rest import rest_get, rest_post 
@@ -74,9 +74,12 @@ async def main(settingsDict):
     for instance in settingsDict['INSTANCES']:
         settingsDict = await getArrInstanceName(settingsDict, instance)
 
+    # Check outdated
+    upgradeChecks(settingsDict)
+
     # Display current settings when loading script
     showSettings(settingsDict)
-
+    
     # Check Minimum Version and if instances are reachable and retrieve qbit cookie
     settingsDict['RADARR_MIN_VERSION']   = '5.3.6.8608'
     settingsDict['SONARR_MIN_VERSION']   = '4.0.1.1131'

@@ -40,3 +40,17 @@ Code contributions are very welcome - thanks for helping improve this app!
 4) Please create a PR against the "dev" branch
 5) Once I have reviewed it, I will merge it and it will create teh "dev" image
 6) Please help testing that the dev image works, before we then commit it to the "latest" image (from main branch)
+
+You do not need to know about how to create docker images to contribute here.
+To get started:
+1) Clone the git repository to your local machine
+2) Create a virtual python environment (python3 -m venv venv)
+3) Activate the virtual environment (source venv/bin/activate)
+4) Install python libraries (pip install -r docker/requirements.txt)
+5) Adjust the config/config.conf to your needs
+6) Adjust the code in the files as needed
+7) Run the script (python3 main.py)
+8) Create a PR once you are ready
+
+
+

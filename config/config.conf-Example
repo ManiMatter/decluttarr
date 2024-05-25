@@ -5,9 +5,9 @@ TEST_RUN        = True
 [features]
 REMOVE_TIMER                = 10
 REMOVE_FAILED               = True
+REMOVE_FAILED_IMPORTS       = True
 REMOVE_METADATA_MISSING     = True
 REMOVE_MISSING_FILES        = True
-REMOVE_NO_FORMAT_UPGRADE    = True
 REMOVE_ORPHANS              = True
 REMOVE_SLOW                 = True
 REMOVE_STALLED              = True
@@ -16,6 +16,7 @@ MIN_DOWNLOAD_SPEED          = 100
 PERMITTED_ATTEMPTS          = 3
 NO_STALLED_REMOVAL_QBIT_TAG = Don't Kill
 IGNORE_PRIVATE_TRACKERS     = FALSE
+FAILED_IMPORT_MESSAGE_PATTERNS  = ["Not a Custom Format upgrade for existing", "Not an upgrade for existing"]
 
 [radarr]
 RADARR_URL                  = http://radarr:7878
