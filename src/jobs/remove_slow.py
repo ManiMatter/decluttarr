@@ -22,15 +22,20 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                 return 0
 
         for queueItem in queue['records']:
-            if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
+            if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem and 'total_size' in queueItem:
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
                     alreadyCheckedDownloadIDs.append(queueItem['downloadId']) # One downloadId may occur in multiple queueItems - only check once for all of them per iteration
                     if queueItem['protocol'] == 'usenet': # No need to check for speed for usenet, since there users pay for speed
                         continue
                     if queueItem['status'] == 'downloading':
                         if queueItem['sizeleft'] == 0: # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
-                            logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
-                            continue
+
+                            ## If the File is stuck on "downloading metadata" -- e.g. a magnet link, resolving to a torrent. This may also be true
+                            ## However, for that case the sizeLeft == 0, and the total_size == -1 (since it doesn't exist yet)
+                            if queueItem['total_size'] >= 0:
+                                # If the total_size exists, then we know it was downloaded.
+                                logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
+                                continue
                         # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
                         downloadedSize, previousSize, increment, speed = await getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME)
                         if queueItem['downloadId'] in download_sizes_tracker.dict and speed is not None:
