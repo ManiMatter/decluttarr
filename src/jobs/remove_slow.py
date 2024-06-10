@@ -36,6 +36,12 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                                 # If the total_size exists, then we know it was downloaded.
                                 logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
                                 continue
+                            else:
+                                # MetaData is too slow to download/is stuck
+                                logger.info('>>> Detected %s Meta Data is slow or stuck. Adding to queue.',queueItem['title'])    
+                                affectedItems.append(queueItem)
+                                continue
+
 
                         # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
                         downloadedSize, previousSize, increment, speed = await getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAME)
