@@ -32,7 +32,7 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
 
                             ## If the File is stuck on "downloading metadata" -- e.g. a magnet link, resolving to a torrent. This may also be true
                             ## However, for that case the sizeLeft == 0, and the total_size == -1 (since it doesn't exist yet)
-                            if queueItem['total_size'] >= 0:
+                            if queueItem['total_size'] > 0:
                                 # If the total_size exists, then we know it was downloaded.
                                 logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
                                 continue
