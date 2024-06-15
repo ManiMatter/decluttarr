@@ -37,7 +37,7 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                                 logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
                                 continue
                             else:
-                                # MetaData is too slow to download/is stuck
+                                # MetaData is 0kb; it is too slow to download/is stuck . Could also be a malformed torrent.
                                 logger.info('>>> Detected %s download that is 0kb is slow or stuck. (Failed Metadata or Torrent) Adding to queue.',queueItem['title'])    
                                 affectedItems.append(queueItem)
                                 continue
