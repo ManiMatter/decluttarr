@@ -38,7 +38,7 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                                 continue
                             else:
                                 # MetaData is too slow to download/is stuck
-                                logger.info('>>> Detected %s Meta Data is slow or stuck. Adding to queue.',queueItem['title'])    
+                                logger.info('>>> Detected %s download that is 0kb is slow or stuck. (Failed Metadata or Torrent) Adding to queue.',queueItem['title'])    
                                 affectedItems.append(queueItem)
                                 continue
 
