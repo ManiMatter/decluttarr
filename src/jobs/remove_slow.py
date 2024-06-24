@@ -28,9 +28,7 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                     if queueItem['protocol'] == 'usenet': # No need to check for speed for usenet, since there users pay for speed
                         continue
                     if queueItem['status'] == 'downloading':
-                        
                         if queueItem['sizeleft'] == 0: # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
-
                             logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])   
                             continue
 
