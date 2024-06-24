@@ -1,9 +1,13 @@
 # Shared Functions
 import logging, verboselogs
+from typing import List
 logger = verboselogs.VerboseLogger(__name__)
 from src.utils.rest import (rest_get, rest_delete, rest_post)
 from src.utils.nest_functions import (add_keys_nested_dict, nested_get)
 import sys, os, traceback
+
+def has_keys(dictonary, keys: List[str]) -> bool:
+    return all(key in dictonary for key in keys)
 
 async def get_queue(BASE_URL, API_KEY, params = {}):
     # Retrieves the current queue

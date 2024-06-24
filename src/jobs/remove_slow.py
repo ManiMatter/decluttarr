@@ -28,19 +28,11 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
                     if queueItem['protocol'] == 'usenet': # No need to check for speed for usenet, since there users pay for speed
                         continue
                     if queueItem['status'] == 'downloading':
+                        
                         if queueItem['sizeleft'] == 0: # Skip items that are finished downloading but are still marked as downloading. May be the case when files are moving
 
-                            ## If the File is stuck on "downloading metadata" -- e.g. a magnet link, resolving to a torrent. This may also be true
-                            ## However, for that case the size == 0, (since it doesn't exist yet). all other files are >0
-                            if queueItem['size'] > 0:
-                                # If the total_size exists, then we know it was downloaded.
-                                logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])    
-                                continue
-                            else:
-                                # MetaData is 0kb; it is too slow to download/is stuck . Could also be a malformed torrent.
-                                logger.info('>>> Detected %s download that is 0kb is slow or stuck. (Failed Metadata or Torrent) Adding to queue.',queueItem['title'])    
-                                affectedItems.append(queueItem)
-                                continue
+                            logger.info('>>> Detected %s download that has completed downloading - skipping check (torrent files likely in process of being moved): %s',failType, queueItem['title'])   
+                            continue
 
 
                         # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
