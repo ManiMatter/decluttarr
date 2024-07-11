@@ -107,7 +107,7 @@ async def instanceChecks(settingsDict):
                     if version.parse(current_version) < version.parse(settingsDict[instance + '_MIN_VERSION']):
                         error_occured = True
                         logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
-                        logger.error('Please update %s to at least version %s. Current version: %s',  settingsDict[instance + '_MIN_VERSION'],current_version)
+                        logger.error('Please update %s to at least version %s. Current version: %s', settingsDict[instance + '_NAME'], settingsDict[instance + '_MIN_VERSION'], current_version)
             if not error_occured:
                 logger.info('OK | %s', settingsDict[instance + '_NAME'])     
                 logger.debug('Current version of %s: %s', instance, current_version)  

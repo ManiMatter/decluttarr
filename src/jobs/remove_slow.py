@@ -1,4 +1,4 @@
-from src.utils.shared import (errorDetails, formattedQueueInfo, get_queue, privateTrackerCheck, protectedDownloadCheck, execute_checks, permittedAttemptsCheck, remove_download)
+from src.utils.shared import (errorDetails, formattedQueueInfo, get_queue, privateTrackerCheck, protectedDownloadCheck, execute_checks, permittedAttemptsCheck, remove_download, qBitOffline)
 import sys, os, traceback
 import logging, verboselogs
 from src.utils.rest import (rest_get)
@@ -11,16 +11,10 @@ async def remove_slow(settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, 
         queue = await get_queue(BASE_URL, API_KEY)
         logger.debug('remove_slow/queue IN: %s', formattedQueueInfo(queue))
         if not queue: return 0
+        if await qBitOffline(settingsDict, failType, NAME): return 0
         # Find items affected
         affectedItems = []
         alreadyCheckedDownloadIDs = []
-
-        if settingsDict['QBITTORRENT_URL']:
-            qBitConnectionStatus = (await rest_get(settingsDict['QBITTORRENT_URL']+'/sync/maindata', cookies=settingsDict['QBIT_COOKIE']))['server_state']['connection_status']
-            if qBitConnectionStatus == 'disconnected':
-                logger.warning('>>> qBittorrent is disconnected. Skipping %s queue cleaning failed on %s.',failType, NAME)
-                return 0
-
         for queueItem in queue['records']:
             if 'downloadId' in queueItem and 'size' in queueItem and 'sizeleft' in queueItem and 'status' in queueItem:
                 if queueItem['downloadId'] not in alreadyCheckedDownloadIDs:
