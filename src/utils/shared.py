@@ -172,3 +172,12 @@ def formattedQueueInfo(queue):
         errorDetails('formattedQueueInfo', error)
         logger.debug('formattedQueueInfo/queue for debug: %s', str(queue)) 
         return 'error'
+
+
+async def qBitOffline(settingsDict, failType, NAME):
+    if settingsDict['QBITTORRENT_URL']:
+        qBitConnectionStatus = (await rest_get(settingsDict['QBITTORRENT_URL']+'/sync/maindata', cookies=settingsDict['QBIT_COOKIE']))['server_state']['connection_status']
+        if qBitConnectionStatus == 'disconnected':
+            logger.warning('>>> qBittorrent is disconnected. Skipping %s queue cleaning failed on %s.',failType, NAME)
+            return True
+    return False
