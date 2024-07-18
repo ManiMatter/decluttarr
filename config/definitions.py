@@ -2,12 +2,13 @@
 from config.parser import get_config_value
 from config.env_vars import *
 # Define data types and default values for settingsDict variables
-# General   
+# General
 LOG_LEVEL                       = get_config_value('LOG_LEVEL',                     'general',      False,  str,    'INFO')
 TEST_RUN                        = get_config_value('TEST_RUN',                      'general',      False,  bool,   False)
 SSL_VERIFICATION                = get_config_value('SSL_VERIFICATION',              'general',      False,  bool,   True)
+TIME_ZONE                       = get_config_value('TIME_ZONE',                     'general',      False,  str,    False)
 
-# Features  
+# Features
 REMOVE_TIMER                    = get_config_value('REMOVE_TIMER',                  'features',     False,  float,  10)
 REMOVE_FAILED                   = get_config_value('REMOVE_FAILED',                 'features',     False,  bool,   False)
 REMOVE_FAILED_IMPORTS           = get_config_value('REMOVE_FAILED_IMPORTS' ,        'features',     False,  bool,   False)
@@ -29,27 +30,27 @@ RADARR_URL                      = get_config_value('RADARR_URL',                
 RADARR_KEY                      = None if RADARR_URL == None else \
                                   get_config_value('RADARR_KEY',                    'radarr',       True,   str)
 
-# Sonarr        
+# Sonarr
 SONARR_URL                      = get_config_value('SONARR_URL',                    'sonarr',       False,  str)
 SONARR_KEY                      = None if SONARR_URL == None else \
                                   get_config_value('SONARR_KEY',                    'sonarr',       True,   str)
 
-# Lidarr        
+# Lidarr
 LIDARR_URL                      = get_config_value('LIDARR_URL',                    'lidarr',       False,  str)
 LIDARR_KEY                      = None if LIDARR_URL == None else \
                                   get_config_value('LIDARR_KEY',                    'lidarr',       True,   str)
 
-# Readarr       
+# Readarr
 READARR_URL                     = get_config_value('READARR_URL',                   'readarr',       False,  str)
 READARR_KEY                     = None if READARR_URL == None else \
                                   get_config_value('READARR_KEY',                   'readarr',       True,   str)
 
-# Whisparr    
+# Whisparr
 WHISPARR_URL                    = get_config_value('WHISPARR_URL',                  'whisparr',       False,  str)
 WHISPARR_KEY                    = None if WHISPARR_URL == None else \
                                   get_config_value('WHISPARR_KEY',                  'whisparr',       True,   str)
 
-# qBittorrent   
+# qBittorrent
 QBITTORRENT_URL                 = get_config_value('QBITTORRENT_URL',               'qbittorrent',  False,  str,    '')
 QBITTORRENT_USERNAME            = get_config_value('QBITTORRENT_USERNAME',          'qbittorrent',  False,  str,    '')
 QBITTORRENT_PASSWORD            = get_config_value('QBITTORRENT_PASSWORD',          'qbittorrent',  False,  str,    '')

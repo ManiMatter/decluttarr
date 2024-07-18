@@ -3,6 +3,7 @@
 # **Decluttarr**
 
 ## Table of contents
+
 - [Overview](#overview)
 - [Dependencies & Hints & FAQ](#dependencies--hints--faq)
 - [Getting started](#getting-started)
@@ -11,9 +12,11 @@
 - [Disclaimer](#disclaimer)
 
 ## Overview
+
 Decluttarr keeps the radarr & sonarr & lidarr & readarr & whisparr queue free of stalled / redundant downloads
 
 Feature overview:
+
 - Automatically delete downloads that are stuck downloading metadata (& trigger download from another source)
 - Automatically delete failed downloads (& trigger download from another source)
 - Automatically delete downloads belonging to radarr/sonarr/etc. items that have been deleted in the meantime ('Orphan downloads')
@@ -26,27 +29,32 @@ You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
 
 ## Dependencies & Hints & FAQ
+
 - Use Sonarr v4 & Radarr v5 (currently 'nightly' tag instead of 'latest'), else certain features may not work correctly
 - qBittorrent is recommended but not required. If you don't use qBittorrent, you will experience the following limitations:
   - When detecting slow downloads, the speeds provided by the *arr apps will be used, which is less accurate than what qBittorrent returns when queried directly
   - The feature that allows to protect downloads from removal (NO_STALLED_REMOVAL_QBIT_TAG) does not work
   - The feature that ignores private trackers does not work
-- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing". On nightly Radarr/Sonarr/Readarr/Lidarr/Whisparr, the option is located under settings/indexers in the advanced options of each indexer, on Prowlarr it is under settings/apps and then the advanced settings of the respective app 
+- If you see strange errors such as "found 10 / 3 times", consider turning on the setting "Reject Blocklisted Torrent Hashes While Grabbing". On nightly Radarr/Sonarr/Readarr/Lidarr/Whisparr, the option is located under settings/indexers in the advanced options of each indexer, on Prowlarr it is under settings/apps and then the advanced settings of the respective app
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
-- If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
-- Currently, “*Arr” apps are only supported in English. Refer to issue https://github.com/ManiMatter/decluttarr/issues/92 for more details.
+- If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see <https://github.com/ManiMatter/decluttarr/issues/56>)
+- Currently, “*Arr” apps are only supported in English. Refer to issue <https://github.com/ManiMatter/decluttarr/issues/92> for more details.
 
 ## Getting started
+
 There's two ways to run this:
+
 - As a docker container with docker-compose
 - By cloning the repository and running the script manually
 
 Both ways are explained below and there's an explanation for the different settings below that
 
 ### Method 1: Docker
+
 1) Make a `docker-compose.yml` file
 2) Use the following as a base for that and tweak the settings to your needs
+
 ```
 version: "3.3"
 services:
@@ -55,19 +63,19 @@ services:
     container_name: decluttarr
     restart: always
     environment:
-      - TZ=Europe/Zurich
+      - TIME_ZONE=Europe/Zurich
       - PUID=1000
       - PGID=1000
       ## General
       - LOG_LEVEL=INFO
       #- TEST_RUN=True
       #- SSL_VERIFICATION=False
-      ## Features 
+      ## Features
       - REMOVE_TIMER=10
       - REMOVE_FAILED=True
       - REMOVE_FAILED_IMPORTS=True
       - REMOVE_METADATA_MISSING=True
-      - REMOVE_MISSING_FILES=True     
+      - REMOVE_MISSING_FILES=True
       - REMOVE_ORPHANS=True
       - REMOVE_SLOW=True
       - REMOVE_STALLED=True
@@ -97,10 +105,12 @@ services:
       #- QBITTORRENT_USERNAME=Your name
       #- QBITTORRENT_PASSWORD=Your password
 ```
+
 3) Run `docker-compose up -d` in the directory where the file is located to create the docker container
 Note: Always pull the "**latest**" version. The "dev" version is for testing only, and should only be pulled when contributing code or supporting with bug fixes
 
 ### Method 2: Running manually
+
 1) Clone the repository with `git clone -b main https://github.com/ManiMatter/decluttarr.git`
 2) Rename the `config.conf-Example` inside the config folder to `config.conf`
 3) Tweak `config.conf` to your needs
@@ -111,9 +121,11 @@ Note: The `config.conf` is disregarded when running via docker-compose.yml
 ## Explanation of the settings
 
 ### **General settings**
+
 Configures the general behavior of the application (across all features)
 
 **LOG_LEVEL**
+
 - Sets the level at which logging will take place
 - `INFO` will only show changes applied to radarr/sonarr/lidarr/readarr/whisparr
 - `VERBOSE` shows each check being performed even if no change is applied
@@ -123,31 +135,42 @@ Configures the general behavior of the application (across all features)
 - Is Mandatory: No (Defaults to INFO)
 
 **TEST_RUN**
+
 - Allows you to safely try out this tool. If active, downloads will not be removed
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
 
 **SSL_VERIFICATION**
+
 - Turns SSL certificate verification on or off for all API calls
 - `True` means that the SSL certificate verification is on
-- Warning: It's important to note that disabling SSL verification can have security implications, as it makes the system vulnerable to man-in-the-middle attacks. It should only be done in a controlled and secure environment where the risks are well understood and mitigated 
+- Warning: It's important to note that disabling SSL verification can have security implications, as it makes the system vulnerable to man-in-the-middle attacks. It should only be done in a controlled and secure environment where the risks are well understood and mitigated
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to True)
 
+**TIME_ZONE**
+
+- Sets the timezone of the system
+- Type: String
+- Is Mandatory: No
+
 ---
 
 ### **Features settings**
+
 Steers which type of cleaning is applied to the downloads queue
 
 **REMOVE_TIMER**
+
 - Sets the frequency of how often the queue is checked for orphan and stalled downloads
 - Type: Integer
 - Unit: Minutes
 - Is Mandatory: No (Defaults to 10)
 
 **REMOVE_FAILED**
+
 - Steers whether failed downloads with no connections are removed from the queue
 - These downloads are not added to the blocklist
 - A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
@@ -156,6 +179,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_FAILED_IMPORTS**
+
 - Steers whether downloads that failed importing are removed from the queue
 - This can happen, for example, when a better version is already present
 - Note: Only considers an import failed if the import message contains a warning that is listed on FAILED_IMPORT_MESSAGE_PATTERNS (see below)
@@ -166,6 +190,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_METADATA_MISSING**
+
 - Steers whether downloads stuck obtaining metadata are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested
 - A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
@@ -174,6 +199,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_MISSING_FILES**
+
 - Steers whether downloads that have the warning "Files Missing" are removed from the queue
 - These downloads are not added to the blocklist
 - Type: Boolean
@@ -181,6 +207,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_ORPHANS**
+
 - Steers whether orphan downloads are removed from the queue
 - Orphan downloads are those that do not belong to any requested media anymore (Since the media was removed from radarr/sonarr/lidarr/readarr/whisparr after the download started)
 - These downloads are not added to the blocklist
@@ -189,6 +216,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_SLOW**
+
 - Steers whether slow downloads are removed from the queue
 - Slow downloads are added to the blocklist, so that they are not re-requested in the future
 - Note: Does not apply to usenet downloads (since there users pay for certain speed, slowness should not occurr)
@@ -197,6 +225,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_STALLED**
+
 - Steers whether stalled downloads with no connections are removed from the queue
 - These downloads are added to the blocklist, so that they are not re-requested in the future
 - Type: Boolean
@@ -204,6 +233,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **REMOVE_UNMONITORED**
+
 - Steers whether downloads belonging to unmonitored media are removed from the queue
 - Note: Will only remove from queue if all TV shows depending on the same download are unmonitored
 - These downloads are not added to the blocklist
@@ -213,6 +243,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to False)
 
 **MIN_DOWNLOAD_SPEED**
+
 - Sets the minimum download speed for active downloads
 - If the increase in the downloaded file size of a download is less than this value between two consecutive checks, the download is considered slow and is removed if happening more ofthen than the permitted attempts
 - Type: Integer
@@ -220,12 +251,14 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to 100, but is only enforced when "REMOVE_SLOW" is true)
 
 **PERMITTED_ATTEMPTS**
+
 - Defines how many times a download has to be caught as stalled, slow or stuck downloading metadata before it is removed
 - Type: Integer
 - Unit: Number of scans
 - Is Mandatory: No (Defaults to 3)
 
 **NO_STALLED_REMOVAL_QBIT_TAG**
+
 - Downloads in qBittorrent tagged with this tag will not be removed
 - Feature is not available when not using qBittorrent as torrent manager
 - Applies to all types of removal (ie. nothing will be removed automatically by decluttarr)
@@ -236,6 +269,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to `Don't Kill`)
 
 **IGNORE_PRIVATE_TRACKERS**
+
 - Private torrents in qBittorrent will not be removed from the queue if this is set to true
 - Only works if qBittorrent is used (does not work with transmission etc.)
 - Applies to all types of removal (ie. nothing will be removed automatically by decluttarr); only exception to this is REMOVE_NO_FORMAT_UPGRADE, where for private trackers the queue item is removed (but the torrent files are kept)
@@ -245,6 +279,7 @@ Steers which type of cleaning is applied to the downloads queue
 - Is Mandatory: No (Defaults to True)
 
 **FAILED_IMPORT_MESSAGE_PATTERNS**
+
 - Works in together with REMOVE_FAILED_IMPORTS (only relevant if this setting is true)
 - Defines the patterns based on which the tool decides if a completed download that has warnings on import should be considered failed
 - Queue items are considered failed if any of the specified patterns is contained in one of the messages of the queue item
@@ -256,88 +291,109 @@ Steers which type of cleaning is applied to the downloads queue
 ---
 
 ### **Radarr section**
+
 Defines radarr instance on which download queue should be decluttered
 
 **RADARR_URL**
+
 - URL under which the instance can be reached
 - If not defined, this instance will not be monitored
 
 **RADARR_KEY**
+
 - Your API key for radarr
 
 ---
 
 ### **Sonarr section**
+
 Defines sonarr instance on which download queue should be decluttered
 
 **SONARR_URL**
+
 - URL under which the instance can be reached
 - If not defined, this instance will not be monitored
 
 **SONARR_KEY**
+
 - Your API key for sonarr
 
 ---
 
 ### **Lidarr section**
+
 Defines lidarr instance on which download queue should be decluttered
 
 **LIDARR_URL**
+
 - URL under which the instance can be reached
 - If not defined, this instance will not be monitored
 
 **LIDARR_KEY**
+
 - Your API key for lidarr
 
 ---
 
 ### **Readarr section**
+
 Defines readarr instance on which download queue should be decluttered
 
 **READARR_URL**
+
 - URL under which the instance can be reached
 - If not defined, this instance will not be monitored
 
 **READARR_KEY**
+
 - Your API key for readarr
 
 ---
 
 ### **Whisparr section**
+
 Defines whisparr instance on which download queue should be decluttered
 
 **WHISPARR_URL**
+
 - URL under which the instance can be reached
 - If not defined, this instance will not be monitored
 
 **WHISPARR_KEY**
+
 - Your API key for whisparr
 
 ---
 
 ### **qBittorrent section**
+
 Defines settings to connect with qBittorrent
 If a different torrent manager is used, comment out this section (see above the limitations in functionality that arises from this)
 
 **QBITTORRENT_URL**
+
 - URL under which the instance can be reached
 - If not defined, the NO_STALLED_REMOVAL_QBIT_TAG takes no effect
 
 **QBITTORRENT_USERNAME**
+
 - Username used to log in to qBittorrent
 - Optional; not needed if authentication bypassing on qBittorrent is enabled (for instance for local connections)
 
 **QBITTORRENT_PASSWORD**
+
 - Password used to log in to qBittorrent
 - Optional; not needed if authentication bypassing on qBittorrent is enabled (for instance for local connections)
 
 ## Credits
+
 - Script for detecting stalled downloads expanded on code by MattDGTL/sonarr-radarr-queue-cleaner
-- Script to read out config expanded on code by syncarr/syncarr 
+- Script to read out config expanded on code by syncarr/syncarr
 - SONARR/RADARR team & contributors for their great product, API documenation, and guidance in their Discord channel
 - Particular thanks to them for adding an additional flag to their API that allowed this script detect downloads stuck finding metadata
 - craggles17 for arm compatibility
 - Fxsch for improved documentation / ReadMe
 
 ## Disclaimer
+
 This script comes free of any warranty, and you are using it at your own risk

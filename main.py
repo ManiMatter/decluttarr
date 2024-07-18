@@ -1,5 +1,5 @@
 # Import Libraries
-import asyncio 
+import asyncio
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
 import json
@@ -7,7 +7,7 @@ import json
 from config.definitions import settingsDict
 from src.utils.loadScripts import *
 from src.decluttarr import queueCleaner
-from src.utils.rest import rest_get, rest_post 
+from src.utils.rest import rest_get, rest_post
 
 # Hide SSL Verification Warnings
 if settingsDict['SSL_VERIFICATION']==False:
@@ -42,18 +42,18 @@ async def getProtectedAndPrivateFromQbit(settingsDict):
                 protectedDownloadIDs.append(str.upper(qbitItem['hash']))
         # Fetch private torrents
         if settingsDict['IGNORE_PRIVATE_TRACKERS']:
-            for qbitItem in qbitItems:           
+            for qbitItem in qbitItems:
                 qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
                 qbitItem['is_private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
                 if qbitItemProperties.get('is_private', False):
                     privateDowloadIDs.append(str.upper(qbitItem['hash']))
         logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "category": item["category"], "tags": item["tags"], "is_private": item.get("is_private", None)} for item in qbitItems]))
-    
+
     logger.debug('main/getProtectedAndPrivateFromQbit/protectedDownloadIDs: %s', str(protectedDownloadIDs))
-    logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))   
+    logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))
 
     return protectedDownloadIDs, privateDowloadIDs
-        
+
 # Main function
 async def main(settingsDict):
 # Adds to settings Dict the instances that are actually configures
@@ -64,7 +64,7 @@ async def main(settingsDict):
             settingsDict['INSTANCES'].append(arrApplication)
 
     # Pre-populates the dictionaries (in classes) that track the items that were already caught as having problems or removed
-    defectiveTrackingInstances = {} 
+    defectiveTrackingInstances = {}
     for instance in settingsDict['INSTANCES']:
         defectiveTrackingInstances[instance] = {}
     defective_tracker = Defective_Tracker(defectiveTrackingInstances)
@@ -79,7 +79,7 @@ async def main(settingsDict):
 
     # Display current settings when loading script
     showSettings(settingsDict)
-    
+
     # Check Minimum Version and if instances are reachable and retrieve qbit cookie
     settingsDict['RADARR_MIN_VERSION']   = '5.3.6.8608'
     settingsDict['SONARR_MIN_VERSION']   = '4.0.1.1131'
@@ -98,14 +98,14 @@ async def main(settingsDict):
     # Start Cleaning
     while True:
         logger.verbose('-' * 50)
-        # Cache protected (via Tag) and private torrents 
+        # Cache protected (via Tag) and private torrents
         protectedDownloadIDs, privateDowloadIDs = await getProtectedAndPrivateFromQbit(settingsDict)
 
         # Run script for each instance
         for instance in settingsDict['INSTANCES']:
             await queueCleaner(settingsDict, instance, defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs)
-        logger.verbose('')  
-        logger.verbose('Queue clean-up complete!')  
+        logger.verbose('')
+        logger.verbose('Queue clean-up complete!')
 
         # Wait for the next run
         await asyncio.sleep(settingsDict['REMOVE_TIMER']*60)
