@@ -6,7 +6,7 @@ from config.env_vars import *
 LOG_LEVEL                       = get_config_value('LOG_LEVEL',                     'general',      False,  str,    'INFO')
 TEST_RUN                        = get_config_value('TEST_RUN',                      'general',      False,  bool,   False)
 SSL_VERIFICATION                = get_config_value('SSL_VERIFICATION',              'general',      False,  bool,   True)
-TIME_ZONE                       = get_config_value('TIME_ZONE',                     'general',      False,  str,    False)
+TIME_ZONE                       = get_config_value('TIME_ZONE',                     'general',      False,  str,   )
 
 # Features
 REMOVE_TIMER                    = get_config_value('REMOVE_TIMER',                  'features',     False,  float,  10)
