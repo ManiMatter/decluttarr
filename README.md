@@ -152,9 +152,11 @@ Configures the general behavior of the application (across all features)
 
 **TIME_ZONE**
 
-- Sets the timezone of the system
+- Sets the timezone for the logs
+- Useful for debugging when running in docker
 - Type: String
 - Is Mandatory: No
+- Warning: If not set, the system timezone will be used. If an invalid timezone is set no timestamp will be included. If running in docker and timezone is either not set or invalid no timestamp will be included.
 
 ---
 
