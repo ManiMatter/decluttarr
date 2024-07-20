@@ -10,32 +10,38 @@ from packaging import version
 
 import logging
 from datetime import datetime
-import pytz  # Requires installing the pytz module
+import pytz
 
 
 class TZFormatter(logging.Formatter):
+    # Custom formatter to add timestamps to log messages based on the timezone
     def __init__(self, tz_name, fmt=None, datefmt="%Y-%m-%d %H:%M:%S"):
-        super().__init__(fmt, datefmt)
         self.tz = None
         if tz_name:
             try:
                 self.tz = pytz.timezone(tz_name)
             except pytz.UnknownTimeZoneError:
                 logging.error(
-                    f"Invalid timezone specified: {tz_name}. Time will not be used."
+                    f"Invalid timezone specified: {tz_name}. Specified timezone will not be used."
                 )
+                fmt = fmt.replace("%(asctime)s ", "")
+
+        super().__init__(fmt, datefmt)
+
 
     def formatTime(self, record, datefmt=None):
         if self.tz:
             dt = datetime.fromtimestamp(record.created, self.tz)
             return dt.strftime(self.datefmt)
+
         return super().formatTime(record, datefmt)
 
 
 def setLoggingFormat(settingsDict):
+    # Sets the logging format based on the settings
     log_level_num = logging.getLevelName(settingsDict.get("LOG_LEVEL", "INFO"))
 
-    tz_name = settingsDict.get("TIME_ZONE", None)
+    tz_name = settingsDict.get("TIME_ZONE", False)
     in_docker = settingsDict.get("IS_IN_DOCKER", False)
 
     base_fmt = (
@@ -44,7 +50,7 @@ def setLoggingFormat(settingsDict):
         else "[%(levelname)s]: %(message)s"
     )
 
-    fmt = "%(asctime)s " + base_fmt if tz_name or in_docker else base_fmt
+    fmt = "%(asctime)s " + base_fmt if tz_name or not in_docker else base_fmt
 
     formatter = TZFormatter(tz_name, fmt) if tz_name else logging.Formatter(fmt)
 
@@ -53,22 +59,6 @@ def setLoggingFormat(settingsDict):
     logging.getLogger().handlers[0].setFormatter(formatter)
 
     return
-
-
-# def setLoggingFormat(settingsDict):
-#     # Sets logger output to specific format
-#     log_level_num = logging.getLevelName(settingsDict["LOG_LEVEL"])
-#     logging.basicConfig(
-#         format=("" if settingsDict["IS_IN_DOCKER"] else "%(asctime)s ")
-#         + (
-#             "[%(levelname)-7s]"
-#             if settingsDict["LOG_LEVEL"] == "VERBOSE"
-#             else "[%(levelname)s]"
-#         )
-#         + ": %(message)s",
-#         level=log_level_num,
-#     )
-#     return
 
 
 async def getArrInstanceName(settingsDict, arrApp):
