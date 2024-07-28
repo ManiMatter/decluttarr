@@ -18,12 +18,12 @@ def setLoggingFormat(settingsDict):
 
 
 async def getArrInstanceName(settingsDict, arrApp):
-    # Retrieves the names of the arr instances, and if not defined, sets a default
+    # Retrieves the names of the arr instances, and if not defined, sets a default (should in theory not be requried, since UI already enforces a value)
     try:
         if settingsDict[arrApp + '_URL']:
             settingsDict[arrApp + '_NAME'] = (await rest_get(settingsDict[arrApp + '_URL']+'/system/status', settingsDict[arrApp + '_KEY']))['instanceName']
     except:
-            settingsDict[arrApp + '_NAME'] = None
+            settingsDict[arrApp + '_NAME'] = arrApp.title()
     return settingsDict
 
 
@@ -72,7 +72,7 @@ def showSettings(settingsDict):
             logger.info(
                     '%s%s: %s',
                     instance.title(),
-                    f" ({instance.title()})" if settingsDict.get(instance + '_NAME') else "",
+                    f" ({settingsDict.get(instance + '_NAME')})" if settingsDict.get(instance + '_NAME') != instance.title() else "",
                     settingsDict[instance + '_URL']
                 )
 
