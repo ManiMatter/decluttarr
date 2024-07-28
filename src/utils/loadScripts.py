@@ -23,7 +23,7 @@ async def getArrInstanceName(settingsDict, arrApp):
         if settingsDict[arrApp + '_URL']:
             settingsDict[arrApp + '_NAME'] = (await rest_get(settingsDict[arrApp + '_URL']+'/system/status', settingsDict[arrApp + '_KEY']))['instanceName']
     except:
-            settingsDict[arrApp + '_NAME'] = arrApp.capitalize()
+            settingsDict[arrApp + '_NAME'] = None
     return settingsDict
 
 
@@ -69,7 +69,12 @@ def showSettings(settingsDict):
     
     for instance in settingsDict['INSTANCES']:
         if settingsDict[instance + '_URL']: 
-            logger.info('%s: %s', settingsDict[instance + '_NAME'], settingsDict[instance + '_URL'])   
+            logger.info(
+                    '%s%s: %s',
+                    instance.title(),
+                    f" ({instance.title()})" if settingsDict.get(instance + '_NAME') else "",
+                    settingsDict[instance + '_URL']
+                )
 
     if settingsDict['QBITTORRENT_URL']: logger.info('qBittorrent: %s', settingsDict['QBITTORRENT_URL'])    
 
@@ -95,21 +100,35 @@ async def instanceChecks(settingsDict):
     # Check ARR-apps
     for instance in settingsDict['INSTANCES']:
         if settingsDict[instance + '_URL']:    
+            # Check instance is reachable
             try: 
-                await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settingsDict[instance + '_URL']+'/system/status', params=None, headers={'X-Api-Key': settingsDict[instance + '_KEY']}, verify=settingsDict['SSL_VERIFICATION']))
+                response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settingsDict[instance + '_URL']+'/system/status', params=None, headers={'X-Api-Key': settingsDict[instance + '_KEY']}, verify=settingsDict['SSL_VERIFICATION']))
+                response.raise_for_status()
             except Exception as error:
                 error_occured = True
-                logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
-                logger.error(error)
-            if not error_occured:                
+                logger.error('!! %s Error: !!', instance.title())
+                logger.error('> %s', error)
+                if isinstance(error, requests.exceptions.HTTPError) and error.response.status_code == 401:
+                    logger.error ('> Have you configured %s correctly?', instance + '_KEY')
+
+            if not error_occured:  
+                # Check if network settings are pointing to the right Arr-apps
+                current_app = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['appName']
+                if current_app.upper() != instance:
+                    error_occured = True
+                    logger.error('!! %s Error: !!', instance.title())                    
+                    logger.error('> Your %s points to a %s instance, rather than %s. Did you specify the wrong IP?', instance + '_URL', current_app, instance.title())
+ 
+            if not error_occured:
+                # Check minimum version requirements are met
                 current_version = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['version']
                 if settingsDict[instance + '_MIN_VERSION']:
                     if version.parse(current_version) < version.parse(settingsDict[instance + '_MIN_VERSION']):
                         error_occured = True
-                        logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
-                        logger.error('Please update %s to at least version %s. Current version: %s', settingsDict[instance + '_NAME'], settingsDict[instance + '_MIN_VERSION'], current_version)
+                        logger.error('!! %s Error: !!', instance.title())
+                        logger.error('> Please update %s to at least version %s. Current version: %s', instance.title(), settingsDict[instance + '_MIN_VERSION'], current_version)
             if not error_occured:
-                logger.info('OK | %s', settingsDict[instance + '_NAME'])     
+                logger.info('OK | %s', instance.title())     
                 logger.debug('Current version of %s: %s', instance, current_version)  
 
     # Check Bittorrent
@@ -124,8 +143,8 @@ async def instanceChecks(settingsDict):
         except Exception as error:
             error_occured = True
             logger.error('!! %s Error: !!', 'qBittorrent')
-            logger.error(error)
-            logger.error('Details:')
+            logger.error('> %s', error)
+            logger.error('> Details:')
             logger.error(response.text)
 
         if not error_occured:
@@ -141,7 +160,7 @@ async def instanceChecks(settingsDict):
 
 
     if error_occured:
-        logger.warning('At least one instance was not reachable. Waiting for 60 seconds, then exiting Decluttarr.')      
+        logger.warning('At least one instance had a problem. Waiting for 60 seconds, then exiting Decluttarr.')      
         await asyncio.sleep(60)
         exit()
 
