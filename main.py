@@ -49,17 +49,20 @@ async def main(settingsDict):
     # Check outdated
     upgradeChecks(settingsDict)
 
-    # Display current settings when loading script
+    # Welcome Message
+    showWelcome() 
+
+    # Current Settings
     showSettings(settingsDict)
-    
+
     # Check Minimum Version and if instances are reachable and retrieve qbit cookie
     settingsDict = await instanceChecks(settingsDict)
 
     # Create qBit protection tag if not existing
     await createQbitProtectionTag(settingsDict)
 
-    # Show Logger settings
-    showLoggerSettings(settingsDict)
+    # Show Logger Level
+    showLoggerLevel(settingsDict)
 
     # Start Cleaning
     while True:

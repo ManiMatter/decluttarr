@@ -51,16 +51,19 @@ async def getProtectedAndPrivateFromQbit(settingsDict):
 
     return protectedDownloadIDs, privateDowloadIDs
     
-
-def showSettings(settingsDict):
-    # Prints out the settings
-    fmt = '{0.days} days {0.hours} hours {0.minutes} minutes'
+def showWelcome():
+    # Welcome Message
     logger.info('#' * 50)
     logger.info('Decluttarr - Application Started!')
     logger.info('')      
     logger.info('Like this app? Thanks for giving it a ⭐️ on GitHub!')      
     logger.info('https://github.com/ManiMatter/decluttarr/')   
-    logger.info('')      
+    logger.info('')  
+    return
+
+def showSettings(settingsDict):
+    # Settings Message
+    fmt = '{0.days} days {0.hours} hours {0.minutes} minutes'     
     logger.info('*** Current Settings ***') 
     logger.info('Version: %s', settingsDict['IMAGE_TAG']) 
     logger.info('Commit: %s', settingsDict['SHORT_COMMIT_ID'])    
@@ -205,7 +208,7 @@ async def createQbitProtectionTag(settingsDict):
                 if not settingsDict['TEST_RUN']:
                     await rest_post(url=settingsDict['QBITTORRENT_URL']+'/torrents/createTags', data={'tags': settingsDict['NO_STALLED_REMOVAL_QBIT_TAG']}, headers={'content-type': 'application/x-www-form-urlencoded'}, cookies=settingsDict['QBIT_COOKIE'])
 
-def showLoggerSettings(settingsDict):
+def showLoggerLevel(settingsDict):
     logger.info('#' * 50)
     if settingsDict['LOG_LEVEL'] == 'INFO':
         logger.info('LOG_LEVEL = INFO: Only logging changes (switch to VERBOSE for more info)')      
