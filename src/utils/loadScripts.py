@@ -26,7 +26,31 @@ async def getArrInstanceName(settingsDict, arrApp):
             settingsDict[arrApp + '_NAME'] = arrApp.title()
     return settingsDict
 
+async def getProtectedAndPrivateFromQbit(settingsDict):
+    # Returns two lists containing the hashes of Qbit that are either protected by tag, or are private trackers (if IGNORE_PRIVATE_TRACKERS is true)
+    protectedDownloadIDs = []
+    privateDowloadIDs = []
+    if settingsDict['QBITTORRENT_URL']:
+        # Fetch all torrents
+        qbitItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settingsDict['QBIT_COOKIE'])
+        # Fetch protected torrents (by tag)
+        for qbitItem in qbitItems:
+            if settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'] in qbitItem.get('tags'):
+                protectedDownloadIDs.append(str.upper(qbitItem['hash']))
+        # Fetch private torrents
+        if settingsDict['IGNORE_PRIVATE_TRACKERS']:
+            for qbitItem in qbitItems:           
+                qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
+                qbitItem['is_private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
+                if qbitItemProperties.get('is_private', False):
+                    privateDowloadIDs.append(str.upper(qbitItem['hash']))
+        logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "category": item["category"], "tags": item["tags"], "is_private": item.get("is_private", None)} for item in qbitItems]))
+    
+    logger.debug('main/getProtectedAndPrivateFromQbit/protectedDownloadIDs: %s', str(protectedDownloadIDs))
+    logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))   
 
+    return protectedDownloadIDs, privateDowloadIDs
+    
 
 def showSettings(settingsDict):
     # Prints out the settings
@@ -73,10 +97,14 @@ def showSettings(settingsDict):
                     '%s%s: %s',
                     instance.title(),
                     f" ({settingsDict.get(instance + '_NAME')})" if settingsDict.get(instance + '_NAME') != instance.title() else "",
-                    settingsDict[instance + '_URL']
+                    (settingsDict[instance + '_URL']).split('/api')[0]
                 )
 
-    if settingsDict['QBITTORRENT_URL']: logger.info('qBittorrent: %s', settingsDict['QBITTORRENT_URL'])    
+    if settingsDict['QBITTORRENT_URL']: 
+        logger.info(
+            'qBittorrent: %s', 
+            (settingsDict['QBITTORRENT_URL']).split('/api')[0]
+        )    
 
     logger.info('') 
     return   
