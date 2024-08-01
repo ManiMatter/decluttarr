@@ -18,15 +18,39 @@ def setLoggingFormat(settingsDict):
 
 
 async def getArrInstanceName(settingsDict, arrApp):
-    # Retrieves the names of the arr instances, and if not defined, sets a default
+    # Retrieves the names of the arr instances, and if not defined, sets a default (should in theory not be requried, since UI already enforces a value)
     try:
         if settingsDict[arrApp + '_URL']:
             settingsDict[arrApp + '_NAME'] = (await rest_get(settingsDict[arrApp + '_URL']+'/system/status', settingsDict[arrApp + '_KEY']))['instanceName']
     except:
-            settingsDict[arrApp + '_NAME'] = arrApp.capitalize()
+            settingsDict[arrApp + '_NAME'] = arrApp.title()
     return settingsDict
 
+async def getProtectedAndPrivateFromQbit(settingsDict):
+    # Returns two lists containing the hashes of Qbit that are either protected by tag, or are private trackers (if IGNORE_PRIVATE_TRACKERS is true)
+    protectedDownloadIDs = []
+    privateDowloadIDs = []
+    if settingsDict['QBITTORRENT_URL']:
+        # Fetch all torrents
+        qbitItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settingsDict['QBIT_COOKIE'])
+        # Fetch protected torrents (by tag)
+        for qbitItem in qbitItems:
+            if settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'] in qbitItem.get('tags'):
+                protectedDownloadIDs.append(str.upper(qbitItem['hash']))
+        # Fetch private torrents
+        if settingsDict['IGNORE_PRIVATE_TRACKERS']:
+            for qbitItem in qbitItems:           
+                qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
+                qbitItem['is_private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
+                if qbitItemProperties.get('is_private', False):
+                    privateDowloadIDs.append(str.upper(qbitItem['hash']))
+        logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "category": item["category"], "tags": item["tags"], "is_private": item.get("is_private", None)} for item in qbitItems]))
+    
+    logger.debug('main/getProtectedAndPrivateFromQbit/protectedDownloadIDs: %s', str(protectedDownloadIDs))
+    logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))   
 
+    return protectedDownloadIDs, privateDowloadIDs
+    
 
 def showSettings(settingsDict):
     # Prints out the settings
@@ -69,9 +93,18 @@ def showSettings(settingsDict):
     
     for instance in settingsDict['INSTANCES']:
         if settingsDict[instance + '_URL']: 
-            logger.info('%s: %s', settingsDict[instance + '_NAME'], settingsDict[instance + '_URL'])   
+            logger.info(
+                    '%s%s: %s',
+                    instance.title(),
+                    f" ({settingsDict.get(instance + '_NAME')})" if settingsDict.get(instance + '_NAME') != instance.title() else "",
+                    (settingsDict[instance + '_URL']).split('/api')[0]
+                )
 
-    if settingsDict['QBITTORRENT_URL']: logger.info('qBittorrent: %s', settingsDict['QBITTORRENT_URL'])    
+    if settingsDict['QBITTORRENT_URL']: 
+        logger.info(
+            'qBittorrent: %s', 
+            (settingsDict['QBITTORRENT_URL']).split('/api')[0]
+        )    
 
     logger.info('') 
     return   
@@ -95,21 +128,35 @@ async def instanceChecks(settingsDict):
     # Check ARR-apps
     for instance in settingsDict['INSTANCES']:
         if settingsDict[instance + '_URL']:    
+            # Check instance is reachable
             try: 
-                await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settingsDict[instance + '_URL']+'/system/status', params=None, headers={'X-Api-Key': settingsDict[instance + '_KEY']}, verify=settingsDict['SSL_VERIFICATION']))
+                response = await asyncio.get_event_loop().run_in_executor(None, lambda: requests.get(settingsDict[instance + '_URL']+'/system/status', params=None, headers={'X-Api-Key': settingsDict[instance + '_KEY']}, verify=settingsDict['SSL_VERIFICATION']))
+                response.raise_for_status()
             except Exception as error:
                 error_occured = True
-                logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
-                logger.error(error)
-            if not error_occured:                
+                logger.error('!! %s Error: !!', instance.title())
+                logger.error('> %s', error)
+                if isinstance(error, requests.exceptions.HTTPError) and error.response.status_code == 401:
+                    logger.error ('> Have you configured %s correctly?', instance + '_KEY')
+
+            if not error_occured:  
+                # Check if network settings are pointing to the right Arr-apps
+                current_app = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['appName']
+                if current_app.upper() != instance:
+                    error_occured = True
+                    logger.error('!! %s Error: !!', instance.title())                    
+                    logger.error('> Your %s points to a %s instance, rather than %s. Did you specify the wrong IP?', instance + '_URL', current_app, instance.title())
+ 
+            if not error_occured:
+                # Check minimum version requirements are met
                 current_version = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['version']
                 if settingsDict[instance + '_MIN_VERSION']:
                     if version.parse(current_version) < version.parse(settingsDict[instance + '_MIN_VERSION']):
                         error_occured = True
-                        logger.error('!! %s Error: !!', settingsDict[instance + '_NAME'])
-                        logger.error('Please update %s to at least version %s. Current version: %s',  settingsDict[instance + '_MIN_VERSION'],current_version)
+                        logger.error('!! %s Error: !!', instance.title())
+                        logger.error('> Please update %s to at least version %s. Current version: %s', instance.title(), settingsDict[instance + '_MIN_VERSION'], current_version)
             if not error_occured:
-                logger.info('OK | %s', settingsDict[instance + '_NAME'])     
+                logger.info('OK | %s', instance.title())     
                 logger.debug('Current version of %s: %s', instance, current_version)  
 
     # Check Bittorrent
@@ -124,8 +171,8 @@ async def instanceChecks(settingsDict):
         except Exception as error:
             error_occured = True
             logger.error('!! %s Error: !!', 'qBittorrent')
-            logger.error(error)
-            logger.error('Details:')
+            logger.error('> %s', error)
+            logger.error('> Details:')
             logger.error(response.text)
 
         if not error_occured:
@@ -141,7 +188,7 @@ async def instanceChecks(settingsDict):
 
 
     if error_occured:
-        logger.warning('At least one instance was not reachable. Waiting for 60 seconds, then exiting Decluttarr.')      
+        logger.warning('At least one instance had a problem. Waiting for 60 seconds, then exiting Decluttarr.')      
         await asyncio.sleep(60)
         exit()
 

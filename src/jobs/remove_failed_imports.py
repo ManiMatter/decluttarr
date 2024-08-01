@@ -20,19 +20,31 @@ async def remove_failed_imports(settingsDict, BASE_URL, API_KEY, NAME, deleted_d
 
                 if queueItem['status'] == 'completed' \
                     and queueItem['trackedDownloadStatus'] == 'warning' \
-                    and (queueItem['trackedDownloadState'] == 'importPending' or queueItem['trackedDownloadState'] == 'importFailed' or  queueItem['trackedDownloadState'] == 'importBlocked'):
-                    
+                    and queueItem['trackedDownloadState'] in {'importPending', 'importFailed', 'importBlocked'}:
+
+                    # Find messages that find specified pattern and put them into a "removal_message" that will be displayed in the logger when removing the affected item
+                    removal_messages = ['Tracked Download State: ' + queueItem['trackedDownloadState']]
                     for statusMessage in queueItem['statusMessages']:
-                        if not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS'] or any(any(pattern in message for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']) for message in statusMessage.get('messages', [])):
-                            affectedItems.append(queueItem)
+                        if not settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']: # No patterns defined - including all status messages in the removal_messages
+                            removal_messages.append ('Status Messages (All):')
+                            removal_messages.extend(f"- {msg}" for msg in statusMessage.get('messages', []))
                             break
+
+                        removal_messages.append ('Status Messages (matching specified patterns):')
+                        messages = statusMessage.get('messages', [])
+                        for message in messages:
+                            if any(pattern in message for pattern in settingsDict['FAILED_IMPORT_MESSAGE_PATTERNS']):
+                                removal_messages.append(f"- {message}")
+                    
+                queueItem['removal_messages'] = removal_messages
+                affectedItems.append(queueItem)
 
         affectedItems = await execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, 
                                             addToBlocklist = True, 
                                             doPrivateTrackerCheck = False, 
                                             doProtectedDownloadCheck = True, 
                                             doPermittedAttemptsCheck = False,
-                                            extraParameters = ['keepTorrentForPrivateTrackers']
+                                            extraParameters = {'keepTorrentForPrivateTrackers': True}
                                             )
         return len(affectedItems)
     except Exception as error:
