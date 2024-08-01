@@ -1,4 +1,4 @@
-from src.utils.shared import (errorDetails, formattedQueueInfo, get_queue, privateTrackerCheck, protectedDownloadCheck, execute_checks, permittedAttemptsCheck, remove_download)
+from src.utils.shared import (errorDetails, formattedQueueInfo, get_queue, privateTrackerCheck, protectedDownloadCheck, execute_checks, permittedAttemptsCheck, remove_download, qBitOffline)
 import sys, os, traceback
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
@@ -10,6 +10,7 @@ async def remove_missing_files(settingsDict, BASE_URL, API_KEY, NAME, deleted_do
         queue = await get_queue(BASE_URL, API_KEY)
         logger.debug('remove_missing_files/queue IN: %s', formattedQueueInfo(queue))
         if not queue: return 0
+        if await qBitOffline(settingsDict, failType, NAME): return 0
         # Find items affected
         affectedItems = []
         for queueItem in queue['records']: 
