@@ -55,7 +55,7 @@ def protectedDownloadCheck(settingsDict, affectedItems, failType, protectedDownl
     return affectedItems
 
 
-async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck, extraParameters = []):
+async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck, extraParameters = {}):
     # Goes over the affected items and performs the checks that are parametrized
     try:
         # De-duplicates the affected items (one downloadid may be shared by multiple affected items)
