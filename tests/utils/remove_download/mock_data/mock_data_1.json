@@ -1,0 +1,11 @@
+{
+    "id": 1,
+    "downloadId": "A",
+    "title": "Sonarr Title 1",
+    "removal_messages": [
+        ">>>>> Tracked Download State: importBlocked",
+        ">>>>> Status Messages (matching specified patterns):",
+        ">>>>> - Episode XYZ was not found in the grabbed release: Sonarr Title 2.mkv",
+        ">>>>> - And yet another message"
+    ]
+}

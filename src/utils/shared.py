@@ -55,7 +55,7 @@ def protectedDownloadCheck(settingsDict, affectedItems, failType, protectedDownl
     return affectedItems
 
 
-async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck, extraParameters = []):
+async def execute_checks(settingsDict, affectedItems, failType, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, privateDowloadIDs, protectedDownloadIDs, addToBlocklist, doPrivateTrackerCheck, doProtectedDownloadCheck, doPermittedAttemptsCheck, extraParameters = {}):
     # Goes over the affected items and performs the checks that are parametrized
     try:
         # De-duplicates the affected items (one downloadid may be shared by multiple affected items)
@@ -143,8 +143,8 @@ async def remove_download(settingsDict, BASE_URL, API_KEY, affectedItem, failTyp
             logger.info('>>> Removing %s download (without removing from torrent client): %s', failType, affectedItem['title'])  
         
         # Print out detailed removal messages (if any were added in the jobs)
-        if removal_messages in affectedItem:
-            for removal_message in affectedItem.removal_messages:
+        if 'removal_messages' in affectedItem:
+            for removal_message in affectedItem['removal_messages']:
                 logger.info(removal_message)
             
         if not settingsDict['TEST_RUN']: 

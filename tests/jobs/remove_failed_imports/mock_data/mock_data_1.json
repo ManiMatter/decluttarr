@@ -1,0 +1,33 @@
+{
+    "records": [
+        {
+            "id": 1,
+            "downloadId": "A123",
+            "title": "Sonarr Title 1",
+            "status": "completed",
+            "trackedDownloadStatus": "ok",
+            "trackedDownloadState": "importing",
+            "statusMessages": []
+        },
+        {
+            "id": 2,
+            "downloadId": "B123",
+            "title": "Sonarr Title 2",
+            "status": "completed",
+            "trackedDownloadStatus": "warning",
+            "trackedDownloadState": "importBlocked",
+            "statusMessages": [
+                {
+                    "title": "One or more episodes expected in this release were not imported or missing from the release",
+                    "messages": []
+                },
+                {
+                    "title": "Sonarr Title 2.mkv",
+                    "messages": [
+                        "Episode XYZ was not found in the grabbed release: Sonarr Title 2.mkv"
+                    ]
+                }
+            ]
+        }
+    ]
+}

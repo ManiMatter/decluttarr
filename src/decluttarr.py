@@ -10,12 +10,7 @@ from src.jobs.remove_orphans import remove_orphans
 from src.jobs.remove_slow import remove_slow
 from src.jobs.remove_stalled import remove_stalled
 from src.jobs.remove_unmonitored import remove_unmonitored
-
-class Deleted_Downloads:
-    # Keeps track of which downloads have already been deleted (to not double-delete)
-    def __init__(self, dict):
-        self.dict = dict
-
+from src.utils.trackers import Deleted_Downloads
 
 async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs):
     # Read out correct instance depending on radarr/sonarr flag

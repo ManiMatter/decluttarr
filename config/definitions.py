@@ -56,8 +56,7 @@ QBITTORRENT_PASSWORD            = get_config_value('QBITTORRENT_PASSWORD',      
 
 ########################################################################################################################
 ########### Validate settings
-
-if not (RADARR_URL or SONARR_URL or LIDARR_URL or READARR_URL or WHISPARR_URL):
+if not (IS_IN_PYTEST or RADARR_URL or SONARR_URL or LIDARR_URL or READARR_URL or WHISPARR_URL):
     print(f'[ ERROR ]: No Radarr/Sonarr/Lidarr/Readarr/Whisparr URLs specified (nothing to monitor)')
     exit()
 
