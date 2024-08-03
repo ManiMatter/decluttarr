@@ -1,0 +1,60 @@
+{
+    "records": [
+        {
+            "id": 1,
+            "downloadId": "A123",
+            "title": "Sonarr Title 1",
+            "status": "completed",
+            "trackedDownloadStatus": "warning",
+            "trackedDownloadState": "importPending",
+            "statusMessages": [
+                {
+                    "title": "First Message",
+                    "messages": [
+                        "Message 1 - hello world"
+                    ]
+                },
+                {
+                    "title": "Duplicate of First Message",
+                    "messages": [
+                        "Message 1 - hello world"
+                    ]
+                },
+                {
+                    "title": "Second of Message",
+                    "messages": [
+                        "Message 2 - goodbye all"
+                    ]
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "downloadId": "B123",
+            "title": "Sonarr Title 2",
+            "status": "completed",
+            "trackedDownloadStatus": "warning",
+            "trackedDownloadState": "importFailed",
+            "statusMessages": [
+                {
+                    "title": "First Message",
+                    "messages": [
+                        "Message 1 - hello world"
+                    ]
+                },
+                {
+                    "title": "Duplicate of First Message",
+                    "messages": [
+                        "Message 1 - hello world"
+                    ]
+                },
+                {
+                    "title": "Second of Message",
+                    "messages": [
+                        "Message 2 - goodbye all"
+                    ]
+                }
+            ]
+        }          
+    ]
+}

@@ -25,9 +25,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r docker/requirements.txt
+              
     - name: Test with pytest
       run: |
-        python3 -m pytest --import-mode=append tests/
+        python3 -m pytest -o log_cli=false
 
   build-dev:
     needs: unit-tests

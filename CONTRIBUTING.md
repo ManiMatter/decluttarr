@@ -19,7 +19,7 @@ To raise a new feature request, please go through the following steps:
 - Be willing to provide more details if asked for them and help testing the feature
 
 ## Bug Reports
-Bugs in this application are scarce. If there are any, there most likely features ;-)
+Bugs in this application are scarce. If there are any, they're most likely features ;-)
 Please go follow these steps to submit a bug:
 - Check if this bug has previously been reported
 - Add [Bug] at the beginning of the issue title
@@ -29,28 +29,33 @@ Please go follow these steps to submit a bug:
 2) Turn off all remove functions but one where you expect a removal (example: REMOVE_STALLED: True and the rest on False)
 3) Let it run until the supposed remove should be trigged
 4) Paste the full logs to a pastebin
-- If helpful: Paste a screenshot of qbit and the affected *arr app to a pasteimg
-- Be willing to provide more details if asked for them and help testing the bug fix
+5) Share your settings (docker-compose or config.conf) 
+6) Optional: If helpful, share screenshots showing the problem (from your arr-app or qbit) 
+7) Be responsive and provide more details if asked for them, and help testing the bug fix
 
 ### Code Contributions
 Code contributions are very welcome - thanks for helping improve this app!
-1) Please always branch out from the "dev" branch, not from the "main" branch
-2) Please test your code locally
-3) Please only commit code that you have written yourself and is not owned by anybody else
-4) Please create a PR against the "dev" branch
-5) Once I have reviewed it, I will merge it and it will create teh "dev" image
-6) Please help testing that the dev image works, before we then commit it to the "latest" image (from main branch)
+1) Always branch out from the "dev" branch, not from the "main" branch
+2) Test your code locally
+3) Only commit code that you have written yourself and is not owned by anybody else
+4) Create a PR against the "dev" branch
+5) Be responsive to code review 
+5) Once the code is reviewed and OK, it will be merged to dev branch, which will create the "dev"-docker image
+6) Help testing that the dev image works
+7= Finally, we will then commit the change to the main branch, which will create the "latest"-docker image
 
 You do not need to know about how to create docker images to contribute here.
 To get started:
-1) Clone the git repository to your local machine
-2) Create a virtual python environment (python3 -m venv venv)
-3) Activate the virtual environment (source venv/bin/activate)
-4) Install python libraries (pip install -r docker/requirements.txt)
+1) Create a fork of decluttarr
+2) Clone the git repository from the dev branch to your local machine `git clone -b dev https://github.com/yourName/decluttarr`
+2) Create a virtual python environment (`python3 -m venv venv`)
+3) Activate the virtual environment (`source venv/bin/activate`)
+4) Install python libraries (`pip install -r docker/requirements.txt`)
 5) Adjust the config/config.conf to your needs
 6) Adjust the code in the files as needed
-7) Run the script (python3 main.py)
-8) Create a PR once you are ready
-
+7) Run the script (`python3 main.py`)
+8) Push your changes to your own git repo
+9) Test the dev-image it creates automatically
+10) Create the PR from your repo to ManiMatter/decluttarr (dev branch)
 
 
