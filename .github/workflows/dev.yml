@@ -75,7 +75,7 @@ jobs:
             --push \
 
   clean-up:
-    needs: unit-tests   
+    needs: build-dev  
     steps:     
       - name: "Clean up docker images"
         uses: dataaxiom/ghcr-cleanup-action@main
