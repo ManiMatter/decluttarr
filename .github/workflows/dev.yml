@@ -75,7 +75,8 @@ jobs:
             --push \
 
   clean-up:
-    needs: build-dev  
+    needs: build-dev
+    runs-on: ubuntu-latest    
     steps:     
       - name: "Clean up docker images"
         uses: dataaxiom/ghcr-cleanup-action@main
