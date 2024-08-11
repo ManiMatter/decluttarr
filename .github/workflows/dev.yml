@@ -73,7 +73,10 @@ jobs:
             --build-arg IMAGE_TAG=$IMAGE_TAG \
             --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
             --push \
-   
+
+  clean-up:
+    needs: unit-tests   
+    steps:     
       - name: "Clean up docker images"
         uses: dataaxiom/ghcr-cleanup-action@main
         with:
