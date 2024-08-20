@@ -21,6 +21,7 @@ Feature overview:
 - Automatically delete slow downloads, after they have been found to be slow multiple times in a row (& trigger download from another source)
 - Automatically delete downloads belonging to radarr/sonarr/etc. items that are unmonitored
 - Automatically delete downloads that failed importing since they are not a format upgrade (i.e. a better version is already present)
+- Automatically set file to not download if they are not 100% available (missing peers)
 
 You may run this locally by launching main.py, or by pulling the docker image.
 You can find a sample docker-compose.yml in the docker folder.
@@ -72,6 +73,7 @@ services:
       - REMOVE_SLOW=True
       - REMOVE_STALLED=True
       - REMOVE_UNMONITORED=True
+      - REMOVE_UNAVAILABLE_FILES=True
       - MIN_DOWNLOAD_SPEED=100
       - PERMITTED_ATTEMPTS=3
       - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
@@ -208,6 +210,15 @@ Steers which type of cleaning is applied to the downloads queue
 - Note: Will only remove from queue if all TV shows depending on the same download are unmonitored
 - These downloads are not added to the blocklist
 - Note: Since sonarr does not support multi-season packs, if you download one you should protect it with `NO_STALLED_REMOVAL_QBIT_TAG` that is explained further down
+- Type: Boolean
+- Permissible Values: True, False
+- Is Mandatory: No (Defaults to False)
+
+**REMOVE_UNAVAILABLE_FILES**
+- Steers whether files within torrents are marked as 'not download' if they have less then 100% availabiltiy 
+- These overall download is not removed and will complete for the other files
+- After import, the *arr app will trigger a search for the files that were not downloaded
+- Note that this is only supported when qBittorrent is configured in decluttarr
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
