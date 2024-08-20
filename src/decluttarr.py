@@ -10,6 +10,7 @@ from src.jobs.remove_orphans import remove_orphans
 from src.jobs.remove_slow import remove_slow
 from src.jobs.remove_stalled import remove_stalled
 from src.jobs.remove_unmonitored import remove_unmonitored
+from src.jobs.cancel_unavailable_files import cancel_unavailable_files
 from src.utils.trackers import Deleted_Downloads
 
 async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes_tracker, protectedDownloadIDs, privateDowloadIDs):
@@ -46,7 +47,8 @@ async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes
         
     # Cleans up the downloads queue
     logger.verbose('Cleaning queue on %s:', NAME)
-
+    # Refresh queue:
+    
     full_queue = await get_queue(BASE_URL, API_KEY, params = {full_queue_param: True})
     if not full_queue: 
         logger.verbose('>>> Queue is empty.')
@@ -57,7 +59,10 @@ async def queueCleaner(settingsDict, arr_type, defective_tracker, download_sizes
         
     deleted_downloads = Deleted_Downloads([])
     items_detected = 0
-    try:    
+    try:   
+        if settingsDict['CANCEL_UNAVAILABLE_FILES']: 
+            await cancel_unavailable_files(                   settingsDict, BASE_URL, API_KEY, NAME, protectedDownloadIDs, privateDowloadIDs, arr_type)
+
         if settingsDict['REMOVE_FAILED']:
             items_detected += await remove_failed(            settingsDict, BASE_URL, API_KEY, NAME, deleted_downloads, defective_tracker, protectedDownloadIDs, privateDowloadIDs)
 
