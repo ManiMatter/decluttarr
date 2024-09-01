@@ -1,0 +1,156 @@
+name: Test, Build, Deploy
+
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    branches:
+      - '*' 
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch: 
+  create:
+    branches:
+      - '*'
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    outputs:
+      valid_branch_name: ${{ steps.validate.outputs.valid_branch_name }}
+    steps:
+      - name: Validate Branch Name
+        id: validate
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          if [[ "$BRANCH_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Branch name '$BRANCH_NAME' is not allowed. Branch names using versioning names like 'v1.2.3' are prohibited."
+            echo "valid_branch_name=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "Branch name '$BRANCH_NAME' is valid."
+            echo "valid_branch_name=true" >> $GITHUB_OUTPUT
+          fi
+
+  lint:
+    needs: validate-branch-name
+    if: needs.validate-branch-name.outputs.valid_branch_name == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.13'
+      - name: Install linting dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+      - name: Run lint checks
+        run: |
+          echo "here we'll lint" 
+          # pylint my_project
+
+  unit-tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.13'
+      - name: Install testing dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docker/requirements.txt
+      - name: Run unit tests
+        run: |
+          python3 -m pytest -o log_cli=false
+
+  build:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Store short Commit ID in env variable
+        id: vars
+        run: |
+          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_COMMIT_ID=$calculatedSha" >> $GITHUB_ENV
+
+      - name: Determine Docker image tag
+        id: setversion
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          if [[ "$BRANCH_NAME" == "dev" ]]; then
+            IMAGE_TAG="dev"
+          elif [[ "$BRANCH_NAME" == "stable" ]]; then
+            # Checkout GitHub Action and set up QEMU and Docker Buildx
+            actions/checkout@v2
+            uses: docker/setup-qemu-action@v3
+            uses: docker/setup-buildx-action@v3
+            # Bump version and push tag
+            uses: anothrNick/github-tag-action@1.36.0
+            id: setversion
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              WITH_V: true
+            IMAGE_TAG=${{ steps.setversion.outputs.new_tag }}
+          else
+            IMAGE_TAG=$BRANCH_NAME
+          fi
+          # Convert IMAGE_TAG to lowercase
+          IMAGE_TAG=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          
+          # Convert repository owner to lowercase
+          REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
+          echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+
+      - name: Build, Tag, and Push Docker Image
+        env:
+          IMAGE_NAME: ghcr.io/${{ env.REPO_OWNER }}/decluttarr
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          TAG_LATEST=""
+          if [[ "$BRANCH_NAME" == "stable" ]]; then
+            TAG_LATEST="-t $IMAGE_NAME:latest"
+          fi
+
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 -f docker/Dockerfile . \
+            --progress plain \
+            -t $IMAGE_NAME:$IMAGE_TAG \
+            $TAG_LATEST \
+            --label com.decluttarr.version=$IMAGE_TAG \
+            --label com.decluttarr.commit=$SHORT_COMMIT_ID \
+            --build-arg IMAGE_TAG=$IMAGE_TAG \
+            --build-arg SHORT_COMMIT_ID=$SHORT_COMMIT_ID \
+            --push
+
+  docker-image-clean-up:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clean up Docker images
+        uses: dataaxiom/ghcr-cleanup-action@v1.0.8
+        with:
+          exclude-tags: dev
+          delete-untagged: true
+          delete-ghost-images: true
+          delete-partial-images: true
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,33 @@
+# Removes Docker images belonging to feature branches when the feature branch is deleted
+name: Branch Delete
+on:
+  delete:
+    branches:
+      - '*' 
+
+jobs:
+  delete-branch-docker-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get deleted branch name
+        id: get_branch_name
+        run: |
+          # Use jq to extract the branch name from the event payload
+          BRANCH=$(cat ${{ github.event_path }} | jq --raw-output '.ref' | sed 's/refs\/heads\///')
+          # Convert branch name to lowercase
+          BRANCH_NAME=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]')
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Remove Docker image
+        uses: dataaxiom/ghcr-cleanup-action@v1.0.8
+        with:
+          delete-tags: ${{ env.BRANCH_NAME }}
+          token: ${{ secrets.GITHUB_TOKEN }}
