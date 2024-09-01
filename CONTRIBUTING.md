@@ -54,8 +54,9 @@ To get started:
 5) Adjust the config/config.conf to your needs
 6) Adjust the code in the files as needed
 7) Run the script (`python3 main.py`)
-8) Push your changes to your own git repo
+8) Push your changes to your own git repo and use a descriptive name for the branch name (e.g. add-feature-to-xyz; bugfix-xyz)
 9) Test the dev-image it creates automatically
 10) Create the PR from your repo to ManiMatter/decluttarr (dev branch)
-
-
+11) Make sure all checks pass
+12) Squash your commits
+13) Test that the docker image works that was created when you pushed to your fork 
