@@ -42,7 +42,7 @@ async def run_test(
     execute_checks_mock.side_effect = side_effect
 
     # Create an async mock for get_queue that returns mock_data
-    mock_get_queue = AsyncMock(return_value=mock_data)
+    mock_get_queue = AsyncMock(return_value=mock_data["records"])
 
     # Patch the methods
     monkeypatch.setattr("src.jobs.remove_failed_imports.get_queue", mock_get_queue)

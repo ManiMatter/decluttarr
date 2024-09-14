@@ -36,7 +36,7 @@ async def remove_stalled(
             return 0
         # Find items affected
         affectedItems = []
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if "errorMessage" in queueItem and "status" in queueItem:
                 if (
                     queueItem["status"] == "warning"

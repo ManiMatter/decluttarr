@@ -39,7 +39,7 @@ async def remove_slow(
         # Find items affected
         affectedItems = []
         alreadyCheckedDownloadIDs = []
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if (
                 "downloadId" in queueItem
                 and "size" in queueItem

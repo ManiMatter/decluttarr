@@ -36,7 +36,7 @@ async def remove_missing_files(
             return 0
         # Find items affected
         affectedItems = []
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if "status" in queueItem:
                 # case to check for failed torrents
                 if (

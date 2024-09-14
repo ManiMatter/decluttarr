@@ -37,10 +37,10 @@ async def remove_orphans(
 
         # Find items affected
         # 1. create a list of the "known" queue items
-        queueIDs = [queueItem["id"] for queueItem in queue["records"]] if queue else []
+        queueIDs = [queueItem["id"] for queueItem in queue] if queue else []
         affectedItems = []
         # 2. compare all queue items against the known ones, and those that are not found are the "unknown" or "orphan" ones
-        for queueItem in full_queue["records"]:
+        for queueItem in full_queue:
             if queueItem["id"] not in queueIDs:
                 affectedItems.append(queueItem)
 

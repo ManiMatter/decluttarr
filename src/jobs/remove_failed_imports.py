@@ -30,8 +30,7 @@ async def remove_failed_imports(
         patterns = settingsDict.get("FAILED_IMPORT_MESSAGE_PATTERNS", [])
         if not patterns:  # If patterns is empty or not present
             patterns = None
-
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if (
                 "status" in queueItem
                 and "trackedDownloadStatus" in queueItem

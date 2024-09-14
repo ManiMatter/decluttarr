@@ -3,9 +3,8 @@ repos:
     hooks:
       - id: black
         name: black
-        entry: venv/bin/black
+        entry: venv/bin/black --config pyproject.toml
         language: system
         types: [python]
 
 
-        
