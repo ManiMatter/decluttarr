@@ -82,7 +82,6 @@ def showSettings(settingsDict):
     logger.info('%s | Removing slow downloads (%s)', str(settingsDict['REMOVE_SLOW']), 'REMOVE_SLOW')
     logger.info('%s | Removing stalled downloads (%s)', str(settingsDict['REMOVE_STALLED']), 'REMOVE_STALLED')
     logger.info('%s | Removing downloads belonging to unmonitored items (%s)', str(settingsDict['REMOVE_UNMONITORED']), 'REMOVE_UNMONITORED') 
-    logger.info('%s | Cancelling files with >100%% availability (%s)', str(settingsDict['CANCEL_UNAVAILABLE_FILES']), 'CANCEL_UNAVAILABLE_FILES')     
     logger.info('')          
     logger.info('Running every: %s', fmt.format(rd(minutes=settingsDict['REMOVE_TIMER'])))  
     if settingsDict['REMOVE_SLOW']: 
