@@ -1,0 +1,8 @@
+[tool.black]
+exclude = '''
+(
+    /(\.venv|venv|\.git|\.mypy_cache|\.pytest_cache|\.tox|build|dist)/   # Exclude virtual environments, caches, build directories
+    | .*definitions\.py$                                                  # Exclude specific files (e.g., definitions.py)
+    | .*loadScripts\.py$                                                  # Exclude loadScripts.py
+)
+'''
