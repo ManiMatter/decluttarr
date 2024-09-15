@@ -1,3 +1,5 @@
+#### Turning off black formatting
+# fmt: off
 ########### Import Libraries
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
@@ -226,8 +228,3 @@ def showLoggerLevel(settingsDict):
         logger.info(f'')
         logger.info(f'*'* 50)
         logger.info(f'*'* 50)
-
-
-
-
-
