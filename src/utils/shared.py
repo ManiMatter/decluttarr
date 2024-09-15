@@ -7,21 +7,29 @@ from src.utils.nest_functions import add_keys_nested_dict, nested_get
 import sys, os, traceback
 
 
+async def get_arr_records(BASE_URL, API_KEY, params={}, end_point=""):
+    # All records from a given endpoint
+    record_count = (await rest_get(f"{BASE_URL}/{end_point}", API_KEY, params))[
+        "totalRecords"
+    ]
+    if record_count == 0:
+        return []
+    records = await rest_get(
+        f"{BASE_URL}/{end_point}",
+        API_KEY,
+        {"page": "1", "pageSize": record_count} | params,
+    )
+    return records["records"]
+
+
 async def get_queue(BASE_URL, API_KEY, params={}):
-    # Retrieves the current queue
+    # Refreshes and retrieves the current queue
     await rest_post(
         url=BASE_URL + "/command",
         json={"name": "RefreshMonitoredDownloads"},
         headers={"X-Api-Key": API_KEY},
     )
-    totalRecords = (await rest_get(f"{BASE_URL}/queue", API_KEY, params))[
-        "totalRecords"
-    ]
-    if totalRecords == 0:
-        return None
-    queue = await rest_get(
-        f"{BASE_URL}/queue", API_KEY, {"page": "1", "pageSize": totalRecords} | params
-    )
+    queue = await get_arr_records(BASE_URL, API_KEY, params=params, end_point="queue")
     queue = filterOutDelayedQueueItems(queue)
     return queue
 
@@ -29,29 +37,26 @@ async def get_queue(BASE_URL, API_KEY, params={}):
 def filterOutDelayedQueueItems(queue):
     # Ignores delayed queue items
     if queue is None:
-        return None
+        return queue
     seen_combinations = set()
-    filtered_records = []
-    for record in queue["records"]:
+    filtered_queue = []
+    for queue_item in queue:
         # Use get() method with default value "No indexer" if 'indexer' key does not exist
-        indexer = record.get("indexer", "No indexer")
-        protocol = record.get("protocol", "No protocol")
-        combination = (record["title"], protocol, indexer)
-        if record["status"] == "delay":
+        indexer = queue_item.get("indexer", "No indexer")
+        protocol = queue_item.get("protocol", "No protocol")
+        combination = (queue_item["title"], protocol, indexer)
+        if queue_item["status"] == "delay":
             if combination not in seen_combinations:
                 seen_combinations.add(combination)
                 logger.debug(
                     ">>> Delayed queue item ignored: %s (Protocol: %s, Indexer: %s)",
-                    record["title"],
+                    queue_item["title"],
                     protocol,
                     indexer,
                 )
         else:
-            filtered_records.append(record)
-    if not filtered_records:
-        return None
-    queue["records"] = filtered_records
-    return queue
+            filtered_queue.append(queue_item)
+    return filtered_queue
 
 
 def privateTrackerCheck(settingsDict, affectedItems, failType, privateDowloadIDs):
@@ -326,10 +331,10 @@ def formattedQueueInfo(queue):
         if not queue:
             return "empty"
         formatted_list = []
-        for record in queue["records"]:
-            download_id = record["downloadId"]
-            title = record["title"]
-            item_id = record["id"]
+        for queue_item in queue:
+            download_id = queue_item["downloadId"]
+            title = queue_item["title"]
+            item_id = queue_item["id"]
             # Check if there is an entry with the same download_id and title
             existing_entry = next(
                 (item for item in formatted_list if item["downloadId"] == download_id),

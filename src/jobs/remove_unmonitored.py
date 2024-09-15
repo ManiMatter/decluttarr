@@ -35,7 +35,7 @@ async def remove_unmonitored(
             return 0
         # Find items affected
         monitoredDownloadIDs = []
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if arr_type == "SONARR":
                 isMonitored = (
                     await rest_get(
@@ -70,7 +70,7 @@ async def remove_unmonitored(
                 monitoredDownloadIDs.append(queueItem["downloadId"])
 
         affectedItems = []
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if queueItem["downloadId"] not in monitoredDownloadIDs:
                 affectedItems.append(
                     queueItem

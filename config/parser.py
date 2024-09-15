@@ -22,9 +22,14 @@ def config_section_map(section):
     options = config.options(section)
     for option in options:
         try:
-            dict1[option] = config.get(section, option)
-        except:
-            print("exception on %s!" % option)
+            value = config.get(section, option)
+            # Attempt to parse JSON for dictionary-like values
+            try:
+                dict1[option] = json.loads(value)
+            except json.JSONDecodeError:
+                dict1[option] = value
+        except Exception as e:
+            print(f"Exception on {option}: {e}")
             dict1[option] = None
     return dict1
 
@@ -38,44 +43,33 @@ def get_config_value(key, config_section, is_mandatory, datatype, default_value=
     if IS_IN_DOCKER:
         config_value = os.environ.get(key)
         if config_value is not None:
-            # print(f'The value retrieved for [{config_section}]: {key} is "{config_value}"')
             config_value = config_value
-            # return config_value
         elif is_mandatory:
             print(f"[ ERROR ]: Variable not specified in Docker environment: {key}")
             sys.exit(0)
         else:
-            # return default_value
-            # print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
             config_value = default_value
-
     else:
         try:
             config_value = config_section_map(config_section).get(key)
         except configparser.NoSectionError:
             config_value = None
         if config_value is not None:
-            # print(f'The value retrieved for [{config_section}]: {key} is "{config_value}"')
             config_value = config_value
-            # return config_value
         elif is_mandatory:
             print(
                 f"[ ERROR ]: Mandatory variable not specified in config file, section [{config_section}]: {key} (data type: {datatype.__name__})"
             )
             sys.exit(0)
         else:
-            # return default_value
-            # print(f'The default value used for [{config_section}]: {key} is "{default_value}" (data type: {type(default_value).__name__})')
             config_value = default_value
 
     # Apply data type
     try:
         if datatype == bool:
             config_value = eval(str(config_value).capitalize())
-        elif datatype == list:
-            if (
-                type(config_value) != list
-            ):  # Default value is already a list, doesn't need to be pushed through json.loads
+        elif datatype == list or datatype == dict:
+            if not isinstance(config_value, datatype):
                 config_value = json.loads(config_value)
         elif config_value is not None:
             config_value = cast(config_value, datatype)

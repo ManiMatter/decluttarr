@@ -30,13 +30,15 @@ async def remove_failed(
         failType = "failed"
         queue = await get_queue(BASE_URL, API_KEY)
         logger.debug("remove_failed/queue IN: %s", formattedQueueInfo(queue))
+
         if not queue:
             return 0
+
         if await qBitOffline(settingsDict, failType, NAME):
             return 0
         # Find items affected
         affectedItems = []
-        for queueItem in queue["records"]:
+        for queueItem in queue:
             if "errorMessage" in queueItem and "status" in queueItem:
                 if queueItem["status"] == "failed":
                     affectedItems.append(queueItem)
