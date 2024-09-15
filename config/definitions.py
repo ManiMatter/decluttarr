@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#### Turning off black formatting
+# fmt: off
 from config.parser import get_config_value
 from config.env_vars import *
 # Define data types and default values for settingsDict variables
