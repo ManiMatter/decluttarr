@@ -1,3 +1,5 @@
+#### Turning off black formatting
+# fmt: off
 ########### Import Libraries
 import logging, verboselogs
 logger = verboselogs.VerboseLogger(__name__)
@@ -82,7 +84,10 @@ def showSettings(settingsDict):
     logger.info('%s | Removing slow downloads (%s)', str(settingsDict['REMOVE_SLOW']), 'REMOVE_SLOW')
     logger.info('%s | Removing stalled downloads (%s)', str(settingsDict['REMOVE_STALLED']), 'REMOVE_STALLED')
     logger.info('%s | Removing downloads belonging to unmonitored items (%s)', str(settingsDict['REMOVE_UNMONITORED']), 'REMOVE_UNMONITORED') 
-    logger.info('')          
+    for arr_type, RESCAN_SETTINGS in settingsDict['RUN_PERIODIC_RESCANS'].items():
+        logger.info('%s/%s (%s) | Search missing/cutoff-unmet items. Max queries/list: %s. Min. days to re-search: %s (%s)', RESCAN_SETTINGS['MISSING'],  RESCAN_SETTINGS['CUTOFF_UNMET'], arr_type, RESCAN_SETTINGS['MAX_CONCURRENT_SCANS'], RESCAN_SETTINGS['MIN_DAYS_BEFORE_RESCAN'], 'RUN_PERIODIC_RESCANS') 
+    logger.info('') 
+    
     logger.info('Running every: %s', fmt.format(rd(minutes=settingsDict['REMOVE_TIMER'])))  
     if settingsDict['REMOVE_SLOW']: 
         logger.info('Minimum speed enforced: %s KB/s', str(settingsDict['MIN_DOWNLOAD_SPEED'])) 
@@ -142,9 +147,10 @@ async def instanceChecks(settingsDict):
                 if isinstance(error, requests.exceptions.HTTPError) and error.response.status_code == 401:
                     logger.error ('> Have you configured %s correctly?', instance + '_KEY')
 
+            arr_status = response.json()
             if not error_occured:  
                 # Check if network settings are pointing to the right Arr-apps
-                current_app = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['appName']
+                current_app = arr_status['appName']
                 if current_app.upper() != instance:
                     error_occured = True
                     logger.error('!! %s Error: !!', instance.title())                    
@@ -152,12 +158,22 @@ async def instanceChecks(settingsDict):
  
             if not error_occured:
                 # Check minimum version requirements are met
-                current_version = (await rest_get(settingsDict[instance + '_URL']+'/system/status', settingsDict[instance + '_KEY']))['version']
+                current_version = arr_status['version']
                 if settingsDict[instance + '_MIN_VERSION']:
                     if version.parse(current_version) < version.parse(settingsDict[instance + '_MIN_VERSION']):
                         error_occured = True
                         logger.error('!! %s Error: !!', instance.title())
                         logger.error('> Please update %s to at least version %s. Current version: %s', instance.title(), settingsDict[instance + '_MIN_VERSION'], current_version)
+
+            if not error_occured:
+                # Check if language is english
+                uiLanguage = (await rest_get(settingsDict[instance + '_URL']+'/config/ui', settingsDict[instance + '_KEY']))['uiLanguage']
+                if uiLanguage > 1: # Not English
+                    error_occured = True
+                    logger.error('!! %s Error: !!', instance.title())
+                    logger.error('> Decluttarr only works correctly if UI language is set to English (under Settings/UI in %s)', instance.title())        
+                    logger.error('> Details: https://github.com/ManiMatter/decluttarr/issues/132)')        
+
             if not error_occured:
                 logger.info('OK | %s', instance.title())     
                 logger.debug('Current version of %s: %s', instance, current_version)  
@@ -223,8 +239,3 @@ def showLoggerLevel(settingsDict):
         logger.info(f'')
         logger.info(f'*'* 50)
         logger.info(f'*'* 50)
-
-
-
-
-

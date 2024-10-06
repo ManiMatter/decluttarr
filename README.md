@@ -35,7 +35,7 @@ You can find a sample docker-compose.yml in the docker folder.
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
 - If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
-- Currently, “*Arr” apps are only supported in English. Refer to issue https://github.com/ManiMatter/decluttarr/issues/92 for more details.
+- Currently, “*Arr” apps are only supported in English. Refer to issue https://github.com/ManiMatter/decluttarr/issues/132 for more details
 
 ## Getting started
 There's two ways to run this:
@@ -55,47 +55,66 @@ services:
     container_name: decluttarr
     restart: always
     environment:
-      - TZ=Europe/Zurich
-      - PUID=1000
-      - PGID=1000
-      ## General
-      - LOG_LEVEL=INFO
-      #- TEST_RUN=True
-      #- SSL_VERIFICATION=False
-      ## Features 
-      - REMOVE_TIMER=10
-      - REMOVE_FAILED=True
-      - REMOVE_FAILED_IMPORTS=True
-      - REMOVE_METADATA_MISSING=True
-      - REMOVE_MISSING_FILES=True     
-      - REMOVE_ORPHANS=True
-      - REMOVE_SLOW=True
-      - REMOVE_STALLED=True
-      - REMOVE_UNMONITORED=True
-      - MIN_DOWNLOAD_SPEED=100
-      - PERMITTED_ATTEMPTS=3
-      - NO_STALLED_REMOVAL_QBIT_TAG=Don't Kill
-      - IGNORE_PRIVATE_TRACKERS=True
-      - FAILED_IMPORT_MESSAGE_PATTERNS=["Not an upgrade for existing", "Not a Custom Format upgrade for existing"]
-      ## Radarr
-      - RADARR_URL=http://radarr:7878
-      - RADARR_KEY=$RADARR_API_KEY
-      ## Sonarr
-      - SONARR_URL=http://sonarr:8989
-      - SONARR_KEY=$SONARR_API_KEY
-      ## Lidarr
-      - LIDARR_URL=http://lidarr:8686
-      - LIDARR_KEY=$LIDARR_API_KEY
-      ## Readarr
-      - READARR_URL=http://readarr:8787
-      - READARR_KEY=$READARR_API_KEY
-      ## Whisparr
-      - WHISPARR_URL=http://whisparr:6969
-      - WHISPARR_KEY=$WHISPARR_API_KEY
-      ## qBittorrent
-      - QBITTORRENT_URL=http://qbittorrent:8080
-      #- QBITTORRENT_USERNAME=Your name
-      #- QBITTORRENT_PASSWORD=Your password
+     TZ=Europe/Zurich
+     PUID=1000
+     PGID=1000
+
+     ## General
+     # TEST_RUN=True
+     # SSL_VERIFICATION=False
+     LOG_LEVEL: INFO
+
+     ## Features 
+     REMOVE_TIMER: 10
+     REMOVE_FAILED: True
+     REMOVE_FAILED_IMPORTS: True
+     REMOVE_METADATA_MISSING: True
+     REMOVE_MISSING_FILES: True
+     REMOVE_ORPHANS: True
+     REMOVE_SLOW: True
+     REMOVE_STALLED: True
+     REMOVE_UNMONITORED: True
+     RUN_PERIODIC_RESCANS: '
+        {
+          "SONARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7},
+          "RADARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7}
+        }'
+
+     # Feature Settings
+     PERMITTED_ATTEMPTS: 3
+     NO_STALLED_REMOVAL_QBIT_TAG: Don't Kill
+     REMOVE_SLOW: True
+     MIN_DOWNLOAD_SPEED: 100     
+     FAILED_IMPORT_MESSAGE_PATTERNS: '
+        [
+          "Not a Custom Format upgrade for existing", 
+          "Not an upgrade for existing"
+        ]'
+
+     ## Radarr
+     RADARR_URL: http://radarr:7878
+     RADARR_KEY: $RADARR_API_KEY
+
+     ## Sonarr
+     SONARR_URL: http://sonarr:8989
+     SONARR_KEY: $SONARR_API_KEY
+
+     ## Lidarr
+     LIDARR_URL=http://lidarr:8686
+     LIDARR_KEY=$LIDARR_API_KEY
+
+     ## Readarr
+     READARR_URL=http://readarr:8787
+     READARR_KEY=$READARR_API_KEY
+
+     ## Whisparr
+     WHISPARR_URL=http://whisparr:6969
+     WHISPARR_KEY=$WHISPARR_API_KEY
+
+     ## qBitorrent
+     QBITTORRENT_URL: http://qbittorrent:8080
+     # QBITTORRENT_USERNAME=Your name
+     # QBITTORRENT_PASSWORD=Your password
 ```
 3) Run `docker-compose up -d` in the directory where the file is located to create the docker container
 Note: Always pull the "**latest**" version. The "dev" version is for testing only, and should only be pulled when contributing code or supporting with bug fixes
@@ -211,6 +230,26 @@ Steers which type of cleaning is applied to the downloads queue
 - Type: Boolean
 - Permissible Values: True, False
 - Is Mandatory: No (Defaults to False)
+
+**RUN_PERIODIC_RESCANS**
+- Steers whether searches are automatically triggered for items that are missing or have not yet met the cutoff
+- Note: Only supports Radarr/Sonarr currently (Lidarr depending on: https://github.com/Lidarr/Lidarr/pull/5084 / Readarr Depending on: https://github.com/Readarr/Readarr/pull/3724)
+- Type: Dictionaire
+- Is Mandatory: No (Defaults to no searches being triggered automatically)
+- "SONARR"/"RADARR" turns on the automatic searches for the respective instances
+- "MISSING"/"CUTOFF_UNMET" turns on the automatic search for those wanted items (defaults to True)
+- "MAX_CONCURRENT_SCANS" specifies the maximum number of items to be searched in each scan. This value dictates how many items are processed per search operation, which occurs according to the interval set by the REMOVE_TIMER.
+- Note: The limit is per wanted list. Thus if both Radarr & Sonarr are set up for automatic searches, both for missing and cutoff unmet items, the actual count may be four times the MAX_CONCURRENT_SCANS
+- "MIN_DAYS_BEFORE_RESCAN" steers the days that need to pass before an item is considered again for a scan
+- Note: RUN_PERIODIC_RESCANS will always search those items that haven been searched for longest
+
+```
+     RUN_PERIODIC_RESCANS: '
+        {
+          "SONARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7},
+          "RADARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7}
+        }'
+```
 
 **MIN_DOWNLOAD_SPEED**
 - Sets the minimum download speed for active downloads

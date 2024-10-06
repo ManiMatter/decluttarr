@@ -12,6 +12,9 @@ REMOVE_ORPHANS              = True
 REMOVE_SLOW                 = True
 REMOVE_STALLED              = True
 REMOVE_UNMONITORED          = True
+RUN_PERIODIC_RESCANS        = {"SONARR": {"MISSING": true, CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7}, "RADARR": {"MISSING": true, "CUTOFF_UNMET": true, "MAX_CONCURRENT_SCANS": 3, "MIN_DAYS_BEFORE_RESCAN": 7}}
+
+[feature_settings]
 MIN_DOWNLOAD_SPEED          = 100
 PERMITTED_ATTEMPTS          = 3
 NO_STALLED_REMOVAL_QBIT_TAG = Don't Kill

@@ -1,6 +1,5 @@
 __pycache__/
 .pytest_cache/
-.vscode/
 config/config.conf
 ToDo 
 snip*.py
