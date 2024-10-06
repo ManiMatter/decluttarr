@@ -35,7 +35,7 @@ You can find a sample docker-compose.yml in the docker folder.
 - When broken torrents are removed the files belonging to them are deleted
 - Across all removal types: A new download from another source is automatically added by radarr/sonarr/lidarr/readarr/whisparr (if available)
 - If you use qBittorrent and none of your torrents get removed and the verbose logs tell that all torrents are protected by the NO_STALLED_REMOVAL_QBIT_TAG even if they are not, you may be using a qBittorrent version that has problems with API calls and you may want to consider switching to a different qBit image (see https://github.com/ManiMatter/decluttarr/issues/56)
-- Currently, “*Arr” apps are only supported in English. Refer to issue https://github.com/ManiMatter/decluttarr/issues/92 for more details.
+- Currently, “*Arr” apps are only supported in English. Refer to issue https://github.com/ManiMatter/decluttarr/issues/132 for more details
 
 ## Getting started
 There's two ways to run this:
