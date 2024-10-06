@@ -59,9 +59,19 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Bump version and push tag
+        id: setversion
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v1
@@ -77,22 +87,12 @@ jobs:
           echo "SHORT_COMMIT_ID=$calculatedSha" >> $GITHUB_ENV
 
       - name: Determine Docker image tag
-        id: setversion
+        id: determine_tag
         run: |
           BRANCH_NAME="${{ github.ref_name }}"
           if [[ "$BRANCH_NAME" == "dev" ]]; then
             IMAGE_TAG="dev"
           elif [[ "$BRANCH_NAME" == "stable" ]]; then
-            # Checkout GitHub Action and set up QEMU and Docker Buildx
-            actions/checkout@v2
-            uses: docker/setup-qemu-action@v3
-            uses: docker/setup-buildx-action@v3
-            # Bump version and push tag
-            uses: anothrNick/github-tag-action@1.36.0
-            id: setversion
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              WITH_V: true
             IMAGE_TAG=${{ steps.setversion.outputs.new_tag }}
           else
             IMAGE_TAG=$BRANCH_NAME
