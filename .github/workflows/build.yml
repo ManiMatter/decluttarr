@@ -114,6 +114,7 @@ jobs:
           IMAGE_NAME: ghcr.io/${{ env.REPO_OWNER }}/decluttarr
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
+          BRANCH_NAME="${{ github.ref_name }}"
           TAG_LATEST=""
           if [[ "$BRANCH_NAME" == "stable" ]]; then
             TAG_LATEST="-t $IMAGE_NAME:latest"
