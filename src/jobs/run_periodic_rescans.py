@@ -108,7 +108,6 @@ async def run_periodic_rescans(
                 }
 
             elif arr_type == "RADARR":
-                print(records)
                 logger.verbose(
                     f">>> Running a scan for {len(records)} {end_point} items:\n"
                     + "\n".join(
