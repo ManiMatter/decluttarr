@@ -12,6 +12,9 @@ async def get_arr_records(BASE_URL, API_KEY, params={}, end_point=""):
     record_count = (await rest_get(f"{BASE_URL}/{end_point}", API_KEY, params))[
         "totalRecords"
     ]
+
+    if end_point == 'queue':
+        logger.debug("DEBUG get_arr_records record_count: %s", record_count)
     if record_count == 0:
         return []
     records = await rest_get(
@@ -19,6 +22,8 @@ async def get_arr_records(BASE_URL, API_KEY, params={}, end_point=""):
         API_KEY,
         {"page": "1", "pageSize": record_count} | params,
     )
+    if end_point == 'queue':
+        logger.debug("DEBUG get_arr_records records: %s", records)
     return records["records"]
 
 
