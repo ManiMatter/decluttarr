@@ -97,7 +97,7 @@ async def run_periodic_rescans(
                     f">>> Running a scan for {len(records)} {end_point} items:\n"
                     + "\n".join(
                         [
-                            f"{episode['series']['title']} (Season {episode['seasonNumber']} / Episode {episode['episodeNumber']} / Aired: {episode['airDate']}): {episode['title']}"
+                            f"{episode['series']['title']} (Season {episode['seasonNumber']} / Episode {episode['episodeNumber']} / Aired: {episode.get('airDate', 'Unknown')}): {episode['title']}"
                             for episode in records
                         ]
                     )
@@ -108,7 +108,6 @@ async def run_periodic_rescans(
                 }
 
             elif arr_type == "RADARR":
-                print(records)
                 logger.verbose(
                     f">>> Running a scan for {len(records)} {end_point} items:\n"
                     + "\n".join(
