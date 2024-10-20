@@ -35,18 +35,24 @@ async def getProtectedAndPrivateFromQbit(settingsDict):
     if settingsDict['QBITTORRENT_URL']:
         # Fetch all torrents
         qbitItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settingsDict['QBIT_COOKIE'])
-        # Fetch protected torrents (by tag)
+
         for qbitItem in qbitItems:
+            # Fetch protected torrents (by tag)
             if settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'] in qbitItem.get('tags'):
                 protectedDownloadIDs.append(str.upper(qbitItem['hash']))
-        # Fetch private torrents
-        if settingsDict['IGNORE_PRIVATE_TRACKERS']:
-            for qbitItem in qbitItems:           
-                qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
-                qbitItem['is_private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
-                if qbitItemProperties.get('is_private', False):
-                    privateDowloadIDs.append(str.upper(qbitItem['hash']))
-        logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "category": item["category"], "tags": item["tags"], "is_private": item.get("is_private", None)} for item in qbitItems]))
+                
+            # Fetch private torrents
+            if settingsDict['IGNORE_PRIVATE_TRACKERS']: 
+                if version.parse(settingsDict['QBIT_VERSION']) >= version.parse('5.1.0'):
+                    if qbitItem['private']:
+                        privateDowloadIDs.append(str.upper(qbitItem['hash']))
+                else:
+                    qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
+                    if qbitItemProperties.get('is_private', False):
+                        privateDowloadIDs.append(str.upper(qbitItem['hash']))
+                    qbitItem['private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
+
+        logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "category": item["category"], "tags": item["tags"], "private": item.get("private", None)} for item in qbitItems]))
     
     logger.debug('main/getProtectedAndPrivateFromQbit/protectedDownloadIDs: %s', str(protectedDownloadIDs))
     logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))   
@@ -197,6 +203,7 @@ async def instanceChecks(settingsDict):
         if not error_occured:
             qbit_version = await rest_get(settingsDict['QBITTORRENT_URL']+'/app/version',cookies=settingsDict['QBIT_COOKIE'])
             qbit_version = qbit_version[1:] # version without _v
+            settingsDict['QBIT_VERSION'] = qbit_version
             if version.parse(qbit_version) < version.parse(settingsDict['QBITTORRENT_MIN_VERSION']):
                 error_occured = True
                 logger.error('-- | %s *** Error: %s ***', 'qBittorrent', 'Please update qBittorrent to at least version %s Current version: %s',settingsDict['QBITTORRENT_MIN_VERSION'], qbit_version)
