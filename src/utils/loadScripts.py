@@ -50,6 +50,9 @@ async def getProtectedAndPrivateFromQbit(settingsDict):
                         privateDowloadIDs.append(str.upper(qbitItem['hash']))
                 else:
                     qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
+                    if not qbitItemProperties:
+                        logger.error("Torrent %s not found on qBittorrent - potentially already removed whilst checking if torrent is private. Consider upgrading qBit to v5.1.0 or newer to avoid this problem.", qbitItem['hash'])
+                        continue
                     if qbitItemProperties.get('is_private', False):
                         privateDowloadIDs.append(str.upper(qbitItem['hash']))
                     qbitItem['private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
@@ -204,9 +207,10 @@ async def instanceChecks(settingsDict):
             if version.parse(qbit_version) < version.parse(settingsDict['QBITTORRENT_MIN_VERSION']):
                 error_occured = True
                 logger.error('-- | %s *** Error: %s ***', 'qBittorrent', 'Please update qBittorrent to at least version %s Current version: %s',settingsDict['QBITTORRENT_MIN_VERSION'], qbit_version)
-
         if not error_occured:
             logger.info('OK | %s', 'qBittorrent')
+            if version.parse(settingsDict['QBIT_VERSION']) < version.parse('5.1.0'):
+                logger.info('>>> [Tip!] qBittorrent (Consider upgrading to v5.1.0 or newer to reduce network overhead. You are on %s)', qbit_version) # Particularly if people have many torrents and use private trackers
             logger.debug('Current version of %s: %s', 'qBittorrent', qbit_version)  
 
 

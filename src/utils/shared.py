@@ -365,9 +365,8 @@ def formattedQueueInfo(queue):
             return "empty"
         formatted_list = []
         for queue_item in queue:
-            download_id = queue_item["downloadId"]
-            title = queue_item["title"]
-            item_id = queue_item["id"]
+            download_id = queue_item.get("downloadId", None)
+            item_id = queue_item.get("id", None)
             # Check if there is an entry with the same download_id and title
             existing_entry = next(
                 (item for item in formatted_list if item["downloadId"] == download_id),
@@ -376,21 +375,17 @@ def formattedQueueInfo(queue):
             if existing_entry:
                 existing_entry["IDs"].append(item_id)
             else:
-                new_entry = {
+                formatted_list.append({
                     "downloadId": download_id,
-                    "downloadTitle": title,
+                    "downloadTitle": queue_item.get("title"),
                     "IDs": [item_id],
-                }
-                formatted_list.append(new_entry)
+                    "protocol": [queue_item.get("protocol")],
+                    "status": [queue_item.get("status")],
+                })
         return formatted_list
     except Exception as error:
         errorDetails("formattedQueueInfo", error)
         logger.debug("formattedQueueInfo/queue for debug: %s", str(queue))
-        if isinstance(error, KeyError):
-            logger.debug(
-                "formattedQueueInfo/queue_item with error for debug: %s", queue_item
-            )
-
         return "error"
 
 
