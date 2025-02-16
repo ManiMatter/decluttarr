@@ -10,7 +10,7 @@ config_file_name = "config.conf"
 config_file_full_path = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), config_file_name
 )
-sys.tracebacklimit = 0  # dont show stack traces in prod mode
+sys.tracebacklimit = 0  # don't show stack traces in prod mode
 config = configparser.ConfigParser()
 config.optionxform = str  # maintain capitalization of config keys
 config.read(config_file_full_path)

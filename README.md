@@ -281,7 +281,7 @@ Steers which type of cleaning is applied to the downloads queue
 ```
 
 There are different yaml notations, any some users suggested the below alternative notation.
-If it you face issues, please first check the closed issues before opening a new one (e.g., https://github.com/ManiMatter/decluttarr/issues/173)
+If you face issues, please first check the closed issues before opening a new one (e.g., https://github.com/ManiMatter/decluttarr/issues/173)
 
 ```
 - RUN_PERIODIC_RESCANS=[
@@ -310,7 +310,7 @@ If it you face issues, please first check the closed issues before opening a new
 
 -   Downloads in qBittorrent tagged with this tag will not be removed
 -   Feature is not available when not using qBittorrent as torrent manager
--   Applies to all types of removal (ie. nothing will be removed automatically by decluttarr)
+-   Applies to all types of removal (i.e. nothing will be removed automatically by decluttarr)
 -   Note: You may want to try "force recheck" to get your stuck torrents manually back up and running
 -   Tag is automatically created in qBittorrent (required qBittorrent is reachable on `QBITTORRENT_URL`)
 -   Important: Also protects unmonitored downloads from being removed (relevant for multi-season packs)
@@ -321,7 +321,7 @@ If it you face issues, please first check the closed issues before opening a new
 
 -   Private torrents in qBittorrent will not be removed from the queue if this is set to true
 -   Only works if qBittorrent is used (does not work with transmission etc.)
--   Applies to all types of removal (ie. nothing will be removed automatically by decluttarr); only exception to this is REMOVE_NO_FORMAT_UPGRADE, where for private trackers the queue item is removed (but the torrent files are kept)
+-   Applies to all types of removal (i.e. nothing will be removed automatically by decluttarr); only exception to this is REMOVE_NO_FORMAT_UPGRADE, where for private trackers the queue item is removed (but the torrent files are kept)
 -   Note: You may want to try "force recheck" to get your stuck torrents manually back up and running
 -   Type: Boolean
 -   Permissible Values: True, False

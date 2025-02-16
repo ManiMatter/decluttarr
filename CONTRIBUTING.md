@@ -40,23 +40,23 @@ Code contributions are very welcome - thanks for helping improve this app!
 3) Only commit code that you have written yourself and is not owned by anybody else
 4) Create a PR against the "dev" branch
 5) Be responsive to code review 
-5) Once the code is reviewed and OK, it will be merged to dev branch, which will create the "dev"-docker image
-6) Help testing that the dev image works
-7= Finally, we will then commit the change to the main branch, which will create the "latest"-docker image
+6) Once the code is reviewed and OK, it will be merged to dev branch, which will create the "dev"-docker image
+7) Help testing that the dev image works
+8) Finally, we will then commit the change to the main branch, which will create the "latest"-docker image
 
 You do not need to know about how to create docker images to contribute here.
 To get started:
 1) Create a fork of decluttarr
 2) Clone the git repository from the dev branch to your local machine `git clone -b dev https://github.com/yourName/decluttarr`
-2) Create a virtual python environment (`python3 -m venv venv`)
-3) Activate the virtual environment (`source venv/bin/activate`)
-4) Install python libraries (`pip install -r docker/requirements.txt`)
-5) Adjust the config/config.conf to your needs
-6) Adjust the code in the files as needed
-7) Run the script (`python3 main.py`)
-8) Push your changes to your own git repo and use a descriptive name for the branch name (e.g. add-feature-to-xyz; bugfix-xyz)
-9) Test the dev-image it creates automatically
-10) Create the PR from your repo to ManiMatter/decluttarr (dev branch)
-11) Make sure all checks pass
-12) Squash your commits
-13) Test that the docker image works that was created when you pushed to your fork 
+3) Create a virtual python environment (`python3 -m venv venv`)
+4) Activate the virtual environment (`source venv/bin/activate`)
+5) Install python libraries (`pip install -r docker/requirements.txt`)
+6) Adjust the config/config.conf to your needs
+7) Adjust the code in the files as needed
+8) Run the script (`python3 main.py`)
+9) Push your changes to your own git repo and use a descriptive name for the branch name (e.g. add-feature-to-xyz; bugfix-xyz)
+10) Test the dev-image it creates automatically
+11) Create the PR from your repo to ManiMatter/decluttarr (dev branch)
+12) Make sure all checks pass 
+13) Squash your commits 
+14) Test that the docker image works that was created when you pushed to your fork 

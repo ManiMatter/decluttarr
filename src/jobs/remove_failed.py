@@ -1,16 +1,12 @@
+import verboselogs
+
 from src.utils.shared import (
     errorDetails,
     formattedQueueInfo,
     get_queue,
-    privateTrackerCheck,
-    protectedDownloadCheck,
     execute_checks,
-    permittedAttemptsCheck,
-    remove_download,
     qBitOffline,
 )
-import sys, os, traceback
-import logging, verboselogs
 
 logger = verboselogs.VerboseLogger(__name__)
 
@@ -31,17 +27,17 @@ async def remove_failed(
         queue = await get_queue(BASE_URL, API_KEY, settingsDict)
         logger.debug("remove_failed/queue IN: %s", formattedQueueInfo(queue))
 
-        if not queue:
+        if not queue or await qBitOffline(settingsDict, failType, NAME):
             return 0
 
-        if await qBitOffline(settingsDict, failType, NAME):
-            return 0
         # Find items affected
-        affectedItems = []
-        for queueItem in queue:
-            if "errorMessage" in queueItem and "status" in queueItem:
-                if queueItem["status"] == "failed":
-                    affectedItems.append(queueItem)
+        affectedItems = [
+            item for item in queue if item.get("status") == failType and "errorMessage" in item
+        ]
+
+        if not affectedItems:
+            return 0
+
         affectedItems = await execute_checks(
             settingsDict,
             affectedItems,
@@ -59,6 +55,7 @@ async def remove_failed(
             doPermittedAttemptsCheck=False,
         )
         return len(affectedItems)
+
     except Exception as error:
         errorDetails(NAME, error)
         return 0

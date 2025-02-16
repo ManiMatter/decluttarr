@@ -1,9 +1,10 @@
 ########### Functions to call radarr/sonarr APIs
-import logging
 import asyncio
+import logging
+
 import requests
 from requests.exceptions import RequestException
-import json
+
 from config.definitions import settingsDict
 
 

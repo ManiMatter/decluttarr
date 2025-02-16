@@ -1,19 +1,14 @@
+import verboselogs
+
 from src.utils.shared import (
     errorDetails,
     formattedQueueInfo,
     get_queue,
-    privateTrackerCheck,
-    protectedDownloadCheck,
     execute_checks,
-    permittedAttemptsCheck,
-    remove_download,
     qBitOffline,
 )
-import sys, os, traceback
-import logging, verboselogs
 
 logger = verboselogs.VerboseLogger(__name__)
-
 
 async def remove_missing_files(
     settingsDict,
@@ -23,42 +18,45 @@ async def remove_missing_files(
     deleted_downloads,
     defective_tracker,
     protectedDownloadIDs,
-    privateDowloadIDs,
+    privateDownloadIDs,
 ):
-    # Detects downloads broken because of missing files. Does not add to blocklist
+    # Detects downloads broken due to missing files. Does not add to blocklist.
     try:
         failType = "missing files"
         queue = await get_queue(BASE_URL, API_KEY, settingsDict)
         logger.debug("remove_missing_files/queue IN: %s", formattedQueueInfo(queue))
-        if not queue:
+
+        if not queue or await qBitOffline(settingsDict, failType, NAME):
             return 0
-        if await qBitOffline(settingsDict, failType, NAME):
+
+        # Define error messages indicating missing files
+        missing_file_errors = {
+            "DownloadClientQbittorrentTorrentStateMissingFiles",
+            "The download is missing files",
+            "qBittorrent is reporting missing files",
+        }
+
+        # Find affected items
+        affectedItems = [
+            item for item in queue
+            if item.get("status") == "warning"
+            and item.get("errorMessage") in missing_file_errors
+        ]
+
+        # Check for failed NZBs/bad files/empty directory cases
+        affectedItems.extend([
+            item for item in queue
+            if item.get("status") == "completed"
+            and any(
+                "messages" in statusMessage
+                and any(msg.startswith("No files found are eligible for import in") for msg in statusMessage["messages"])
+                for statusMessage in item.get("statusMessages", [])
+            )
+        ])
+
+        if not affectedItems:
             return 0
-        # Find items affected
-        affectedItems = []
-        for queueItem in queue:
-            if "status" in queueItem:
-                # case to check for failed torrents
-                if (
-                    queueItem["status"] == "warning"
-                    and "errorMessage" in queueItem
-                    and (
-                        queueItem["errorMessage"]
-                        == "DownloadClientQbittorrentTorrentStateMissingFiles"
-                        or queueItem["errorMessage"] == "The download is missing files"
-                        or queueItem["errorMessage"] == "qBittorrent is reporting missing files"
-                    )
-                ):
-                    affectedItems.append(queueItem)
-                # case to check for failed nzb's/bad files/empty directory
-                if queueItem["status"] == "completed" and "statusMessages" in queueItem:
-                    for statusMessage in queueItem["statusMessages"]:
-                        if "messages" in statusMessage:
-                            for message in statusMessage["messages"]:
-                                if message.startswith(
-                                    "No files found are eligible for import in"
-                                ):
-                                    affectedItems.append(queueItem)
+
         affectedItems = await execute_checks(
             settingsDict,
             affectedItems,
@@ -68,14 +66,16 @@ async def remove_missing_files(
             NAME,
             deleted_downloads,
             defective_tracker,
-            privateDowloadIDs,
+            privateDownloadIDs,
             protectedDownloadIDs,
             addToBlocklist=False,
             doPrivateTrackerCheck=True,
             doProtectedDownloadCheck=True,
             doPermittedAttemptsCheck=False,
         )
+
         return len(affectedItems)
+
     except Exception as error:
         errorDetails(NAME, error)
         return 0

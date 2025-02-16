@@ -1,7 +1,9 @@
 #### Turning off black formatting
 # fmt: off
 ########### Import Libraries
-import logging, verboselogs
+import logging
+import verboselogs
+
 logger = verboselogs.VerboseLogger(__name__)
 from dateutil.relativedelta import relativedelta as rd
 import requests 

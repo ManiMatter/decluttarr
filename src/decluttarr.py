@@ -1,5 +1,6 @@
 # Cleans the download queue
-import logging, verboselogs
+import sys
+import verboselogs
 
 logger = verboselogs.VerboseLogger(__name__)
 from src.utils.shared import errorDetails, get_queue
@@ -14,8 +15,7 @@ from src.jobs.remove_unmonitored import remove_unmonitored
 from src.jobs.run_periodic_rescans import run_periodic_rescans
 from src.utils.trackers import Deleted_Downloads
 
-
-async def queueCleaner(
+async def queuecleaner(
     settingsDict,
     arr_type,
     defective_tracker,
@@ -23,34 +23,21 @@ async def queueCleaner(
     protectedDownloadIDs,
     privateDowloadIDs,
 ):
-    # Read out correct instance depending on radarr/sonarr flag
-    run_dict = {}
-    if arr_type == "RADARR":
-        BASE_URL = settingsDict["RADARR_URL"]
-        API_KEY = settingsDict["RADARR_KEY"]
-        NAME = settingsDict["RADARR_NAME"]
-        full_queue_param = "includeUnknownMovieItems"
-    elif arr_type == "SONARR":
-        BASE_URL = settingsDict["SONARR_URL"]
-        API_KEY = settingsDict["SONARR_KEY"]
-        NAME = settingsDict["SONARR_NAME"]
-        full_queue_param = "includeUnknownSeriesItems"
-    elif arr_type == "LIDARR":
-        BASE_URL = settingsDict["LIDARR_URL"]
-        API_KEY = settingsDict["LIDARR_KEY"]
-        NAME = settingsDict["LIDARR_NAME"]
-        full_queue_param = "includeUnknownArtistItems"
-    elif arr_type == "READARR":
-        BASE_URL = settingsDict["READARR_URL"]
-        API_KEY = settingsDict["READARR_KEY"]
-        NAME = settingsDict["READARR_NAME"]
-        full_queue_param = "includeUnknownAuthorItems"
-    elif arr_type == "WHISPARR":
-        BASE_URL = settingsDict["WHISPARR_URL"]
-        API_KEY = settingsDict["WHISPARR_KEY"]
-        NAME = settingsDict["WHISPARR_NAME"]
-        full_queue_param = "includeUnknownSeriesItems"
-    else:
+    ARR_SETTINGS = {
+        "RADARR": ("RADARR_URL", "RADARR_KEY", "RADARR_NAME", "includeUnknownMovieItems"),
+        "SONARR": ("SONARR_URL", "SONARR_KEY", "SONARR_NAME", "includeUnknownSeriesItems"),
+        "LIDARR": ("LIDARR_URL", "LIDARR_KEY", "LIDARR_NAME", "includeUnknownArtistItems"),
+        "READARR": ("READARR_URL", "READARR_KEY", "READARR_NAME", "includeUnknownAuthorItems"),
+        "WHISPARR": ("WHISPARR_URL", "WHISPARR_KEY", "WHISPARR_NAME", "includeUnknownSeriesItems"),
+    }
+
+    # Retrieve settings based on arr_type(instance)
+    try:
+        url_key, api_key, name_key, full_queue_param = ARR_SETTINGS[arr_type]
+        BASE_URL = settingsDict[url_key]
+        API_KEY = settingsDict[api_key]
+        NAME = settingsDict[name_key]
+    except KeyError:
         logger.error("Unknown arr_type specified, exiting: %s", str(arr_type))
         sys.exit()
 
@@ -66,118 +53,53 @@ async def queueCleaner(
             deleted_downloads = Deleted_Downloads([])
             items_detected = 0
 
-            if settingsDict["REMOVE_FAILED"]:
-                items_detected += await remove_failed(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                )
+            # Mapping removal functions to their corresponding settings keys
+            removal_tasks = {
+                "REMOVE_FAILED": remove_failed,
+                "REMOVE_FAILED_IMPORTS": remove_failed_imports,
+                "REMOVE_METADATA_MISSING": remove_metadata_missing,
+                "REMOVE_MISSING_FILES": remove_missing_files,
+                "REMOVE_ORPHANS": remove_orphans,
+                "REMOVE_SLOW": remove_slow,
+                "REMOVE_STALLED": remove_stalled,
+                "REMOVE_UNMONITORED": remove_unmonitored,
+            }
 
-            if settingsDict["REMOVE_FAILED_IMPORTS"]:
-                items_detected += await remove_failed_imports(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                )
+            # Common arguments for all functions
+            common_args = (
+                settingsDict,
+                BASE_URL,
+                API_KEY,
+                NAME,
+                deleted_downloads,
+                defective_tracker,
+                protectedDownloadIDs,
+                privateDowloadIDs,
+            )
 
-            if settingsDict["REMOVE_METADATA_MISSING"]:
-                items_detected += await remove_metadata_missing(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                )
+            # Iterate over the mapping and call functions dynamically
+            for key, func in removal_tasks.items():
+                if settingsDict.get(key):
+                    extra_args = ()
 
-            if settingsDict["REMOVE_MISSING_FILES"]:
-                items_detected += await remove_missing_files(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                )
+                    # Additional arguments for specific functions
+                    if key == "REMOVE_ORPHANS":
+                        extra_args = (full_queue_param,)
+                    elif key == "REMOVE_SLOW":
+                        extra_args = (download_sizes_tracker,)
+                    elif key == "REMOVE_UNMONITORED":
+                        extra_args = (arr_type,)
 
-            if settingsDict["REMOVE_ORPHANS"]:
-                items_detected += await remove_orphans(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                    full_queue_param,
-                )
+                    items_detected += await func(*common_args, *extra_args)
 
-            if settingsDict["REMOVE_SLOW"]:
-                items_detected += await remove_slow(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                    download_sizes_tracker,
-                )
-
-            if settingsDict["REMOVE_STALLED"]:
-                items_detected += await remove_stalled(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                )
-
-            if settingsDict["REMOVE_UNMONITORED"]:
-                items_detected += await remove_unmonitored(
-                    settingsDict,
-                    BASE_URL,
-                    API_KEY,
-                    NAME,
-                    deleted_downloads,
-                    defective_tracker,
-                    protectedDownloadIDs,
-                    privateDowloadIDs,
-                    arr_type,
-                )
             if items_detected == 0:
                 logger.verbose(">>> Queue is clean.")
         else:
             logger.verbose(">>> Queue is empty.")
 
-        if settingsDict["RUN_PERIODIC_RESCANS"]:
-            await run_periodic_rescans(
-                settingsDict,
-                BASE_URL,
-                API_KEY,
-                NAME,
-                arr_type,
-            )
+        # Run periodic rescans if enabled
+        if settingsDict.get("RUN_PERIODIC_RESCANS"):
+            await run_periodic_rescans(settingsDict, BASE_URL, API_KEY, NAME, arr_type)
 
     except Exception as error:
         errorDetails(NAME, error)
-    return

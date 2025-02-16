@@ -1,15 +1,13 @@
 # Import Libraries
 import asyncio
-import logging, verboselogs
+import verboselogs
 
 logger = verboselogs.VerboseLogger(__name__)
-import json
 
 # Import Functions
 from config.definitions import settingsDict
 from src.utils.loadScripts import *
-from src.decluttarr import queueCleaner
-from src.utils.rest import rest_get, rest_post
+from src.decluttarr import queuecleaner
 from src.utils.trackers import Defective_Tracker, Download_Sizes_Tracker
 
 # Hide SSL Verification Warnings
@@ -75,9 +73,10 @@ async def main(settingsDict):
             settingsDict
         )
 
-        # Run script for each instance
+        # Run script for each instance(arr)
         for instance in settingsDict["INSTANCES"]:
-            await queueCleaner(
+            logger.verbose("Checking %s", instance)
+            await queuecleaner(
                 settingsDict,
                 instance,
                 defective_tracker,
@@ -90,8 +89,6 @@ async def main(settingsDict):
 
         # Wait for the next run
         await asyncio.sleep(settingsDict["REMOVE_TIMER"] * 60)
-    return
-
 
 if __name__ == "__main__":
     asyncio.run(main(settingsDict))

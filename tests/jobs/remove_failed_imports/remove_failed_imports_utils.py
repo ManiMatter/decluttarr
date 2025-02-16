@@ -59,7 +59,7 @@ async def run_test(
         deleted_downloads=set(),
         defective_tracker=set(),
         protectedDownloadIDs=set(),
-        privateDowloadIDs=set(),
+        privateDownloadIDs=set(),
     )
 
     # Assertions
