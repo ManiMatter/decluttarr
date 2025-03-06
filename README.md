@@ -100,6 +100,8 @@ services:
         "Not an upgrade for existing"
         ]'
       IGNORED_DOWNLOAD_CLIENTS: ["emulerr"]
+      BLOCKLIST_REMOVED: True
+      UPDATE_CATEGORY: False
 
       ## Radarr
       RADARR_URL: http://radarr:7878
