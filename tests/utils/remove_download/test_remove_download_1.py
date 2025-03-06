@@ -8,7 +8,11 @@ failType = "failed import"
 
 @pytest.mark.asyncio
 async def test_removal_with_removal_messages(monkeypatch, caplog):
-    settingsDict = {"TEST_RUN": True}
+    settingsDict = {
+        "TEST_RUN": True,
+        "BLOCKLIST_REMOVED": True, 
+        "UPDATE_CATEGORY": False  # new
+    }
     removeFromClient = True
     expected_removal_messages = {
         ">>> Removing failed import download: Sonarr Title 1",
@@ -30,7 +34,11 @@ async def test_removal_with_removal_messages(monkeypatch, caplog):
 
 @pytest.mark.asyncio
 async def test_schizophrenic_removal_with_removal_messages(monkeypatch, caplog):
-    settingsDict = {"TEST_RUN": True}
+    settingsDict = {
+        "TEST_RUN": True,
+        "BLOCKLIST_REMOVED": True, 
+        "UPDATE_CATEGORY": False  # new
+    }
     removeFromClient = False
     expected_removal_messages = {
         ">>> Removing failed import download (without removing from torrent client): Sonarr Title 1",
