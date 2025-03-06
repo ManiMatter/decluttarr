@@ -298,14 +298,49 @@ async def remove_download(
     deleted_downloads,
     removeFromClient,
 ):
-    # Removes downloads and creates log entry
+    """
+    Removes the queue item from the *Arr application. By default:
+      - 'removeFromClient' decides if the torrent/nzb is also removed from its download client
+      - 'addToBlocklist' decides if the item is blocklisted in *Arr
+      - If BLOCKLIST_REMOVED = False, items will never be blocklisted (even if addToBlocklist=True).
+      - If UPDATE_CATEGORY = True, we do removeFromClient=False + changeCategory=True
+    """
     logger.debug(
         "remove_download/deleted_downloads.dict IN: %s", str(deleted_downloads.dict)
     )
-    if affectedItem["downloadId"] not in deleted_downloads.dict:
-        # "schizophrenic" removal:
-        # Yes, the failed imports are removed from the -arr apps (so the removal kicks still in)
-        # But in the torrent client they are kept
+
+    # Only proceed if we haven't removed this downloadId before
+    if affectedItem["downloadId"] in deleted_downloads.dict:
+        logger.debug("remove_download: Skipping %s because already removed.", affectedItem["downloadId"])
+        return
+
+    # final_blocklist is true if:
+    #   (the job wants blocklist) AND (global BLOCKLIST_REMOVED is true)
+    final_blocklist = addToBlocklist and settingsDict["BLOCKLIST_REMOVED"]
+
+    if settingsDict["UPDATE_CATEGORY"]:
+        # If user wants to "update category," we:
+        # - do NOT remove from client
+        # - set changeCategory=True
+        params = {
+            "removeFromClient": False,
+            "blocklist": final_blocklist,
+            "skipRedownload": False,
+            "changeCategory": True
+        }
+        logger.info(
+            ">>> Updating category (rather than removing from client) for %s download: %s",
+            failType,
+            affectedItem["title"]
+        )
+        if final_blocklist:
+            logger.debug(">>> Also blocklisting this item in *Arr due to BLOCKLIST_REMOVED=True.")
+    else:
+        # Standard removal approach
+        params = {
+            "removeFromClient": removeFromClient,
+            "blocklist": final_blocklist,
+        }
         if removeFromClient:
             logger.info(">>> Removing %s download: %s", failType, affectedItem["title"])
         else:
@@ -315,23 +350,25 @@ async def remove_download(
                 affectedItem["title"],
             )
 
-        # Print out detailed removal messages (if any were added in the jobs)
-        if "removal_messages" in affectedItem:
-            for removal_message in affectedItem["removal_messages"]:
-                logger.info(removal_message)
+    # Print out any "removal_messages"
+    if "removal_messages" in affectedItem:
+        for removal_message in affectedItem["removal_messages"]:
+            logger.info(removal_message)
 
-        if not settingsDict["TEST_RUN"]:
-            await rest_delete(
-                f'{BASE_URL}/queue/{affectedItem["id"]}',
-                API_KEY,
-                {"removeFromClient": removeFromClient, "blocklist": addToBlocklist},
-            )
-        deleted_downloads.dict.append(affectedItem["downloadId"])
+    # Actually call *Arr, unless in test mode
+    if not settingsDict["TEST_RUN"]:
+        response = await rest_delete(
+            f'{BASE_URL}/queue/{affectedItem["id"]}',
+            API_KEY,
+            params,
+        )
+        logger.debug("remove_download - API response: %s", response)
 
+    # Record that we removed it
+    deleted_downloads.dict.append(affectedItem["downloadId"])
     logger.debug(
         "remove_download/deleted_downloads.dict OUT: %s", str(deleted_downloads.dict)
     )
-    return
 
 
 def errorDetails(NAME, error):

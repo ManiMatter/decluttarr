@@ -28,6 +28,8 @@ NO_STALLED_REMOVAL_QBIT_TAG     = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG'
 IGNORE_PRIVATE_TRACKERS         = get_config_value('IGNORE_PRIVATE_TRACKERS',       'feature_settings',     False,  bool,   True)
 FAILED_IMPORT_MESSAGE_PATTERNS  = get_config_value('FAILED_IMPORT_MESSAGE_PATTERNS','feature_settings',     False,  list,   [])
 IGNORED_DOWNLOAD_CLIENTS        = get_config_value('IGNORED_DOWNLOAD_CLIENTS',      'feature_settings',     False,  list,   [])
+BLOCKLIST_REMOVED               = get_config_value('BLOCKLIST_REMOVED',             'feature_settings',     False,  bool,   True)
+UPDATE_CATEGORY                 = get_config_value('UPDATE_CATEGORY',               'feature_settings',     False,  bool,   False)
 
 # Radarr
 RADARR_URL                      = get_config_value('RADARR_URL',                    'radarr',       False,  str)

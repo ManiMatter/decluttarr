@@ -344,6 +344,20 @@ If it you face issues, please first check the closed issues before opening a new
 - Type: List
 - Is Mandatory: No (Defaults to [], which means no download clients are skipped)
 
+### BLOCKLIST_REMOVED
+- **Type**: Boolean
+- **Default**: `true`
+- **Description**: Controls whether any removed queue items in *Arr should be blocklisted.
+  - When `true`, if a particular job calls for blocklisting (`addToBlocklist=True`), decluttarr will pass `blocklist=true` to *Arr.
+  - When `false`, blocklisting is disabled globally, so `blocklist` is never passed to *Arr — even if a job attempts it.
+
+### UPDATE_CATEGORY
+- **Type**: Boolean
+- **Default**: `false`
+- **Description**: When set `true`, decluttarr calls `DELETE /queue/{id}?removeFromClient=false&changeCategory=true`
+  for all queue removals. This effectively changes the download category in your torrent client (post‐import category).
+  - Note that blocklisting may still occur simultaneously if `BLOCKLIST_REMOVED=true` and a job wants blocklisting.
+
 ---
 
 ### **Radarr section**
