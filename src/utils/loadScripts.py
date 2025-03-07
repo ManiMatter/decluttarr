@@ -95,6 +95,8 @@ def showSettings(settingsDict):
     logger.info('%s | Removing slow downloads (%s)', str(settingsDict['REMOVE_SLOW']), 'REMOVE_SLOW')
     logger.info('%s | Removing stalled downloads (%s)', str(settingsDict['REMOVE_STALLED']), 'REMOVE_STALLED')
     logger.info('%s | Removing downloads belonging to unmonitored items (%s)', str(settingsDict['REMOVE_UNMONITORED']), 'REMOVE_UNMONITORED') 
+    logger.info('%s | Allow blocklisting of removed queue items (%s)', str(settingsDict['BLOCKLIST_REMOVED']), 'BLOCKLIST_REMOVED')
+    logger.info('%s | Move private tracker queue items to their post-import category (%s)', str(settingsDict['UPDATE_CATEGORY']), 'UPDATE_CATEGORY')
     for arr_type, RESCAN_SETTINGS in settingsDict['RUN_PERIODIC_RESCANS'].items():
         logger.info('%s/%s (%s) | Search missing/cutoff-unmet items. Max queries/list: %s. Min. days to re-search: %s (%s)', RESCAN_SETTINGS['MISSING'],  RESCAN_SETTINGS['CUTOFF_UNMET'], arr_type, RESCAN_SETTINGS['MAX_CONCURRENT_SCANS'], RESCAN_SETTINGS['MIN_DAYS_BEFORE_RESCAN'], 'RUN_PERIODIC_RESCANS') 
     logger.info('') 
