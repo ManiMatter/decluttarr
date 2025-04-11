@@ -8,6 +8,7 @@ _Like this app? Thanks for giving it a_ ⭐️
 -   [Dependencies & Hints & FAQ](#dependencies--hints--faq)
 -   [Getting started](#getting-started)
 -   [Explanation of the settings](#explanation-of-the-settings)
+-   [Migration Guide](#migration-guide)
 -   [Credits](#credits)
 -   [Disclaimer](#disclaimer)
 
@@ -456,6 +457,10 @@ If a different torrent manager is used, comment out this section (see above the 
 
 -   Password used to log in to qBittorrent
 -   Optional; not needed if authentication bypassing on qBittorrent is enabled (for instance for local connections)
+
+## Migration Guide
+
+If you're upgrading from a previous version of Decluttarr, please review the [Migration Guide](MIGRATION_GUIDE.md) for details on transitioning from single-instance configuration to multi-instance configuration.
 
 ## Credits
 

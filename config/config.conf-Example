@@ -25,24 +25,44 @@ BLOCKLIST_REMOVED           = True
 UPDATE_CATEGORY             = False
 
 [radarr]
+# Single-instance configuration (deprecated)
 RADARR_URL                  = http://radarr:7878
 RADARR_KEY                  = $RADARR_API_KEY
 
+# Multi-instance configuration (preferred)
+RADARR_INSTANCES            = [{"url": "http://radarr:7878", "key": "$RADARR_API_KEY"}]
+
 [sonarr]
+# Single-instance configuration (deprecated)
 SONARR_URL                  = http://sonarr:8989
 SONARR_KEY                  = $SONARR_API_KEY
 
+# Multi-instance configuration (preferred)
+SONARR_INSTANCES          = [{"url": "http://sonarr:8989", "key": "$SONARR_API_KEY"}]
+
 [lidarr]
+# Single-instance configuration (deprecated)
 LIDARR_URL                  = http://lidarr:8686
 LIDARR_KEY                  = $LIDARR_API_KEY
 
+# Multi-instance configuration (preferred)
+LIDARR_INSTANCES          = [{"url": "http://lidarr:8686", "key": "$LIDARR_API_KEY"}]
+
 [readarr]
+# Single-instance configuration (deprecated)
 READARR_URL                  = http://lidarr:8787
 READARR_KEY                  = $READARR_API_KEY
 
+# Multi-instance configuration (preferred)
+READARR_INSTANCES          = [{"url": "http://lidarr:8787", "key": "$READARR_API_KEY"}]
+
 [whisparr]
+# Single-instance configuration (deprecated)
 WHISPARR_URL                = http://whisparr:6969
 WHISPARR_KEY                = $WHISPARR_API_KEY
+
+# Multi-instance configuration (preferred)
+WHISPARR_INSTANCES          = [{"url": "http://whisparr:6969", "key": "$WHISPARR_API_KEY"}]
 
 [qbittorrent]
 QBITTORRENT_URL             = http://qbittorrent:8080
