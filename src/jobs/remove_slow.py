@@ -71,8 +71,8 @@ async def remove_slow(
                         if (limit > 0):
                             # if the difference between the speed and the limit is less than the threshold, skip the item
                             if (limit - speed) < settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"]:
-                                logger.debug(
-                                    "remove_slow/speed limit reached, skip checking slow speed: %s (Speed: %d KB/s, Limit: %d KB/s, Min Diff: %d KB/s)",
+                                logger.info(
+                                    ">>> Detected speed limit reached, skip checking slow speed: %s (Speed: %d KB/s, Limit: %d KB/s, Min Diff: %d KB/s)",
                                     queueItem["title"],
                                     speed,
                                     limit,
