@@ -24,11 +24,12 @@ setLoggingFormat(settingsDict)
 
 # Main function
 async def main(settingsDict):
-    # Adds to settings Dict the instances that are actually configures
-    settingsDict["INSTANCES"] = []
-    for arrApplication in settingsDict["SUPPORTED_ARR_APPS"]:
-        if settingsDict[arrApplication + "_URL"]:
-            settingsDict["INSTANCES"].append(arrApplication)
+    # Build multi-instance dictionary for ARR apps
+    settingsDict["INSTANCES"] = {}
+    for app in settingsDict["SUPPORTED_ARR_APPS"]:
+        instances = settingsDict.get(app + "_INSTANCES", [])
+        if instances:
+            settingsDict["INSTANCES"][app] = instances
 
     # Pre-populates the dictionaries (in classes) that track the items that were already caught as having problems or removed
     defectiveTrackingInstances = {}
@@ -75,16 +76,18 @@ async def main(settingsDict):
             settingsDict
         )
 
-        # Run script for each instance
-        for instance in settingsDict["INSTANCES"]:
-            await queueCleaner(
-                settingsDict,
-                instance,
-                defective_tracker,
-                download_sizes_tracker,
-                protectedDownloadIDs,
-                privateDowloadIDs,
-            )
+        # Run script for each instance of each ARR app
+        for app, instances in settingsDict["INSTANCES"].items():
+            for instance in instances:
+                await queueCleaner(
+                    settingsDict,
+                    app,
+                    instance,
+                    defective_tracker,
+                    download_sizes_tracker,
+                    protectedDownloadIDs,
+                    privateDowloadIDs,
+                )
         logger.verbose("")
         logger.verbose("Queue clean-up complete!")
 

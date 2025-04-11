@@ -18,6 +18,7 @@ from src.utils.trackers import Deleted_Downloads
 async def queueCleaner(
     settingsDict,
     arr_type,
+    instance,
     defective_tracker,
     download_sizes_tracker,
     protectedDownloadIDs,
@@ -26,29 +27,29 @@ async def queueCleaner(
     # Read out correct instance depending on radarr/sonarr flag
     run_dict = {}
     if arr_type == "RADARR":
-        BASE_URL = settingsDict["RADARR_URL"]
-        API_KEY = settingsDict["RADARR_KEY"]
-        NAME = settingsDict["RADARR_NAME"]
+        BASE_URL = instance["url"]
+        API_KEY = instance["key"]
+        NAME = instance.get("name", "RADARR")
         full_queue_param = "includeUnknownMovieItems"
     elif arr_type == "SONARR":
-        BASE_URL = settingsDict["SONARR_URL"]
-        API_KEY = settingsDict["SONARR_KEY"]
-        NAME = settingsDict["SONARR_NAME"]
+        BASE_URL = instance["url"]
+        API_KEY = instance["key"]
+        NAME = instance.get("name", "SONARR")
         full_queue_param = "includeUnknownSeriesItems"
     elif arr_type == "LIDARR":
-        BASE_URL = settingsDict["LIDARR_URL"]
-        API_KEY = settingsDict["LIDARR_KEY"]
-        NAME = settingsDict["LIDARR_NAME"]
+        BASE_URL = instance["url"]
+        API_KEY = instance["key"]
+        NAME = instance.get("name", "LIDARR")
         full_queue_param = "includeUnknownArtistItems"
     elif arr_type == "READARR":
-        BASE_URL = settingsDict["READARR_URL"]
-        API_KEY = settingsDict["READARR_KEY"]
-        NAME = settingsDict["READARR_NAME"]
+        BASE_URL = instance["url"]
+        API_KEY = instance["key"]
+        NAME = instance.get("name", "READARR")
         full_queue_param = "includeUnknownAuthorItems"
     elif arr_type == "WHISPARR":
-        BASE_URL = settingsDict["WHISPARR_URL"]
-        API_KEY = settingsDict["WHISPARR_KEY"]
-        NAME = settingsDict["WHISPARR_NAME"]
+        BASE_URL = instance["url"]
+        API_KEY = instance["key"]
+        NAME = instance.get("name", "WHISPARR")
         full_queue_param = "includeUnknownSeriesItems"
     else:
         logger.error("Unknown arr_type specified, exiting: %s", str(arr_type))

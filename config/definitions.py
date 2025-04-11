@@ -31,40 +31,28 @@ IGNORED_DOWNLOAD_CLIENTS        = get_config_value('IGNORED_DOWNLOAD_CLIENTS',  
 BLOCKLIST_REMOVED               = get_config_value('BLOCKLIST_REMOVED',             'feature_settings',     False,  bool,   True)
 UPDATE_CATEGORY                 = get_config_value('UPDATE_CATEGORY',               'feature_settings',     False,  bool,   False)
 
-# Radarr
-RADARR_URL                      = get_config_value('RADARR_URL',                    'radarr',       False,  str)
-RADARR_KEY                      = None if RADARR_URL == None else \
-                                  get_config_value('RADARR_KEY',                    'radarr',       True,   str)
+# Radarr Instances
+RADARR_INSTANCES = get_config_value('RADARR_INSTANCES', 'radarr', False, list, [])
 
-# Sonarr        
-SONARR_URL                      = get_config_value('SONARR_URL',                    'sonarr',       False,  str)
-SONARR_KEY                      = None if SONARR_URL == None else \
-                                  get_config_value('SONARR_KEY',                    'sonarr',       True,   str)
+# Sonarr Instances
+SONARR_INSTANCES = get_config_value('SONARR_INSTANCES', 'sonarr', False, list, [])
 
-# Lidarr        
-LIDARR_URL                      = get_config_value('LIDARR_URL',                    'lidarr',       False,  str)
-LIDARR_KEY                      = None if LIDARR_URL == None else \
-                                  get_config_value('LIDARR_KEY',                    'lidarr',       True,   str)
+# Lidarr Instances
+LIDARR_INSTANCES = get_config_value('LIDARR_INSTANCES', 'lidarr', False, list, [])
 
-# Readarr       
-READARR_URL                     = get_config_value('READARR_URL',                   'readarr',       False,  str)
-READARR_KEY                     = None if READARR_URL == None else \
-                                  get_config_value('READARR_KEY',                   'readarr',       True,   str)
+# Readarr Instances
+READARR_INSTANCES = get_config_value('READARR_INSTANCES', 'readarr', False, list, [])
 
-# Whisparr    
-WHISPARR_URL                    = get_config_value('WHISPARR_URL',                  'whisparr',       False,  str)
-WHISPARR_KEY                    = None if WHISPARR_URL == None else \
-                                  get_config_value('WHISPARR_KEY',                  'whisparr',       True,   str)
+# Whisparr Instances
+WHISPARR_INSTANCES = get_config_value('WHISPARR_INSTANCES', 'whisparr', False, list, [])
 
-# qBittorrent   
-QBITTORRENT_URL                 = get_config_value('QBITTORRENT_URL',               'qbittorrent',  False,  str,    '')
-QBITTORRENT_USERNAME            = get_config_value('QBITTORRENT_USERNAME',          'qbittorrent',  False,  str,    '')
-QBITTORRENT_PASSWORD            = get_config_value('QBITTORRENT_PASSWORD',          'qbittorrent',  False,  str,    '')
+# qBittorrent Instances
+QBITTORRENT_INSTANCES = get_config_value('QBITTORRENT_INSTANCES', 'qbittorrent', False, list, [])
 
 ########################################################################################################################
 ########### Validate settings
-if not (IS_IN_PYTEST or RADARR_URL or SONARR_URL or LIDARR_URL or READARR_URL or WHISPARR_URL):
-    print(f'[ ERROR ]: No Radarr/Sonarr/Lidarr/Readarr/Whisparr URLs specified (nothing to monitor)')
+if not (IS_IN_PYTEST or RADARR_INSTANCES or SONARR_INSTANCES or LIDARR_INSTANCES or READARR_INSTANCES or WHISPARR_INSTANCES):
+    print(f'[ ERROR ]: No Radarr/Sonarr/Lidarr/Readarr/Whisparr instances specified (nothing to monitor)')
     exit()
 
 
@@ -103,12 +91,18 @@ for app in rescan_supported_apps:
                     RUN_PERIODIC_RESCANS[app][param] = default
 
 ########### Enrich setting variables
-if RADARR_URL:      RADARR_URL =        RADARR_URL.rstrip('/')      + '/api/v3'
-if SONARR_URL:      SONARR_URL =        SONARR_URL.rstrip('/')      + '/api/v3'
-if LIDARR_URL:      LIDARR_URL =        LIDARR_URL.rstrip('/')      + '/api/v1'
-if READARR_URL:     READARR_URL =       READARR_URL.rstrip('/')     + '/api/v1'
-if WHISPARR_URL:    WHISPARR_URL =      WHISPARR_URL.rstrip('/')    + '/api/v3'
-if QBITTORRENT_URL: QBITTORRENT_URL =   QBITTORRENT_URL.rstrip('/') + '/api/v2'
+for instance in RADARR_INSTANCES:
+    instance['url'] = instance['url'].rstrip('/') + '/api/v3'
+for instance in SONARR_INSTANCES:
+    instance['url'] = instance['url'].rstrip('/') + '/api/v3'
+for instance in LIDARR_INSTANCES:
+    instance['url'] = instance['url'].rstrip('/') + '/api/v1'
+for instance in READARR_INSTANCES:
+    instance['url'] = instance['url'].rstrip('/') + '/api/v1'
+for instance in WHISPARR_INSTANCES:
+    instance['url'] = instance['url'].rstrip('/') + '/api/v3'
+for instance in QBITTORRENT_INSTANCES:
+    instance['url'] = instance['url'].rstrip('/') + '/api/v2'
 
 
 RADARR_MIN_VERSION = "5.3.6.8608"
