@@ -36,6 +36,19 @@ async def remove_slow(
             return 0
         if await qBitOffline(settingsDict, failType, NAME):
             return 0
+        
+        # determine if the global download speed is too close to global download speed limit
+        limit, speed = await getDownloadSpeedLimit(settingsDict, NAME)
+        # if the difference between the speed and the limit is less than the threshold, skip the item. A limit of 0 means no limit.
+        if (limit > 0 and (limit - speed) < settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"]):
+            logger.info(
+                ">>> Detected speed limit reached, skip checking slow speed (Speed: %d KB/s, Limit: %d KB/s, Diff: %d KB/s, Min Diff: %d KB/s)",
+                speed,
+                limit,
+                limit-speed,
+                settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"],
+            )
+            return 0
         # Find items affected
         affectedItems = []
         alreadyCheckedDownloadIDs = []
@@ -64,21 +77,6 @@ async def remove_slow(
                                 queueItem["title"],
                             )
                             continue
-                        # determine if the global download speed is too close to global download speed limit if speed limit is set (not equal to 0)
-                        limit, speed = await getDownloadSpeedLimit(
-                            settingsDict, queueItem, NAME
-                        )
-                        if (limit > 0):
-                            # if the difference between the speed and the limit is less than the threshold, skip the item
-                            if (limit - speed) < settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"]:
-                                logger.info(
-                                    ">>> Detected speed limit reached, skip checking slow speed: %s (Speed: %d KB/s, Limit: %d KB/s, Min Diff: %d KB/s)",
-                                    queueItem["title"],
-                                    speed,
-                                    limit,
-                                    settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"],
-                                )
-                                continue
                         # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
                         downloadedSize, previousSize, increment, speed = (
                             await getDownloadedSize(
@@ -157,13 +155,10 @@ async def getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAM
         errorDetails(NAME, error)
         return
 
-async def getDownloadSpeedLimit(settingsDict, queueItem, NAME):
+async def getDownloadSpeedLimit(settingsDict, NAME):
     try:
         # Fetches the global download speed limit and current global download speed from qBit
-        if (
-            settingsDict["QBITTORRENT_URL"]
-            and queueItem["downloadClient"] == "qBittorrent"
-        ):
+        if (settingsDict["QBITTORRENT_URL"]):
             qbitInfo = await rest_get(
                 settingsDict["QBITTORRENT_URL"] + "/transfer/info",
                 cookies=settingsDict["QBIT_COOKIE"],
