@@ -1,5 +1,6 @@
 # Cleans the download queue
 import logging
+import sys
 try:
     import verboselogs
 except ImportError:
