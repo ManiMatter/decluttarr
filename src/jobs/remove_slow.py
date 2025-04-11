@@ -64,7 +64,7 @@ async def remove_slow(
                                 queueItem["title"],
                             )
                             continue
-                        # determine if the global download speed is too close to global download speed limit if speed limit is set
+                        # determine if the global download speed is too close to global download speed limit if speed limit is set (not equal to 0)
                         limit, speed = await getDownloadSpeedLimit(
                             settingsDict, queueItem, NAME
                         )
