@@ -25,7 +25,7 @@ async def remove_metadata_missing(
     protectedDownloadIDs,
     privateDowloadIDs,
 ):
-    # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist
+    # Detects downloads stuck downloading metadata and triggers repeat check and subsequent delete. Adds to blocklist
     try:
         failType = "missing metadata"
         queue = await get_queue(BASE_URL, API_KEY, settingsDict)

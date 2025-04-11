@@ -25,7 +25,7 @@ async def remove_failed(
     protectedDownloadIDs,
     privateDowloadIDs,
 ):
-    # Detects failed and triggers delete. Does not add to blocklist
+    # Detects failed downloads and triggers delete. Does not add to blocklist
     try:
         failType = "failed"
         queue = await get_queue(BASE_URL, API_KEY, settingsDict)

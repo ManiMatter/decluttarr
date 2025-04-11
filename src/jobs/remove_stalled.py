@@ -25,7 +25,7 @@ async def remove_stalled(
     protectedDownloadIDs,
     privateDowloadIDs,
 ):
-    # Detects stalled and triggers repeat check and subsequent delete. Adds to blocklist
+    # Detects stalled downloads and triggers repeat check and subsequent delete. Adds to blocklist
     try:
         failType = "stalled"
         queue = await get_queue(BASE_URL, API_KEY, settingsDict)

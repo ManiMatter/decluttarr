@@ -25,7 +25,7 @@ async def remove_failed_imports(
     protectedDownloadIDs,
     privateDowloadIDs,
 ):
-    # Detects downloads stuck downloading meta data and triggers repeat check and subsequent delete. Adds to blocklist
+    # Detects downloads stuck downloading metadata and triggers repeat check and subsequent delete. Adds to blocklist
     try:
         failType = "failed import"
         queue = await get_queue(BASE_URL, API_KEY, settingsDict)
