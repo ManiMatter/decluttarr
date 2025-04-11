@@ -101,7 +101,8 @@ def showSettings(settingsDict):
     
     logger.info('Running every: %s', fmt.format(rd(minutes=settingsDict['REMOVE_TIMER'])))  
     if settingsDict['REMOVE_SLOW']: 
-        logger.info('Minimum speed enforced: %s KB/s', str(settingsDict['MIN_DOWNLOAD_SPEED'])) 
+        logger.info('Minimum speed enforced: %s KB/s', str(settingsDict['MIN_DOWNLOAD_SPEED']))
+        logger.info('Minimum remaining speed limit difference enforced: %s KB/s', str(settingsDict['MIN_DOWNLOAD_SPEED_LIMIT_DIFF'])) 
     logger.info('Permitted number of times before stalled/missing metadata/slow downloads are removed: %s', str(settingsDict['PERMITTED_ATTEMPTS']))      
     if settingsDict['QBITTORRENT_URL']: 
         logger.info('Downloads with this tag will be skipped: \"%s\"', settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'])  
