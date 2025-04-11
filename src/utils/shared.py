@@ -1,8 +1,19 @@
 # Shared Functions
-import logging, verboselogs
+import logging
+try:
+    import verboselogs
+except ImportError:
+    verboselogs = None
 import asyncio
 import requests
-logger = verboselogs.VerboseLogger(__name__)
+if verboselogs:
+    logger = verboselogs.VerboseLogger(__name__)
+else:
+    logger = logging.getLogger(__name__)
+    if not hasattr(logger, 'verbose'):
+        def verbose(msg, *args, **kwargs):
+            logger.debug(msg, *args, **kwargs)
+        logger.verbose = verbose
 from src.utils.rest import rest_get, rest_delete, rest_post
 from src.utils.nest_functions import add_keys_nested_dict, nested_get
 import sys, os, traceback

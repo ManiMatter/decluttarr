@@ -1,7 +1,17 @@
 # Cleans the download queue
-import logging, verboselogs
-
-logger = verboselogs.VerboseLogger(__name__)
+import logging
+try:
+    import verboselogs
+except ImportError:
+    verboselogs = None
+if verboselogs:
+    logger = verboselogs.VerboseLogger(__name__)
+else:
+    logger = logging.getLogger(__name__)
+    if not hasattr(logger, 'verbose'):
+        def verbose(msg, *args, **kwargs):
+            logger.debug(msg, *args, **kwargs)
+        logger.verbose = verbose
 from src.utils.shared import errorDetails, get_queue
 from src.jobs.remove_failed import remove_failed
 from src.jobs.remove_failed_imports import remove_failed_imports

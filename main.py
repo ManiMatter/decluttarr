@@ -1,8 +1,18 @@
 # Import Libraries
 import asyncio
-import logging, verboselogs
-
-logger = verboselogs.VerboseLogger(__name__)
+import logging
+try:
+    import verboselogs
+except ImportError:
+    verboselogs = None
+if verboselogs:
+    logger = verboselogs.VerboseLogger(__name__)
+else:
+    logger = logging.getLogger(__name__)
+    if not hasattr(logger, 'verbose'):
+        def verbose(msg, *args, **kwargs):
+            logger.debug(msg, *args, **kwargs)
+        logger.verbose = verbose
 import json
 
 # Import Functions
