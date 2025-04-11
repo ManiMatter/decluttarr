@@ -64,6 +64,21 @@ async def remove_slow(
                                 queueItem["title"],
                             )
                             continue
+                        # determine if the global download speed is too close to global download speed limit if speed limit is set
+                        limit, speed = await getDownloadSpeedLimit(
+                            settingsDict, queueItem, NAME
+                        )
+                        if (limit > 0):
+                            # if the difference between the speed and the limit is less than the threshold, skip the item
+                            if (limit - speed) < settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"]:
+                                logger.debug(
+                                    "remove_slow/speed limit reached, skip checking slow speed: %s (Speed: %d KB/s, Limit: %d KB/s, Min Diff: %d KB/s)",
+                                    queueItem["title"],
+                                    speed,
+                                    limit,
+                                    settingsDict["MIN_DOWNLOAD_SPEED_LIMIT_DIFF"],
+                                )
+                                continue
                         # determine if the downloaded bit on average between this and the last iteration is greater than the min threshold
                         downloadedSize, previousSize, increment, speed = (
                             await getDownloadedSize(
@@ -137,6 +152,29 @@ async def getDownloadedSize(settingsDict, queueItem, download_sizes_tracker, NAM
             speed = None
 
         download_sizes_tracker.dict[queueItem["downloadId"]] = downloadedSize
+        return downloadedSize, previousSize, increment, speed
+    except Exception as error:
+        errorDetails(NAME, error)
+        return
+
+async def getDownloadSpeedLimit(settingsDict, queueItem, NAME):
+    try:
+        # Fetches the global download speed limit and current global download speed from qBit
+        if (
+            settingsDict["QBITTORRENT_URL"]
+            and queueItem["downloadClient"] == "qBittorrent"
+        ):
+            qbitInfo = await rest_get(
+                settingsDict["QBITTORRENT_URL"] + "/transfer/info",
+                cookies=settingsDict["QBIT_COOKIE"],
+            )
+            return qbitInfo["dl_rate_limit"]/1000, qbitInfo["dl_info_speed"]/1000
+        else:
+            logger.debug(
+                "getDownloadSpeedLimitAlert/WARN: Skipping download limit check because no direct qBIT query is possible"
+            )
+            return 0, 0
+            
         return downloadedSize, previousSize, increment, speed
     except Exception as error:
         errorDetails(NAME, error)

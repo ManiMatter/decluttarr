@@ -23,6 +23,7 @@ RUN_PERIODIC_RESCANS            = get_config_value('RUN_PERIODIC_RESCANS',      
 
 # Feature Settings
 MIN_DOWNLOAD_SPEED              = get_config_value('MIN_DOWNLOAD_SPEED',            'feature_settings',     False,  int,    0)
+MIN_DOWNLOAD_SPEED_LIMIT_DIFF   = get_config_value('MIN_DOWNLOAD_SPEED_LIMIT_DIFF', 'feature_settings',     False,  int,    0)
 PERMITTED_ATTEMPTS              = get_config_value('PERMITTED_ATTEMPTS',            'feature_settings',     False,  int,    3)
 NO_STALLED_REMOVAL_QBIT_TAG     = get_config_value('NO_STALLED_REMOVAL_QBIT_TAG',   'feature_settings',     False,  str,   'Don\'t Kill')
 IGNORE_PRIVATE_TRACKERS         = get_config_value('IGNORE_PRIVATE_TRACKERS',       'feature_settings',     False,  bool,   True)
