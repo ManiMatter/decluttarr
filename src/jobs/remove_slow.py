@@ -169,8 +169,6 @@ async def getDownloadSpeedLimit(settingsDict, NAME):
                 "getDownloadSpeedLimitAlert/WARN: Skipping download limit check because no direct qBIT query is possible"
             )
             return 0, 0
-            
-        return downloadedSize, previousSize, increment, speed
     except Exception as error:
         errorDetails(NAME, error)
         return
