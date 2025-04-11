@@ -94,6 +94,7 @@ services:
       PERMITTED_ATTEMPTS: 3
       NO_STALLED_REMOVAL_QBIT_TAG: Don't Kill
       MIN_DOWNLOAD_SPEED: 100
+      MIN_DOWNLOAD_SPEED_LIMIT_DIFF: 500
       FAILED_IMPORT_MESSAGE_PATTERNS: '
         [
         "Not a Custom Format upgrade for existing",
@@ -298,6 +299,14 @@ If it you face issues, please first check the closed issues before opening a new
 -   Type: Integer
 -   Unit: KBytes per second
 -   Is Mandatory: No (Defaults to 100, but is only enforced when "REMOVE_SLOW" is true)
+
+**MIN_DOWNLOAD_SPEED_LIMIT_DIFF**
+
+-   Sets the minimum difference between global download speed and global speed limit for active downloads
+-   Skips MIN_DOWNLOAD_SPEED check if the difference is smaller than value given.
+-   Type: Integer
+-   Unit: KBytes per second
+-   Is Mandatory: No (Defaults to 500, but is only enforced when "REMOVE_SLOW" is true)
 
 **PERMITTED_ATTEMPTS**
 
