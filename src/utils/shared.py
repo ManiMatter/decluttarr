@@ -5,7 +5,10 @@ try:
 except ImportError:
     verboselogs = None
 import asyncio
-import requests
+try:
+    import requests
+except ImportError:
+    raise ImportError("The 'requests' package is required. Please install it using: pip install requests")
 if verboselogs:
     logger = verboselogs.VerboseLogger(__name__)
 else:
