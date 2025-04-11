@@ -5,3 +5,5 @@ ToDo
 snip*.py
 venv
 testMagnets.txt
+.aider*
+CONVENTIONS.md
