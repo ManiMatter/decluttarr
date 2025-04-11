@@ -32,37 +32,46 @@ async def getArrInstanceName(settingsDict, arrApp, instance):
 
 
 async def getProtectedAndPrivateFromQbit(settingsDict):
-    # Returns two lists containing the hashes of Qbit that are either protected by tag, or are private trackers (if IGNORE_PRIVATE_TRACKERS is true)
+    # Returns two lists containing the hashes of qBittorrent torrents that are either protected by tag or marked as private.
     protectedDownloadIDs = []
     privateDowloadIDs = []
-    if settingsDict['QBITTORRENT_URL']:
-        # Fetch all torrents
-        qbitItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info',params={}, cookies=settingsDict['QBIT_COOKIE'])
-
+    if settingsDict.get('QBITTORRENT_INSTANCES'):
+        for instance in settingsDict['QBITTORRENT_INSTANCES']:
+            qbitItems = await rest_get(instance["url"]+'/torrents/info', params={}, cookies=instance.get("cookie"))
+            for qbitItem in qbitItems:
+                if settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'] in qbitItem.get('tags', []):
+                    protectedDownloadIDs.append(str.upper(qbitItem['hash']))
+                if settingsDict['IGNORE_PRIVATE_TRACKERS']:
+                    if version.parse(settingsDict['QBIT_VERSION']) >= version.parse('5.1.0'):
+                        if qbitItem.get('private'):
+                            privateDowloadIDs.append(str.upper(qbitItem['hash']))
+                    else:
+                        qbitItemProperties = await rest_get(instance["url"]+'/torrents/properties', params={'hash': qbitItem['hash']}, cookies=instance.get("cookie"))
+                        if not qbitItemProperties:
+                            logger.error("Torrent %s not found on qBittorrent.", qbitItem['hash'])
+                            continue
+                        if qbitItemProperties.get('is_private', False):
+                            privateDowloadIDs.append(str.upper(qbitItem['hash']))
+                        qbitItem['private'] = qbitItemProperties.get('is_private', None)
+    elif settingsDict.get('QBITTORRENT_URL'):
+        qbitItems = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/info', params={}, cookies=settingsDict['QBIT_COOKIE'])
         for qbitItem in qbitItems:
-            # Fetch protected torrents (by tag)
-            if settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'] in qbitItem.get('tags'):
+            if settingsDict['NO_STALLED_REMOVAL_QBIT_TAG'] in qbitItem.get('tags', []):
                 protectedDownloadIDs.append(str.upper(qbitItem['hash']))
-                
-            # Fetch private torrents
-            if settingsDict['IGNORE_PRIVATE_TRACKERS']: 
+            if settingsDict['IGNORE_PRIVATE_TRACKERS']:
                 if version.parse(settingsDict['QBIT_VERSION']) >= version.parse('5.1.0'):
-                    if qbitItem['private']:
+                    if qbitItem.get('private'):
                         privateDowloadIDs.append(str.upper(qbitItem['hash']))
                 else:
-                    qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties',params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
+                    qbitItemProperties = await rest_get(settingsDict['QBITTORRENT_URL']+'/torrents/properties', params={'hash': qbitItem['hash']}, cookies=settingsDict['QBIT_COOKIE'])
                     if not qbitItemProperties:
-                        logger.error("Torrent %s not found on qBittorrent - potentially already removed whilst checking if torrent is private. Consider upgrading qBit to v5.1.0 or newer to avoid this problem.", qbitItem['hash'])
+                        logger.error("Torrent %s not found on qBittorrent.", qbitItem['hash'])
                         continue
                     if qbitItemProperties.get('is_private', False):
                         privateDowloadIDs.append(str.upper(qbitItem['hash']))
-                    qbitItem['private'] = qbitItemProperties.get('is_private', None) # Adds the is_private flag to qbitItem info for simplified logging
-
-        logger.debug('main/getProtectedAndPrivateFromQbit/qbitItems: %s', str([{"hash": str.upper(item["hash"]), "name": item["name"], "category": item["category"], "tags": item["tags"], "private": item.get("private", None)} for item in qbitItems]))
-    
+                    qbitItem['private'] = qbitItemProperties.get('is_private', None)
     logger.debug('main/getProtectedAndPrivateFromQbit/protectedDownloadIDs: %s', str(protectedDownloadIDs))
-    logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))   
-
+    logger.debug('main/getProtectedAndPrivateFromQbit/privateDowloadIDs: %s', str(privateDowloadIDs))
     return protectedDownloadIDs, privateDowloadIDs
     
 def showWelcome():
