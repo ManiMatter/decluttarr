@@ -57,7 +57,7 @@ async def main(settingsDict):
     await createQbitProtectionTag(settingsDict)
 
     # Create qBit obsolete tag if not existing
-    if settingsDict['SET_OBSOLETE_QBIT_TAG']
+    if settingsDict['SET_OBSOLETE_QBIT_TAG']:
         await createQbitObsoleteTag(settingsDict)
 
     # Show Logger Level
