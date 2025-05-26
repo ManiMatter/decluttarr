@@ -243,7 +243,7 @@ class QbitClient:
                 protected_downloads.append(qbit_item["hash"].upper())
 
             # Fetch private torrents
-            if not (self.settings.general.private_tracker_handling == "remove" or self.settings.general.public_tracker_handling == "remove"):
+            if self.settings.general.private_tracker_handling != "remove":
                 if version.parse(self.version) >= version.parse("5.0.0"):
                     if qbit_item.get("private"):
                         private_downloads.append(qbit_item["hash"].upper())
