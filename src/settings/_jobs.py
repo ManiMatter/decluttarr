@@ -77,6 +77,102 @@ class Jobs:
         self._set_job_configs(config)
         del self.job_defaults
 
+    @classmethod
+    def create_with_overrides(cls, overrides, global_jobs):
+        """
+        Create a new Jobs instance with instance-level overrides applied.
+
+        This method creates a merged Jobs object where instance-specific settings
+        override global job settings while preserving unspecified parameters.
+
+        Args:
+            overrides: Dict of instance-specific job configurations
+            global_jobs: Global Jobs object to use as base
+
+        Returns:
+            Jobs object with instance overrides applied
+
+        """
+        # Create a new Jobs instance without calling __init__
+        merged = cls.__new__(cls)
+
+        # Copy all job objects from global jobs
+        for attr_name in dir(global_jobs):
+            if attr_name.startswith("_"):
+                continue
+            attr_value = getattr(global_jobs, attr_name)
+            if isinstance(attr_value, JobParams):
+                # Deep copy the job params
+                setattr(merged, attr_name, cls._deep_copy_job_params(attr_value))
+
+        # Apply instance overrides
+        for job_name, job_override_config in overrides.items():
+            if hasattr(merged, job_name):
+                merged._apply_override(job_name, job_override_config)
+            else:
+                logger.warning(
+                    f"Instance job override for unknown job '{job_name}' ignored. "
+                    f"Valid job names: {', '.join([name for name in dir(merged) if not name.startswith('_') and isinstance(getattr(merged, name), JobParams)])}",
+                )
+
+        return merged
+
+    @staticmethod
+    def _deep_copy_job_params(job_params):
+        """
+        Create a deep copy of a JobParams object.
+
+        Args:
+            job_params: JobParams object to copy
+
+        Returns:
+            New JobParams object with copied attributes
+
+        """
+        copied = JobParams()
+        for attr_name, attr_value in vars(job_params).items():
+            # Deep copy lists to avoid shared references
+            if isinstance(attr_value, list):
+                setattr(copied, attr_name, attr_value.copy())
+            else:
+                setattr(copied, attr_name, attr_value)
+        return copied
+
+    def _apply_override(self, job_name, override_config) -> None:
+        """
+        Apply instance-level override to a specific job.
+
+        Handles three configuration formats:
+        - None: Enable the job with existing parameters
+        - bool: Set enabled status
+        - dict: Merge parameters (instance values override global)
+
+        Args:
+            job_name: Name of the job to override
+            override_config: Override configuration (None, bool, or dict)
+
+        """
+        job = getattr(self, job_name)
+
+        if override_config is None:
+            # None means enable the job with existing parameters
+            job.enabled = True
+        elif isinstance(override_config, bool):
+            # Boolean directly sets enabled status
+            job.enabled = override_config
+        elif isinstance(override_config, dict):
+            # Dict means merge parameters
+            # Set enabled=True by default unless explicitly specified
+            if "enabled" in override_config:
+                job.enabled = override_config["enabled"]
+            else:
+                job.enabled = True
+
+            # Merge other parameters
+            for key, value in override_config.items():
+                if key != "enabled":
+                    setattr(job, key, value)
+
     def _set_job_defaults(self):
         self.remove_bad_files = JobParams(keep_archives=self.job_defaults.keep_archives)
         self.remove_done_seeding = JobParams(target_tags=self.job_defaults.target_tags)

@@ -52,15 +52,43 @@ instances:
   sonarr:
     - base_url: "http://sonarr:8989"
       api_key: "xxxx"
+      # Optional: Override job settings for this specific instance
+      # Instance-level settings override global job settings
+      # jobs:
+      #   # Disable a globally-enabled job for this instance
+      #   remove_stalled: false
+      #
+      #   # Override specific parameters while inheriting others from global
+      #   remove_slow:
+      #     min_speed: 200  # Override min_speed, inherit max_strikes from global
+      #
+      #   # Enable a job disabled globally, with custom parameters
+      #   search_unmet_cutoff:
+      #     max_concurrent_searches: 2
+      #     min_days_between_searches: 14
+
   radarr:
     - base_url: "http://radarr:7878"
       api_key: "xxxx"
+      # This instance uses all global job settings (no overrides)
+
+    # Example: Second radarr instance (e.g., for 4K content)
+    # - base_url: "http://radarr-4k:7878"
+    #   api_key: "yyyy"
+    #   jobs:
+    #     # Different config for 4K instance
+    #     search_missing: false  # Don't auto-search on 4K
+    #     remove_slow:
+    #       min_speed: 500  # Require faster speeds for 4K content
+
   readarr:
     - base_url: "http://readarr:8787"
       api_key: "xxxx"
+
   lidarr:
     - base_url: "http://lidarr:8686"
       api_key: "xxxx"
+
   whisparr:
     - base_url: "http://whisparr:6969"
       api_key: "xxxx"

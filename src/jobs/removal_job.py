@@ -21,7 +21,7 @@ class RemovalJob(ABC):
         self.arr = arr
         self.settings = settings
         self.job_name = job_name
-        self.job = getattr(self.settings.jobs, self.job_name)
+        self.job = getattr(self.arr.jobs, self.job_name)
         self.queue_manager = QueueManager(self.arr, self.settings)
         self.max_strikes = getattr(self.job, "max_strikes", None)
         if self.max_strikes:

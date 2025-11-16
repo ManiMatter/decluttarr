@@ -134,3 +134,110 @@ def test_env_loading_parametrized(
         assert value == expected
     else:
         assert value == expected
+
+
+# ---- Test instance-level job overrides ----
+
+def test_instance_level_job_overrides_from_env():
+    """Test that instance-level job overrides work through environment variables."""
+    sonarr_with_jobs_yaml = textwrap.dedent(
+        """
+        - base_url: "http://sonarr1:8989"
+          api_key: "sonarr1_key"
+          jobs:
+            remove_stalled: false
+            remove_slow:
+              min_speed: 200
+              max_strikes: 5
+        - base_url: "http://sonarr2:8989"
+          api_key: "sonarr2_key"
+    """,
+    ).strip()
+
+    env = {
+        "SONARR": sonarr_with_jobs_yaml,
+        "REMOVE_STALLED": "true",  # Globally enabled
+        "REMOVE_SLOW": "min_speed: 100",  # Global config
+    }
+
+    with patch.dict(os.environ, env, clear=True):
+        config = _load_from_env()
+
+        # Check that the config was loaded
+        assert "instances" in config
+        assert "sonarr" in config["instances"]
+
+        sonarr_instances = config["instances"]["sonarr"]
+        assert len(sonarr_instances) == 2
+
+        # First instance has job overrides
+        sonarr1 = sonarr_instances[0]
+        assert sonarr1["base_url"] == "http://sonarr1:8989"
+        assert sonarr1["api_key"] == "sonarr1_key"
+        assert "jobs" in sonarr1
+        assert sonarr1["jobs"]["remove_stalled"] is False
+        assert sonarr1["jobs"]["remove_slow"]["min_speed"] == 200
+        assert sonarr1["jobs"]["remove_slow"]["max_strikes"] == 5
+
+        # Second instance has no job overrides
+        sonarr2 = sonarr_instances[1]
+        assert sonarr2["base_url"] == "http://sonarr2:8989"
+        assert sonarr2["api_key"] == "sonarr2_key"
+        assert "jobs" not in sonarr2
+
+
+def test_instance_job_overrides_integration_with_env():
+    """Integration test: instance job overrides work end-to-end with env vars."""
+    from src.settings.settings import Settings
+
+    radarr_with_jobs_yaml = textwrap.dedent(
+        """
+        - base_url: "http://radarr-1080p:7878"
+          api_key: "radarr_1080p_key"
+        - base_url: "http://radarr-4k:7878"
+          api_key: "radarr_4k_key"
+          jobs:
+            remove_slow:
+              min_speed: 500
+            search_missing: false
+    """,
+    ).strip()
+
+    env = {
+        "LOG_LEVEL": "INFO",
+        "TEST_RUN": "true",
+        "TIMER": "10",
+        "REMOVE_SLOW": "min_speed: 100\nmax_strikes: 3",
+        "SEARCH_MISSING": "true",
+        "RADARR": radarr_with_jobs_yaml,
+        "IN_DOCKER": "true",  # Mock being in Docker so env vars are used
+    }
+
+    with patch.dict(os.environ, env, clear=True):
+        # Create full Settings and verify instances
+        settings_full = Settings()
+
+        # Verify global jobs
+        assert settings_full.jobs.remove_slow.enabled is True
+        assert settings_full.jobs.remove_slow.min_speed == 100
+        assert settings_full.jobs.remove_slow.max_strikes == 3
+        assert settings_full.jobs.search_missing.enabled is True
+
+        radarr_instances = [
+            arr for arr in settings_full.instances if arr.arr_type == "radarr"
+        ]
+        assert len(radarr_instances) == 2
+
+        radarr_1080p, radarr_4k = radarr_instances
+
+        # 1080p instance uses global settings
+        assert radarr_1080p.base_url == "http://radarr-1080p:7878"
+        assert radarr_1080p.jobs.remove_slow.min_speed == 100
+        assert radarr_1080p.jobs.remove_slow.max_strikes == 3
+        assert radarr_1080p.jobs.search_missing.enabled is True
+
+        # 4K instance has overrides
+        assert radarr_4k.base_url == "http://radarr-4k:7878"
+        assert radarr_4k.jobs.remove_slow.min_speed == 500  # Overridden
+        assert radarr_4k.jobs.remove_slow.max_strikes == 3  # Inherited
+        assert radarr_4k.jobs.search_missing.enabled is False  # Overridden

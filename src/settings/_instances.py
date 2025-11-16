@@ -13,6 +13,7 @@ from src.settings._constants import (
     RefreshItemCommand,
     RefreshItemKey,
 )
+from src.settings._jobs import Jobs
 from src.utils.common import extract_json_from_response, make_request, wait_and_exit
 from src.utils.log_setup import logger
 
@@ -78,6 +79,8 @@ class ArrInstances(list):
             "refresh_item_key",
             "refresh_item_id_key",
             "refresh_item_command",
+            "_jobs_config",
+            "_jobs",
         }
 
         outputs = []
@@ -122,6 +125,7 @@ class ArrInstances(list):
                             arr_type=arr_type,
                             base_url=client_config["base_url"],
                             api_key=client_config["api_key"],
+                            jobs_config=client_config.get("jobs", {}),
                         ),
                     )
                 except KeyError as e:
@@ -135,7 +139,7 @@ class ArrInstance:
     version: str = None
     name: str = None
 
-    def __init__(self, settings, arr_type: str, base_url: str, api_key: str):
+    def __init__(self, settings, arr_type: str, base_url: str, api_key: str, jobs_config: dict | None = None):
         if not base_url:
             logger.error(f"Skipping {arr_type} client entry: 'base_url' is required.")
             error = f"{arr_type} client must have a 'base_url'."
@@ -162,6 +166,42 @@ class ArrInstance:
             self.refresh_item_key = getattr(RefreshItemKey, arr_type)
             self.refresh_item_id_key = self.refresh_item_key + "Id"
             self.refresh_item_command = getattr(RefreshItemCommand, arr_type)
+
+        # Store instance-specific jobs config for lazy initialization
+        self._jobs_config = jobs_config or {}
+        self._jobs = None
+
+    @property
+    def jobs(self):
+        """
+        Return merged jobs (instance overrides + global jobs).
+
+        Uses lazy initialization to avoid circular dependencies since Jobs
+        are created before ArrInstances during Settings initialization.
+        """
+        if self._jobs is None:
+            self._jobs = self._create_merged_jobs()
+        return self._jobs
+
+    def _create_merged_jobs(self):
+        """
+        Create a merged Jobs object with instance overrides applied.
+
+        Merging precedence: Instance overrides > Global jobs > Job defaults
+
+        Returns:
+            Jobs object with instance-specific overrides applied
+
+        """
+        if not self._jobs_config:
+            # No instance overrides, return global jobs
+            return self.settings.jobs
+
+        # Create merged jobs with instance overrides
+        return Jobs.create_with_overrides(
+            overrides=self._jobs_config,
+            global_jobs=self.settings.jobs,
+        )
 
     async def _check_ui_language(self):
         """Check if the UI language is set to English."""

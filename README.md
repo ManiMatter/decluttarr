@@ -261,6 +261,7 @@ services:
       # DETECT_DELETIONS:
 
       # --- Instances ---
+      # Note: Each instance can optionally override global job settings using a 'jobs:' section
       SONARR: >
         - base_url: "http://sonarr1:8989"
           api_key: "$SONARR_API_KEY"
@@ -270,6 +271,14 @@ services:
       # RADARR: >
       #   - base_url: "http://radarr:7878"
       #     api_key: "$RADARR_API_KEY"
+      #
+      #   # Example: Second radarr instance with instance-specific job overrides
+      #   - base_url: "http://radarr-4k:7878"
+      #     api_key: "$RADARR_4K_API_KEY"
+      #     jobs:
+      #       remove_slow:
+      #         min_speed: 500        # Require faster speeds for 4K content
+      #       search_missing: false   # Don't auto-search on 4K instance
 
       # READARR: >
       #   - base_url: "http://readarr:8787"

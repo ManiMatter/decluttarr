@@ -21,10 +21,10 @@ class SearchHandler:
             f"search_handler.py/_configure_search_target: Setting job & search label ({self.missing_or_cutoff})"
         )
         if self.missing_or_cutoff == "missing":
-            self.job = self.settings.jobs.search_missing
+            self.job = self.arr.jobs.search_missing
             self.search_target_label = f"missing {self.arr.detail_item_key}s"
         elif self.missing_or_cutoff == "cutoff":
-            self.job = self.settings.jobs.search_unmet_cutoff
+            self.job = self.arr.jobs.search_unmet_cutoff
             self.search_target_label = f"{self.arr.detail_item_key}s with unmet cutoff"
         else:
             error = f"Unknown search type: {self.missing_or_cutoff}"

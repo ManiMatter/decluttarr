@@ -90,14 +90,16 @@ class JobManager:
             self.arr.arr_type == "whisparr"
         ):  # Whisparr does not support this endpoint (yet?)
             return
-        if self.settings.jobs.search_missing.enabled:
+
+        if self.arr.jobs.search_missing.enabled:
             await SearchHandler(
                 arr=self.arr,
                 settings=self.settings,
                 missing_or_cutoff="missing",
                 job_name="search_missing",
             ).handle_search()
-        if self.settings.jobs.search_unmet_cutoff.enabled:
+
+        if self.arr.jobs.search_unmet_cutoff.enabled:
             await SearchHandler(
                 arr=self.arr,
                 settings=self.settings,
@@ -147,7 +149,8 @@ class JobManager:
         """
         Return a list of enabled removal job instances based on the provided settings.
 
-        Each job is included if the corresponding attribute exists and is truthy in settings.jobs.
+        Each job is included if the corresponding attribute exists and is truthy in
+        instance-specific jobs (arr.jobs) or global settings.jobs.
         """
         removal_job_classes = {
             "remove_bad_files": RemoveBadFiles,
@@ -163,7 +166,7 @@ class JobManager:
 
         jobs = []
         for removal_job_name, removal_job_class in removal_job_classes.items():
-            if getattr(self.settings.jobs, removal_job_name, False):
+            if getattr(self.arr.jobs, removal_job_name, False):
                 jobs.append(
                     removal_job_class(self.arr, self.settings, removal_job_name),
                 )
