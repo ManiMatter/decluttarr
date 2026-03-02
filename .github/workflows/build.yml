@@ -6,11 +6,15 @@ on:
       - '*'
     paths:
       - 'src/**'
+      - 'docker/**'
+      - '.github/workflows/build.yml'
   pull_request:
     branches:
       - '*'
     paths:
       - 'src/**'
+      - 'docker/**'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
   create:
     branches:
@@ -60,7 +64,7 @@ jobs:
   build:
     needs: unit-tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
         with:
