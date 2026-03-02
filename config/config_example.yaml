@@ -13,6 +13,10 @@ job_defaults:
   max_strikes: 3
   min_days_between_searches: 7
   max_concurrent_searches: 3
+  # action_mode: "remove" # Optional for ARR-removal jobs: remove, skip, tag_only
+  # handoff_tag: "cleanup-ready" # Optional: used when action_mode=tag_only
+  # deferred_arr_followup: false # Optional: run ARR follow-up after external removal is detected
+  # followup_trigger: "on_download_removed" # Optional: currently supported trigger
 
 jobs:
   remove_bad_files:
@@ -35,6 +39,10 @@ jobs:
     # max_strikes: 3
   remove_missing_files:
   remove_orphans:
+    # action_mode: "tag_only"
+    # handoff_tag: "cleanup-ready"
+    # deferred_arr_followup: true
+    # followup_trigger: "on_download_removed"
   remove_slow:
     # min_speed: 100
     # max_strikes: 3

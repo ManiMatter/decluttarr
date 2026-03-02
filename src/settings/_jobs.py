@@ -14,6 +14,10 @@ class JobParams:
     max_concurrent_searches: int
     min_days_between_searches: int
     target_tags: list
+    action_mode: str = "remove"
+    handoff_tag: str
+    deferred_arr_followup: bool = False
+    followup_trigger: str = "on_download_removed"
 
     def __init__(
         self,
@@ -25,6 +29,10 @@ class JobParams:
         max_concurrent_searches=None,
         min_days_between_searches=None,
         target_tags=None,
+        action_mode=None,
+        handoff_tag=None,
+        deferred_arr_followup=None,
+        followup_trigger=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
@@ -34,6 +42,10 @@ class JobParams:
         self.max_concurrent_searches = max_concurrent_searches
         self.min_days_between_searches = min_days_between_searches
         self.target_tags = target_tags
+        self.action_mode = action_mode
+        self.handoff_tag = handoff_tag
+        self.deferred_arr_followup = deferred_arr_followup
+        self.followup_trigger = followup_trigger
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -55,15 +67,29 @@ class JobDefaults:
     min_speed: int = 100
     message_patterns = ["*"]
     target_tags = []
+    action_mode: str = "remove"
+    handoff_tag: str = ""
+    deferred_arr_followup: bool = False
+    followup_trigger: str = "on_download_removed"
 
     def __init__(self, config, settings):
         job_defaults_config = config.get("job_defaults", {})
         self.target_tags.append(settings.general.obsolete_tag)
         self.max_strikes = job_defaults_config.get("max_strikes", self.max_strikes)
-        self.max_concurrent_searches = job_defaults_config.get("max_concurrent_searches", self.max_concurrent_searches)
+        self.max_concurrent_searches = job_defaults_config.get(
+            "max_concurrent_searches", self.max_concurrent_searches
+        )
         self.min_days_between_searches = job_defaults_config.get(
             "min_days_between_searches",
             self.min_days_between_searches,
+        )
+        self.action_mode = job_defaults_config.get("action_mode", self.action_mode)
+        self.handoff_tag = job_defaults_config.get("handoff_tag", self.handoff_tag)
+        self.deferred_arr_followup = job_defaults_config.get(
+            "deferred_arr_followup", self.deferred_arr_followup
+        )
+        self.followup_trigger = job_defaults_config.get(
+            "followup_trigger", self.followup_trigger
         )
         validate_data_types(self)
 
@@ -78,23 +104,38 @@ class Jobs:
         del self.job_defaults
 
     def _set_job_defaults(self):
-        self.remove_bad_files = JobParams(keep_archives=self.job_defaults.keep_archives)
+        removal_defaults = {
+            "action_mode": self.job_defaults.action_mode,
+            "handoff_tag": self.job_defaults.handoff_tag,
+            "deferred_arr_followup": self.job_defaults.deferred_arr_followup,
+            "followup_trigger": self.job_defaults.followup_trigger,
+        }
+        self.remove_bad_files = JobParams(
+            keep_archives=self.job_defaults.keep_archives,
+            **removal_defaults,
+        )
         self.remove_done_seeding = JobParams(target_tags=self.job_defaults.target_tags)
-        self.remove_failed_downloads = JobParams()
+        self.remove_failed_downloads = JobParams(**removal_defaults)
         self.remove_failed_imports = JobParams(
             message_patterns=self.job_defaults.message_patterns,
+            **removal_defaults,
         )
         self.remove_metadata_missing = JobParams(
             max_strikes=self.job_defaults.max_strikes,
+            **removal_defaults,
         )
-        self.remove_missing_files = JobParams()
-        self.remove_orphans = JobParams()
+        self.remove_missing_files = JobParams(**removal_defaults)
+        self.remove_orphans = JobParams(**removal_defaults)
         self.remove_slow = JobParams(
             max_strikes=self.job_defaults.max_strikes,
             min_speed=self.job_defaults.min_speed,
+            **removal_defaults,
         )
-        self.remove_stalled = JobParams(max_strikes=self.job_defaults.max_strikes)
-        self.remove_unmonitored = JobParams()
+        self.remove_stalled = JobParams(
+            max_strikes=self.job_defaults.max_strikes,
+            **removal_defaults,
+        )
+        self.remove_unmonitored = JobParams(**removal_defaults)
         self.search_unmet_cutoff = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,

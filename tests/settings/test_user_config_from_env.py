@@ -15,6 +15,10 @@ from src.settings._user_config import _load_from_env
 LOG_LEVEL_VALUE = "VERBOSE"
 TIMER_VALUE = "10"
 SSL_VERIFICATION_VALUE = "true"
+ACTION_MODE_VALUE = "tag_only"
+HANDOFF_TAG_VALUE = "cleanup-ready"
+DEFERRED_ARR_FOLLOWUP_VALUE = "true"
+FOLLOWUP_TRIGGER_VALUE = "on_download_removed"
 
 # List
 ignored_download_clients_yaml = textwrap.dedent(
@@ -80,6 +84,10 @@ def fixture_env_vars():
         "LOG_LEVEL": LOG_LEVEL_VALUE,
         "TIMER": TIMER_VALUE,
         "SSL_VERIFICATION": SSL_VERIFICATION_VALUE,
+        "ACTION_MODE": ACTION_MODE_VALUE,
+        "HANDOFF_TAG": HANDOFF_TAG_VALUE,
+        "DEFERRED_ARR_FOLLOWUP": DEFERRED_ARR_FOLLOWUP_VALUE,
+        "FOLLOWUP_TRIGGER": FOLLOWUP_TRIGGER_VALUE,
         "IGNORED_DOWNLOAD_CLIENTS": ignored_download_clients_yaml,
         "REMOVE_BAD_FILES": remove_bad_files_yaml,
         "REMOVE_SLOW": remove_slow_yaml,
@@ -113,6 +121,10 @@ qbit_expected = yaml.safe_load(qbit_yaml)
             "ignored_download_clients",
             remove_ignored_download_clients_expected,
         ),
+        ("job_defaults", "action_mode", ACTION_MODE_VALUE),
+        ("job_defaults", "handoff_tag", HANDOFF_TAG_VALUE),
+        ("job_defaults", "deferred_arr_followup", True),
+        ("job_defaults", "followup_trigger", FOLLOWUP_TRIGGER_VALUE),
         ("jobs", "remove_bad_files", remove_bad_files_expected),
         ("jobs", "remove_slow", remove_slow_expected),
         ("jobs", "remove_stalled", remove_stalled_expected),

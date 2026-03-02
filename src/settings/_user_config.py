@@ -25,6 +25,10 @@ CONFIG_MAPPING = {
         "MAX_STRIKES",
         "MIN_DAYS_BETWEEN_SEARCHES",
         "MAX_CONCURRENT_SEARCHES",
+        "ACTION_MODE",
+        "HANDOFF_TAG",
+        "DEFERRED_ARR_FOLLOWUP",
+        "FOLLOWUP_TRIGGER",
     ],
     "jobs": [
         "REMOVE_BAD_FILES",

@@ -29,6 +29,10 @@ Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
     - [MAX_STRIKES](#max_strikes)
     - [MIN_DAYS_BETWEEN_SEARCHES](#min_days_between_searches)
     - [MAX_CONCURRENT_SEARCHES](#max_concurrent_searches)
+    - [ACTION_MODE](#action_mode)
+    - [HANDOFF_TAG](#handoff_tag)
+    - [DEFERRED_ARR_FOLLOWUP](#deferred_arr_followup)
+    - [FOLLOWUP_TRIGGER](#followup_trigger)
   - [Jobs](#jobs)
     - [REMOVE_BAD_FILES](#remove_bad_files)
     - [REMOVE_FAILED_DOWNLOADS](#remove_failed_downloads)
@@ -207,6 +211,10 @@ services:
       # max_strikes: 3
       # MIN_DAYS_BETWEEN_SEARCHES: 7
       # MAX_CONCURRENT_SEARCHES: 3
+      # ACTION_MODE: "remove" # remove, skip, tag_only (ARR-removal jobs)
+      # HANDOFF_TAG: "cleanup-ready"
+      # DEFERRED_ARR_FOLLOWUP: false
+      # FOLLOWUP_TRIGGER: "on_download_removed"
 
       # # --- Jobs (short notation) ---
       # If you want to go with the most basic settings, you can just turn them all on:
@@ -246,6 +254,11 @@ services:
       #   max_strikes: 3
       # REMOVE_MISSING_FILES: True
       # REMOVE_ORPHANS: True
+      # REMOVE_ORPHANS: |
+      #   action_mode: "tag_only"
+      #   handoff_tag: "cleanup-ready"
+      #   deferred_arr_followup: true
+      #   followup_trigger: "on_download_removed"
       # REMOVE_SLOW: |
       #   min_speed: 100
       #   max_strikes: 3
@@ -479,9 +492,54 @@ If a job has the same settings configured on job-level, the job-level settings w
 -   Permissible Values: Any number
 -   Is Mandatory: No (Defaults to 3)
 
+#### ACTION_MODE
+
+-   Optional default for ARR-removal jobs (`remove_bad_files`, `remove_failed_downloads`, `remove_failed_imports`, `remove_metadata_missing`, `remove_missing_files`, `remove_orphans`, `remove_slow`, `remove_stalled`, `remove_unmonitored`)
+-   Defines how Decluttarr should act when a matching item is found
+    -   `remove`: Existing/default behavior (`remove`, `skip`, `obsolete_tag`) determined by private/public handling
+    -   `skip`: Do not take removal/tag action
+    -   `tag_only`: Apply a handoff tag and do not remove from download client directly
+-   Type: String
+-   Permissible Values: remove, skip, tag_only
+-   Is Mandatory: No (Defaults to remove)
+
+#### HANDOFF_TAG
+
+-   Optional default tag used when `action_mode` is set to `tag_only`
+-   If empty, Decluttarr falls back to `OBSOLETE_TAG`
+-   Type: String
+-   Permissible Values: Any
+-   Is Mandatory: No (Defaults to empty -> fallback to OBSOLETE_TAG)
+
+#### DEFERRED_ARR_FOLLOWUP
+
+-   Optional default for `tag_only` workflows
+-   If enabled, Decluttarr waits until the tagged torrent is no longer present in the download client, then triggers ARR queue follow-up actions for the matching item
+-   Type: Boolean
+-   Permissible Values: True, False
+-   Is Mandatory: No (Defaults to False)
+
+#### FOLLOWUP_TRIGGER
+
+-   Optional default trigger used together with `deferred_arr_followup`
+-   Supported trigger(s):
+    -   `on_download_removed`: follow-up is triggered when Decluttarr detects the download hash is gone from qBittorrent
+-   Type: String
+-   Permissible Values: on_download_removed
+-   Is Mandatory: No (Defaults to on_download_removed)
+
 ### **Jobs**
 
 This is the interesting section. It defines which job you want decluttarr to run for you.
+
+For ARR-removal jobs (`remove_bad_files`, `remove_failed_downloads`, `remove_failed_imports`, `remove_metadata_missing`, `remove_missing_files`, `remove_orphans`, `remove_slow`, `remove_stalled`, `remove_unmonitored`), you can optionally set the following keys per job:
+
+- `action_mode`
+- `handoff_tag`
+- `deferred_arr_followup`
+- `followup_trigger`
+
+When omitted on job-level, Job Defaults are used.
 
 #### REMOVE_BAD_FILES
 
