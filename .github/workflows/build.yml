@@ -16,6 +16,10 @@ on:
     branches:
       - '*'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   validate-branch-name:
     runs-on: ubuntu-latest
@@ -101,8 +105,15 @@ jobs:
           else
             IMAGE_TAG=$BRANCH_NAME
           fi
-          # Convert IMAGE_TAG to lowercase
-          IMAGE_TAG=$(echo $IMAGE_TAG | tr '[:upper:]' '[:lower:]')
+
+          # Normalize tags to Docker-compatible values so feature/* branches can be published.
+          IMAGE_TAG=$(echo "$IMAGE_TAG" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG=$(echo "$IMAGE_TAG" | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//; s/^[.]+//; s/[.]+$//; s/-{2,}/-/g')
+          IMAGE_TAG="${IMAGE_TAG:0:120}"
+          if [[ -z "$IMAGE_TAG" ]]; then
+            IMAGE_TAG="branch-${SHORT_COMMIT_ID}"
+          fi
+
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           
           # Convert repository owner to lowercase

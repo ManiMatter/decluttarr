@@ -5,6 +5,10 @@ on:
     branches:
       - '*' 
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   delete-branch-docker-image:
     runs-on: ubuntu-latest
