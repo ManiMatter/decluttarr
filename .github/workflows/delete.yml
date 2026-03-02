@@ -3,7 +3,7 @@ name: Branch Delete
 on:
   delete:
     branches:
-      - '*' 
+      - '**'
 
 permissions:
   contents: read
@@ -26,8 +26,10 @@ jobs:
         run: |
           # Use jq to extract the branch name from the event payload
           BRANCH=$(cat ${{ github.event_path }} | jq --raw-output '.ref' | sed 's/refs\/heads\///')
-          # Convert branch name to lowercase
+          # Normalize to the same Docker-safe tag format used by build.yml
           BRANCH_NAME=$(echo "$BRANCH" | tr '[:upper:]' '[:lower:]')
+          BRANCH_NAME=$(echo "$BRANCH_NAME" | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//; s/^[.]+//; s/[.]+$//; s/-{2,}/-/g')
+          BRANCH_NAME="${BRANCH_NAME:0:120}"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Remove Docker image

@@ -3,14 +3,14 @@ name: Test, Build, Deploy
 on:
   push:
     branches:
-      - '*'
+      - '**'
     paths:
       - 'src/**'
       - 'docker/**'
       - '.github/workflows/build.yml'
   pull_request:
     branches:
-      - '*'
+      - '**'
     paths:
       - 'src/**'
       - 'docker/**'
@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
   create:
     branches:
-      - '*'
+      - '**'
 
 permissions:
   contents: read
