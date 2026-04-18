@@ -260,17 +260,24 @@ class QbitClient:
         logger.debug(
             "_download_clients_qBit.py/check_qbit_reachability: Checking if qbit is connected to the internet",
         )
-        qbit_connection_status = (
-            (
-                await make_request(
-                    "get",
-                    self.api_url + "/sync/maindata",
-                    self.settings,
-                    timeout=self.timeout,
-                    cookies=self.cookie,
-                )
-            ).json()
-        )["server_state"]["connection_status"]
+        try:
+            qbit_connection_status = (
+                (
+                    await make_request(
+                        "get",
+                        self.api_url + "/sync/maindata",
+                        self.settings,
+                        timeout=self.timeout,
+                        cookies=self.cookie,
+                    )
+                ).json()
+            )["server_state"]["connection_status"]
+        except Exception:
+            logger.warning(
+                ">>> %s: Failed to reach /sync/maindata. Treating as disconnected.",
+                self.name,
+            )
+            return False
         if qbit_connection_status == "disconnected":
             return False
         return True
