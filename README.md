@@ -39,7 +39,7 @@ Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
     - [REMOVE_STALLED](#remove_stalled)
     - [REMOVE_UNMONITORED](#remove_unmonitored)
     - [REMOVE_DONE_SEEDING](#remove_done_seeding)
-    - [SEARCH_CUTOFF_UNMET](#search_unmet_cutoff)
+    - [SEARCH_UNMET_CUTOFF](#search_unmet_cutoff)
     - [SEARCH_MISSING](#search_missing)
     - [DETECT_DELETIONS](#detect_deletions)
   - [Instances](#arr-instances)
@@ -69,7 +69,7 @@ Feature overview:
 -   Removing downloads that are stalled (remove_stalled)
 -   Removing downloads belonging to movies/series/albums etc. that have been marked as "unmonitored" (remove_unmonitored)
 -   Removing completed downloads from your download client that match certain criteria (remove_done_seeding)
--   Periodically searching for better content on movies/series/albums etc. where cutoff has not been reached yet (search_cutoff_unmet)
+-   Periodically searching for better content on movies/series/albums etc. where cutoff has not been reached yet (search_unmet_cutoff)
 -   Periodically searching for missing content that has not yet been found (search_missing)
 
 
@@ -218,7 +218,7 @@ services:
       REMOVE_SLOW: True
       REMOVE_STALLED: True
       REMOVE_UNMONITORED: True
-      SEARCH_BETTER: True
+      SEARCH_UNMET_CUTOFF: True
       SEARCH_MISSING: True
       DETECT_DELETIONS: True
 
@@ -351,7 +351,7 @@ Below are **examples** how keys have changed.
 | `PERMITTED_ATTEMPTS`            | `max_strikes`                                                       |
 | `NO_STALLED_REMOVAL_QBIT_TAG`   | `protected_tag`                                                     |
 | `REMOVE_FAILED`                 | `remove_failed_downloads`                                           |
-| `RUN_PERIODIC_RESCANS`          | `search_better`, `search_missing` (both under `jobs`) |
+| `RUN_PERIODIC_RESCANS`          | `search_unmet_cutoff`, `search_missing` (both under `jobs`) |
 | `MIN_DAYS_BEFORE_RESCAN`        | `min_days_between_searches`                                        |
 | `MIN_DOWNLOAD_SPEED`            | `min_speed`                                                         |
 | `FAILED_IMPORT_MESSAGE_PATTERNS`| `message_patterns` inside `remove_failed_imports`. Note that this now uses wildcards (*). Without wildcard(s), exact match is assumed                                                     |
