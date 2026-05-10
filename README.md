@@ -1,6 +1,7 @@
 _Like this app? Thanks for giving it a_ ⭐️
 
 # **Decluttarr**
+**Decluttar V2 was released on Nov 1st, 2025 with _breaking config file changes_.**
 
 Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
 
