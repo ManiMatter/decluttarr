@@ -219,6 +219,13 @@ class ArrInstance:
     def _check_arr_type(self, status):
         """Check if the ARR instance is of the correct type."""
         actual_arr_type = status["appName"]
+        if self.arr_type == "sportarr":
+            # Sportarr's Sonarr-compatible API reports appName "Sonarr" (other
+            # consumers validate on that), so its identity marker is the extra
+            # sportarrVersion field a real Sonarr never sends.
+            if "sportarrVersion" in status:
+                return
+            actual_arr_type = "Sonarr"
         if actual_arr_type.lower() != self.arr_type:
             logger.error("!! %s Error: !!", self.name)
             logger.error(
