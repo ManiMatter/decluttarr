@@ -122,7 +122,7 @@ class SearchHandler:
                 title = item.get("title", "Unknown")
                 logger.verbose(f"- {title}")
 
-            elif self.arr.arr_type == "sonarr":
+            elif self.arr.arr_type in ("sonarr", "sportarr"):
                 logger.debug(
                     "search_handler.py/_log_items: Getting series information for better display in output"
                 )

@@ -122,6 +122,7 @@ class WatcherManager:
         folders_to_watch = []
         if arr.arr_type not in (
             "sonarr",
+            "sportarr",
             "radarr",
         ):  # only working for sonarr / radarr for now
             return folders_to_watch
