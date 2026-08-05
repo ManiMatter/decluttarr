@@ -91,7 +91,7 @@ class ArrInstances(list):
         }
 
         outputs = []
-        for arr_type in ["sonarr", "radarr", "readarr", "lidarr", "whisparr"]:
+        for arr_type in ["sonarr", "sportarr", "radarr", "readarr", "lidarr", "whisparr"]:
             arrs = self.get_by_arr_type(arr_type)
             if arrs:
                 output = get_config_as_yaml(
@@ -174,7 +174,7 @@ class ArrInstance:
         self.detail_item_id_key = self.detail_item_key + "Id"
         self.detail_item_ids_key = self.detail_item_key + "Ids"
         self.detail_item_search_command = getattr(DetailItemSearchCommand, arr_type)
-        if self.arr_type in ("radarr", "sonarr"):
+        if self.arr_type in ("radarr", "sonarr", "sportarr"):
             self.refresh_item_key = getattr(RefreshItemKey, arr_type)
             self.refresh_item_id_key = self.refresh_item_key + "Id"
             self.refresh_item_command = getattr(RefreshItemCommand, arr_type)
@@ -219,6 +219,13 @@ class ArrInstance:
     def _check_arr_type(self, status):
         """Check if the ARR instance is of the correct type."""
         actual_arr_type = status["appName"]
+        if self.arr_type == "sportarr":
+            # Sportarr's Sonarr-compatible API reports appName "Sonarr" (other
+            # consumers validate on that), so its identity marker is the extra
+            # sportarrVersion field a real Sonarr never sends.
+            if "sportarrVersion" in status:
+                return
+            actual_arr_type = "Sonarr"
         if actual_arr_type.lower() != self.arr_type:
             logger.error("!! %s Error: !!", self.name)
             logger.error(
