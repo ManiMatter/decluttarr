@@ -64,3 +64,16 @@ def test_skip_unreleased_from_job_defaults_and_job_override():
     jobs = Jobs(config, _FakeSettings())
     assert jobs.search_missing.skip_unreleased is False
     assert jobs.search_unmet_cutoff.skip_unreleased is True
+
+
+def test_remove_stalled_min_days_stalled_defaults_to_zero():
+    """The bare `remove_stalled:` YAML form keeps the job defaults."""
+    jobs = _jobs({"remove_stalled": None})
+
+    assert jobs.remove_stalled.min_days_stalled == 0
+
+
+def test_remove_stalled_min_days_stalled_read_from_job_config():
+    jobs = _jobs({"remove_stalled": {"min_days_stalled": 7}})
+
+    assert jobs.remove_stalled.min_days_stalled == 7

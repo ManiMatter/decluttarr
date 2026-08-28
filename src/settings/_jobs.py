@@ -10,6 +10,7 @@ class JobParams:
     keep_archives = False
     message_patterns: list
     max_strikes: int
+    min_days_stalled: int = 0
     min_speed: int
     max_concurrent_searches: int
     min_days_between_searches: int
@@ -23,6 +24,7 @@ class JobParams:
         keep_archives=None,
         message_patterns=None,
         max_strikes=None,
+        min_days_stalled=None,
         min_speed=None,
         max_concurrent_searches=None,
         min_days_between_searches=None,
@@ -34,6 +36,7 @@ class JobParams:
         self.keep_archives = keep_archives
         self.message_patterns = message_patterns
         self.max_strikes = max_strikes
+        self.min_days_stalled = min_days_stalled
         self.min_speed = min_speed
         self.max_concurrent_searches = max_concurrent_searches
         self.min_days_between_searches = min_days_between_searches
@@ -109,7 +112,10 @@ class Jobs:
             max_strikes=self.job_defaults.max_strikes,
             min_speed=self.job_defaults.min_speed,
         )
-        self.remove_stalled = JobParams(max_strikes=self.job_defaults.max_strikes)
+        self.remove_stalled = JobParams(
+            max_strikes=self.job_defaults.max_strikes,
+            min_days_stalled=0,
+        )
         self.remove_unmonitored = JobParams()
         self.search_unmet_cutoff = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,

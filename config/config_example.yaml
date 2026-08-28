@@ -43,6 +43,7 @@ jobs:
     # max_strikes: 3
   remove_stalled:
     # max_strikes: 3
+    # min_days_stalled: 0
   remove_unmonitored:
   search_unmet_cutoff:
     # min_days_between_searches: 7

@@ -1,4 +1,7 @@
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.settings._download_clients import DownloadClients
 
@@ -44,3 +47,14 @@ def test_unknown_name_returns_none():
         None,
         None,
     )
+
+
+@pytest.mark.parametrize(("min_days_stalled", "warned"), [(7, True), (0, False)])
+def test_min_days_stalled_warns_only_without_qbittorrent(min_days_stalled, warned):
+    settings = MagicMock()
+    settings.jobs.remove_stalled.min_days_stalled = min_days_stalled
+
+    with patch("src.settings._download_clients.logger") as logger:
+        DownloadClients({"download_clients": {}}, settings)
+
+    assert logger.warning.called is warned
