@@ -274,7 +274,7 @@ async def test_run_detects_metadata_stuck_item_present_only_in_full_queue():
         queue_scope="full"
     )
     removal_job.arr.remove_queue_item.assert_awaited_once_with(
-        queue_id=full_only_item["id"], blocklist=True
+        queue_id=full_only_item["id"], blocklist=True, remove_from_client=True
     )
 
 
@@ -293,7 +293,7 @@ async def test_run_still_detects_metadata_stuck_item_in_normal_queue():
 
     assert removed == 1
     removal_job.arr.remove_queue_item.assert_awaited_once_with(
-        queue_id=normal_item["id"], blocklist=True
+        queue_id=normal_item["id"], blocklist=True, remove_from_client=True
     )
 
 
@@ -348,7 +348,7 @@ async def test_run_keeps_ignored_client_and_protected_tag_downloads():
 
     assert removed == 1
     removal_job.arr.remove_queue_item.assert_awaited_once_with(
-        queue_id=removable_item["id"], blocklist=True
+        queue_id=removable_item["id"], blocklist=True, remove_from_client=True
     )
     assert removal_job.arr.tracker.deleted == [removable_item["downloadId"]]
 
@@ -380,7 +380,7 @@ async def test_run_preserves_strikes_and_blocklist_for_full_only_item():
         == 2
     )
     removal_job.arr.remove_queue_item.assert_awaited_once_with(
-        queue_id=full_only_item["id"], blocklist=True
+        queue_id=full_only_item["id"], blocklist=True, remove_from_client=True
     )
 
 
@@ -395,7 +395,7 @@ async def test_run_removes_duplicate_queue_rows_only_once():
 
     assert removed == 1
     removal_job.arr.remove_queue_item.assert_awaited_once_with(
-        queue_id=first_row["id"], blocklist=True
+        queue_id=first_row["id"], blocklist=True, remove_from_client=True
     )
     assert removal_job.arr.tracker.deleted == [first_row["downloadId"]]
 
@@ -423,6 +423,6 @@ async def test_missing_size_opt_in_remains_limited_to_normal_queue():
 
     assert removed == 1
     removal_job.arr.remove_queue_item.assert_awaited_once_with(
-        queue_id=normal_size_zero["id"], blocklist=True
+        queue_id=normal_size_zero["id"], blocklist=True, remove_from_client=True
     )
     assert removal_job.arr.tracker.deleted == [normal_size_zero["downloadId"]]
