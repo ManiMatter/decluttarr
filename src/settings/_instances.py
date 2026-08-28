@@ -341,7 +341,9 @@ class ArrInstance:
                     logger.info(tip)
         return
 
-    async def remove_queue_item(self, queue_id, *, blocklist=False):
+    async def remove_queue_item(
+        self, queue_id, *, blocklist=False, remove_from_client=True
+    ):
         """
         Remove a specific queue item from the queue by its queue id.
 
@@ -350,17 +352,22 @@ class ArrInstance:
         Args:
             queue_id (str): The queue ID of the queue item to be removed.
             blocklist (bool): Whether to add the item to the blocklist. Default is False.
+            remove_from_client (bool): Whether to also delete the download from the
+                download client. Default is True. Set to False to clear only the queue
+                entry and leave the torrent in place (e.g. to keep seeding a private
+                tracker torrent that still carries a hit-and-run obligation).
 
         Returns:
             bool: Returns True if the removal was successful, False otherwise.
 
         """
         logger.debug(
-            f"_instances.py/remove_queue_item: Removing queue item, blocklist: {blocklist}"
+            f"_instances.py/remove_queue_item: Removing queue item, blocklist: {blocklist}, "
+            f"remove_from_client: {remove_from_client}"
         )
         endpoint = f"{self.api_url}/queue/{queue_id}"
         headers = {"X-Api-Key": self.api_key}
-        query = {"removeFromClient": True, "blocklist": blocklist}
+        query = {"removeFromClient": remove_from_client, "blocklist": blocklist}
 
         # Send the request to remove the download from the queue
         response = await make_request(

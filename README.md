@@ -439,8 +439,9 @@ Configures the general behavior of the application (across all features)
     -   "remove" means that torrents are removed (default behavior)
     -   "skip" means they are disregarded (which some users might find handy to protect their private trackers prematurely, i.e., before their seed targets are met)
     -   "obsolete_tag" means that rather than being removed, the torrents are tagged. This allows other applications (such as [qbit_manage](https://github.com/StuffAnThings/qbit_manage) to monitor them and remove them once seed targets are fulfilled)
+    -   "remove_from_queue" behaves like "remove" on the *arr side (the queue entry is cleared, and blocklisted if the job blocklists), but leaves the torrent untouched in the download client. Use this when the torrent still carries a hit-and-run obligation you must honour: the *arr stops waiting on a download that will never import and is free to grab an alternative, while seeding continues and another application (such as [qbit_manage](https://github.com/StuffAnThings/qbit_manage)) retires the torrent on the tracker's terms. Unlike "obsolete_tag" this clears the queue entry immediately rather than waiting for the torrent to disappear
 -   Type: String
--   Permissible Values: remove, skip, obsolete_tag
+-   Permissible Values: remove, remove_from_queue, skip, obsolete_tag
 -   Is Mandatory: No (Defaults to remove)
 
 

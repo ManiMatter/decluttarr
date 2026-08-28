@@ -21,6 +21,13 @@ class RemovalHandler:
 
             if handling_method == "remove":
                 await self._remove_download(affected_download, download_id, blocklist)
+            elif handling_method == "remove_from_queue":
+                await self._remove_download(
+                    affected_download,
+                    download_id,
+                    blocklist,
+                    remove_from_client=False,
+                )
             elif handling_method == "obsolete_tag":
                 await self._tag_as_obsolete(affected_download, download_id)
 
@@ -31,13 +38,23 @@ class RemovalHandler:
 
             self.arr.tracker.deleted.append(download_id)
 
-    async def _remove_download(self, affected_download, download_id, blocklist):
+    async def _remove_download(
+        self, affected_download, download_id, blocklist, *, remove_from_client=True
+    ):
         queue_id = affected_download["queue_ids"][0]
+        action = "removal" if remove_from_client else "queue removal (torrent kept)"
         logger.info(
-            f"Job '{self.job_name}' triggered removal: {affected_download['title']}"
+            f"Job '{self.job_name}' triggered {action}: {affected_download['title']}"
         )
-        logger.debug(f"remove_handler.py/_remove_download: download_id={download_id}")
-        await self.arr.remove_queue_item(queue_id=queue_id, blocklist=blocklist)
+        logger.debug(
+            f"remove_handler.py/_remove_download: download_id={download_id}, "
+            f"remove_from_client={remove_from_client}"
+        )
+        await self.arr.remove_queue_item(
+            queue_id=queue_id,
+            blocklist=blocklist,
+            remove_from_client=remove_from_client,
+        )
 
     async def _tag_as_obsolete(self, affected_download, download_id):
         logger.info(
