@@ -20,8 +20,9 @@ from src.utils.queue_manager import QueueManager
 class JobManager:
     arr = None
 
-    def __init__(self, settings):
+    def __init__(self, settings, event_bus=None):
         self.settings = settings
+        self.event_bus = event_bus
 
     async def run_jobs(self, arr):
         self.arr = arr
@@ -218,7 +219,7 @@ class JobManager:
         for removal_job_name, removal_job_class in removal_job_classes.items():
             if getattr(self.settings.jobs, removal_job_name, False):
                 jobs.append(
-                    removal_job_class(self.arr, self.settings, removal_job_name),
+                    removal_job_class(self.arr, self.settings, removal_job_name, event_bus=self.event_bus),
                 )
         return jobs
 

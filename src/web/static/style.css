@@ -1,0 +1,206 @@
+/* Decluttarr Web UI Custom Styles */
+
+/* Status bar */
+.status-bar {
+    background: var(--pico-card-background-color);
+    padding: 0.75rem 1rem;
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.test-badge {
+    background: #e65100;
+    color: white;
+}
+
+.protected-badge {
+    background: #2e7d32;
+    color: white;
+}
+
+.strike-badge {
+    background: #f57f17;
+    color: white;
+}
+
+.override-badge {
+    color: #f57f17;
+    font-style: italic;
+}
+
+/* Arr type badges */
+[data-arr-type="sonarr"] { background: #35c5f4; color: #000; }
+[data-arr-type="radarr"] { background: #ffc230; color: #000; }
+[data-arr-type="lidarr"] { background: #1db954; color: #fff; }
+[data-arr-type="readarr"] { background: #8e24aa; color: #fff; }
+[data-arr-type="whisparr"] { background: #e91e63; color: #fff; }
+
+/* Action badges */
+.action-badge-removed { background: #c62828; color: white; }
+.action-badge-flagged { background: #e65100; color: white; }
+.action-badge-recovered { background: #2e7d32; color: white; }
+.action-badge-protected { background: #1565c0; color: white; }
+.action-badge-strike { background: #f57f17; color: white; }
+
+/* Status badges */
+.status-downloading { background: #1565c0; color: white; }
+.status-warning { background: #e65100; color: white; }
+.status-completed { background: #2e7d32; color: white; }
+.status-failed { background: #c62828; color: white; }
+.status-queued { background: var(--pico-secondary); color: white; }
+.status-paused { background: #6a1b9a; color: white; }
+
+/* Row highlighting */
+.row-flagged {
+    border-left: 3px solid #e65100;
+}
+
+.row-protected {
+    border-left: 3px solid #2e7d32;
+    background: rgba(46, 125, 50, 0.08);
+}
+
+.row-protected .btn-unprotect {
+    color: #2e7d32;
+    border-color: #2e7d32;
+}
+
+.row-protected .btn-unprotect:hover {
+    background: #2e7d32;
+    color: white;
+}
+
+.action-removed {
+    opacity: 0.8;
+}
+
+.action-recovered td {
+    color: var(--pico-ins-color);
+}
+
+/* Small button variant */
+.small-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+/* Activity feed table */
+.activity-feed-table td {
+    padding: 0.3rem 0.5rem;
+}
+
+.queue-title .truncate {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 300px;
+    overflow-wrap: anywhere;
+}
+
+/* Dashboard layout spacing */
+.dashboard-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-block: 1.5rem;
+}
+
+section {
+    margin-block: 1.5rem;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1rem;
+}
+.pagination button {
+    flex: 0 0 auto;
+}
+.pagination span {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+/* Save flash animation */
+@keyframes flash-save {
+    0%   {
+        background-color: rgba(46, 125, 50, 0.35);
+        box-shadow: 0 0 0 6px rgba(46, 125, 50, 0.35);
+    }
+    100% {
+        background-color: transparent;
+        box-shadow: 0 0 0 6px transparent;
+    }
+}
+@keyframes flash-error {
+    0%   {
+        background-color: rgba(198, 40, 40, 0.35);
+        box-shadow: 0 0 0 6px rgba(198, 40, 40, 0.35);
+    }
+    100% {
+        background-color: transparent;
+        box-shadow: 0 0 0 6px transparent;
+    }
+}
+.flash-save,
+.flash-error {
+    border-radius: var(--pico-border-radius);
+}
+.flash-save {
+    animation: flash-save 1.5s ease-out;
+}
+.flash-error {
+    animation: flash-error 1.5s ease-out;
+}
+
+/* Nav active link */
+nav a.active {
+    color: var(--pico-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 1rem 0;
+    opacity: 0.6;
+}
+
+/* Settings details */
+details summary {
+    cursor: pointer;
+}
+
+details[open] summary {
+    margin-bottom: 0.5rem;
+}
+
+/* Job enabled/disabled status label (set as a class so no inline style is
+   needed, keeping the markup clean under a strict script CSP). */
+.status-enabled {
+    color: var(--pico-ins-color);
+    margin-left: 0.5rem;
+}
+
+.status-disabled {
+    color: var(--pico-secondary);
+    margin-left: 0.5rem;
+}

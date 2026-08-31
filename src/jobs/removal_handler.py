@@ -2,10 +2,11 @@ from src.utils.log_setup import logger
 
 
 class RemovalHandler:
-    def __init__(self, arr, settings, job_name):
+    def __init__(self, arr, settings, job_name, event_bus=None):
         self.arr = arr
         self.settings = settings
         self.job_name = job_name
+        self.event_bus = event_bus
 
     async def remove_downloads(self, affected_downloads, blocklist):
         for download_id in list(affected_downloads.keys()):
@@ -30,6 +31,19 @@ class RemovalHandler:
                     logger.verbose(msg)
 
             self.arr.tracker.deleted.append(download_id)
+
+            # Emit removal event
+            if self.event_bus:
+                from src.web.events import Event, EventType
+                await self.event_bus.emit(Event(EventType.ITEM_REMOVED, {
+                    "arr_name": self.arr.name,
+                    "arr_type": self.arr.arr_type,
+                    "job_name": self.job_name,
+                    "download_id": download_id,
+                    "title": affected_download.get("title", "Unknown"),
+                    "handling_method": handling_method,
+                    "test_run": self.settings.general.test_run,
+                }))
 
     async def _remove_download(self, affected_download, download_id, blocklist):
         queue_id = affected_download["queue_ids"][0]

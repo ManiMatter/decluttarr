@@ -90,6 +90,11 @@ def fixture_env_vars():
         "RADARR": radarr_yaml,
         "SONARR": sonarr_yaml,
         "QBITTORRENT": qbit_yaml,
+        "WEB_ENABLED": "false",
+        "WEB_HOST": "127.0.0.1",
+        "WEB_PORT": "8080",
+        "PROXY_PREFIX": "decluttarr",
+        "WEB_DB_PATH": "/data/custom.db",
     }
     with patch.dict(os.environ, env, clear=True):
         yield env
@@ -123,6 +128,13 @@ qbit_expected = yaml.safe_load(qbit_yaml)
         ("instances", "radarr", radarr_expected),
         ("instances", "sonarr", sonarr_expected),
         ("download_clients", "qbittorrent", qbit_expected),
+        # Web env vars: section prefix (WEB_) is stripped on load so the keys
+        # match the YAML schema. PROXY_PREFIX has no prefix and stays as-is.
+        ("web", "enabled", False),
+        ("web", "host", "127.0.0.1"),
+        ("web", "port", 8080),
+        ("web", "proxy_prefix", "decluttarr"),
+        ("web", "db_path", "/data/custom.db"),
     ],
 )
 def test_env_loading_parametrized(

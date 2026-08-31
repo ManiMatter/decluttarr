@@ -80,6 +80,7 @@ Feature overview:
 -   Removing completed downloads from your download client that match certain criteria (remove_done_seeding)
 -   Periodically searching for better content on movies/series/albums etc. where cutoff has not been reached yet (search_unmet_cutoff)
 -   Periodically searching for missing content that has not yet been found (search_missing)
+-   Built-in web UI for monitoring, activity history, and runtime control (enabled by default on port 9999)
 
 
 Key behaviors:
@@ -726,6 +727,89 @@ Supported download clients: **qBittorrent** and **SABnzbd**.
     - base_url: URL under which SABnzbd can be reached (mandatory)
     - api_key: SABnzbd API key (mandatory)
     - name: Optional. Needs to correspond with the name that you have set up in your Arr instance. Defaults to "SABnzbd"
+
+### **Web UI**
+
+Decluttarr includes an optional lightweight web interface for monitoring, activity history, and runtime control. It is enabled by default on port 9999.
+
+Features:
+-   **Dashboard** — real-time queue view across all arr instances, instance status cards, live activity feed, and a "Run Now" button to manually trigger a cycle
+-   **Activity Log** — searchable, filterable, paginated history of every action (flags, removals, recoveries, strikes) stored in SQLite
+-   **Settings Editor** — toggle `test_run`, enable/disable jobs, and adjust `max_strikes`/`min_speed` at runtime without editing YAML or restarting
+-   **Download Protection** — protect individual downloads from removal via the UI (supplements the qBit "Keep" tag)
+-   **REST API** — full JSON API with auto-generated OpenAPI docs at `/api/docs`
+-   **SSE Live Updates** — server-sent events push changes to the browser in real time
+
+#### Configuration
+
+All web settings are optional and have sensible defaults:
+
+```yaml
+web:
+  enabled: true       # Set to false to disable the web UI entirely
+  host: "0.0.0.0"    # Listen address (default: 0.0.0.0)
+  port: 9999          # Listen port (default: 9999)
+  proxy_prefix: ""    # Path prefix when running behind a reverse proxy (see below)
+  db_path: ""         # Optional override for the SQLite database file path
+```
+
+##### `db_path`
+
+Path to the SQLite database file used for activity history, protected downloads, and runtime config overrides.
+
+- Default: `./data/decluttarr.db`
+- Useful when you want to mount a dedicated volume / PVC for the database, or co-locate it with other persistent state.
+- Precedence: `web.db_path` (YAML) → `DECLUTTARR_DB_PATH` (env var) → default.
+
+##### `proxy_prefix`
+
+The literal path prefix that your reverse proxy strips before forwarding to Decluttarr.
+
+- **nginx / Traefik / Caddy:** if the UI lives at `https://example.com/decluttarr`, set `proxy_prefix: "decluttarr"`.
+- **code-server:** the convention is `/proxy/<port>/`, so set `proxy_prefix: "proxy/9999"` (the port is part of the prefix, not appended for you).
+
+Leading and trailing slashes are stripped, so `decluttarr`, `/decluttarr`, and `/decluttarr/` all behave the same.
+
+Environment variable equivalents: `WEB_ENABLED`, `WEB_HOST`, `WEB_PORT`, `PROXY_PREFIX`, `WEB_DB_PATH`
+
+#### Docker
+
+Expose the web UI port in your docker-compose:
+
+```yaml
+ports:
+  - "9999:9999"
+```
+
+#### Disabling the Web UI
+
+Set `enabled: false` in the `web` config section, or set the environment variable `WEB_ENABLED=false`. When disabled, the event bus uses a no-op implementation with zero overhead.
+
+#### Security
+
+The web UI ships **without built-in authentication**. Anyone who can reach the listen address can read your activity history and mutate runtime config (toggle `test_run`, disable jobs, change `max_strikes`/`min_speed`, trigger cycles, manage protected downloads). Treat it like an internal admin endpoint:
+
+-   Bind it to a trusted interface (`host: "127.0.0.1"`) and reach it via SSH tunnel, **or**
+-   Place it behind a reverse proxy that handles authentication (Caddy, Traefik, nginx + auth_request, Cloudflare Access, Authelia, etc.), **or**
+-   Set `enabled: false` if you don't need it.
+
+Do not expose port 9999 directly to the public internet.
+
+#### Content Security Policy
+
+If you serve Decluttarr behind a reverse proxy that injects a Content Security Policy, the web UI works under a strict `script-src` so long as `'unsafe-eval'` is allowed:
+
+```
+default-src 'self';
+script-src  'self' 'unsafe-eval';
+style-src   'self';
+connect-src 'self';
+img-src     'self' data:;
+```
+
+- All frontend dependencies (Pico CSS, HTMX, Alpine.js) are vendored under `/static/vendor/` — **no external CDN allowlist required**.
+- All page-level JavaScript is in external `.js` files under `/static/` — no inline `<script>` blocks, so `'unsafe-inline'` is **not** needed for `script-src`.
+- `'unsafe-eval'` is required because Alpine.js compiles its `x-data` / `x-show` / `x-text` expressions with `new Function(...)`. A follow-up will migrate to the `alpinejs-csp` build to remove this requirement; until then, `'unsafe-eval'` is the one CSP relaxation the UI depends on.
 
 
 ## Disclaimer

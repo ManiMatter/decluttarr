@@ -4,10 +4,12 @@ from src.utils.log_setup import logger
 
 
 class StrikesHandler:
-    def __init__(self, job_name, arr, max_strikes):
+    def __init__(self, job_name, arr, max_strikes, event_bus=None):
         self.job_name = job_name
+        self.arr = arr
         self.tracker = arr.tracker
         self.max_strikes = max_strikes
+        self.event_bus = event_bus
         self.tracker.defective.setdefault(job_name, {})
 
     def filter_strike_exceeds(self, affected_downloads, queue):
@@ -166,6 +168,24 @@ class StrikesHandler:
             strikes = self._increment_strike(d_id, title)
             strikes_left = self.max_strikes - strikes
             self._log_strike_status(title, strikes, strikes_left)
+
+            # Emit strike event (fire-and-forget via stored task reference)
+            if self.event_bus:
+                import asyncio
+                from src.web.events import Event, EventType
+                try:
+                    asyncio.ensure_future(self.event_bus.emit(Event(EventType.STRIKE_APPLIED, {
+                        "arr_name": self.arr.name,
+                        "arr_type": self.arr.arr_type,
+                        "job_name": self.job_name,
+                        "download_id": d_id,
+                        "title": title,
+                        "strikes": strikes,
+                        "max_strikes": self.max_strikes,
+                    })))
+                except Exception:
+                    pass
+
             if strikes_left >= 0:
                 del affected_downloads[d_id]
 

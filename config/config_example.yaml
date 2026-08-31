@@ -68,6 +68,13 @@ instances:
     - base_url: "http://whisparr:6969"
       api_key: "xxxx"
 
+web:
+  enabled: true # Set to false to disable the web UI
+  # host: "0.0.0.0" # optional. Default: 0.0.0.0
+  # port: 9999 # optional. Default: 9999
+  # proxy_prefix: "decluttarr"     # path prefix behind a reverse proxy (e.g. "decluttarr", or "proxy/9999" for code-server)
+  # db_path: "/data/decluttarr.db" # optional. Default: "./data/decluttarr.db". Overrides DECLUTTARR_DB_PATH env var.
+
 download_clients:
   qbittorrent:
     - base_url: "http://qbittorrent:8080" # You can use decluttarr without qbit (not all features available, see readme).

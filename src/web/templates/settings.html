@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Settings - Decluttarr{% endblock %}
+{% block content %}
+<!-- tojson escapes < > & ' but not " — so it is safe only inside a
+     single-quoted attribute. Double quotes here truncate the JSON at its
+     first inner quote and break JSON.parse in settings.js. -->
+<div id="settings-init-data"
+     data-config='{{ config | tojson }}'
+     data-overrides='{{ overrides | tojson }}'
+     hidden></div>
+<div x-data="settingsPage">
+    <h2>Settings</h2>
+
+    <span x-show="message" x-text="message" x-transition
+          :style="messageStyle"
+          style="display: block; margin-bottom: 1rem;"></span>
+
+    <!-- General Settings -->
+    <article>
+        <header><h4>General</h4></header>
+
+        <div class="grid">
+            <label>
+                Test Run
+                <input type="checkbox" role="switch" :checked="config.general.test_run"
+                       data-key="general.test_run" @change="saveField">
+                <small x-show="ov.general.test_run" class="override-badge">overridden</small>
+            </label>
+            <label>
+                Timer (minutes)
+                <input type="number" :value="config.general.timer" min="1" step="1"
+                       data-key="general.timer" @change="saveField">
+                <small x-show="ov.general.timer" class="override-badge">overridden</small>
+            </label>
+        </div>
+
+        <div class="grid">
+            <label>
+                Log Level
+                <select :value="config.general.log_level" data-key="general.log_level" @change="saveField">
+                    <option>DEBUG</option>
+                    <option>VERBOSE</option>
+                    <option>INFO</option>
+                    <option>WARNING</option>
+                    <option>ERROR</option>
+                </select>
+            </label>
+            <label>
+                SSL Verification
+                <input type="checkbox" role="switch" :checked="config.general.ssl_verification"
+                       data-key="general.ssl_verification" @change="saveField">
+            </label>
+        </div>
+
+        <div class="grid">
+            <label>
+                Private Tracker Handling
+                <select :value="config.general.private_tracker_handling"
+                        data-key="general.private_tracker_handling" @change="saveField">
+                    <option value="remove">Remove</option>
+                    <option value="skip">Skip</option>
+                    <option value="obsolete_tag">Obsolete Tag</option>
+                </select>
+            </label>
+            <label>
+                Public Tracker Handling
+                <select :value="config.general.public_tracker_handling"
+                        data-key="general.public_tracker_handling" @change="saveField">
+                    <option value="remove">Remove</option>
+                    <option value="skip">Skip</option>
+                    <option value="obsolete_tag">Obsolete Tag</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="grid">
+            <label>
+                Obsolete Tag
+                <input type="text" :value="config.general.obsolete_tag"
+                       data-key="general.obsolete_tag" @change="saveField">
+            </label>
+            <label>
+                Protected Tag
+                <input type="text" :value="config.general.protected_tag"
+                       data-key="general.protected_tag" @change="saveField">
+            </label>
+        </div>
+    </article>
+
+    <!-- Jobs -->
+    <article>
+        <header><h4>Jobs</h4></header>
+
+        <template x-for="(jobConfig, jobName) in config.jobs" :key="jobName">
+            <details>
+                <summary>
+                    <span x-text="jobName"></span>
+                    <span x-text="jobConfig.enabledLabel" :class="jobConfig.enabledClass"></span>
+                </summary>
+                <div style="padding: 0.5rem;">
+                    <div class="grid">
+                        <label>
+                            Enabled
+                            <input type="checkbox" role="switch" :checked="jobConfig.enabled"
+                                   :data-job="jobName" data-attr="enabled" @change="saveJobField">
+                        </label>
+                        <template x-if="jobConfig.hasMaxStrikes">
+                            <label>
+                                Max Strikes
+                                <input type="number" :value="jobConfig.max_strikes" min="1"
+                                       :data-job="jobName" data-attr="max_strikes" @change="saveJobField">
+                            </label>
+                        </template>
+                        <template x-if="jobConfig.hasMinSpeed">
+                            <label>
+                                Min Speed (KB/s)
+                                <input type="number" :value="jobConfig.min_speed" min="0"
+                                       :data-job="jobName" data-attr="min_speed" @change="saveJobField">
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </details>
+        </template>
+    </article>
+
+    <!-- Instances (read-only) -->
+    <article>
+        <header><h4>Instances <small>(read-only, requires restart to change)</small></h4></header>
+        <template x-for="inst in config.instances" :key="inst.name">
+            <div class="grid" style="padding: 0.25rem 0;">
+                <span><strong x-text="inst.name"></strong></span>
+                <span x-text="inst.arr_type"></span>
+                <span><code x-text="inst.base_url"></code></span>
+            </div>
+        </template>
+    </article>
+
+    <!-- Reset -->
+    <button class="outline secondary" @click="resetOverrides">Reset All to YAML Defaults</button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ request.url_for('static', path='settings.js') }}"></script>
+{% endblock %}

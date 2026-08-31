@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Activity Log - Decluttarr{% endblock %}
+{% block content %}
+<div x-data="activityLog">
+    <h2>Activity Log</h2>
+
+    <!-- Filters -->
+    <details open>
+        <summary>Filters</summary>
+        <div class="grid">
+            <label>
+                Search
+                <input type="text" :value="filters.search" data-filter="search" @input.debounce.300ms="setFilter" placeholder="Search titles...">
+            </label>
+            <label>
+                Action
+                <select :value="filters.action" data-filter="action" @change="setFilter">
+                    <option value="">All</option>
+                    <option value="removed">Removed</option>
+                    <option value="flagged">Flagged</option>
+                    <option value="recovered">Recovered</option>
+                    <option value="protected">Protected</option>
+                    <option value="unprotected">Unprotected</option>
+                    <option value="strike">Strike</option>
+                </select>
+            </label>
+            <label>
+                Arr Instance
+                <select :value="filters.arr" data-filter="arr" @change="setFilter">
+                    <option value="">All</option>
+                    {% for inst in settings.instances %}
+                    <option value="{{ inst.name }}">{{ inst.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="grid">
+            <label>
+                From
+                <input type="date" :value="filters.date_from" data-filter="date_from" @change="setFilter">
+            </label>
+            <label>
+                To
+                <input type="date" :value="filters.date_to" data-filter="date_to" @change="setFilter">
+            </label>
+        </div>
+    </details>
+
+    <!-- Results -->
+    <div x-show="loading" aria-busy="true">Loading...</div>
+
+    <figure x-show="notLoading">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Instance</th>
+                    <th>Job</th>
+                    <th>Action</th>
+                    <th>Title</th>
+                    <th>Strikes</th>
+                    <th>Test</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="item in items" :key="item.id">
+                    <tr :class="item.rowClass">
+                        <td x-text="item.timeFormatted" style="white-space: nowrap;"></td>
+                        <td>
+                            <span class="badge" :data-arr-type="item.arr_type" x-text="item.arr_name"></span>
+                        </td>
+                        <td><code x-text="item.job_name"></code></td>
+                        <td>
+                            <span class="badge" :class="item.actionBadgeClass" x-text="item.action"></span>
+                        </td>
+                        <td x-text="item.title" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></td>
+                        <td>
+                            <span x-show="item.hasStrikes" x-text="item.strikesDisplay"></span>
+                        </td>
+                        <td>
+                            <span x-show="item.test_run" class="badge test-badge">TEST</span>
+                        </td>
+                    </tr>
+                </template>
+                <tr x-show="noItems">
+                    <td colspan="7" style="text-align: center;">No activity found</td>
+                </tr>
+            </tbody>
+        </table>
+    </figure>
+
+    <!-- Pagination -->
+    <div class="pagination" x-show="hasPages">
+        <button class="outline" @click="prevPage" :disabled="onFirstPage">Previous</button>
+        <span>Page <span x-text="page"></span> of <span x-text="totalPages"></span> (<span x-text="total"></span> total)</span>
+        <button class="outline" @click="nextPage" :disabled="onLastPage">Next</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ request.url_for('static', path='activity.js') }}"></script>
+{% endblock %}

@@ -53,6 +53,22 @@ class Tracker:
             protected_downloads.extend(protected)
             private_downloads.extend(private)
 
+        # Include UI-protected downloads from the web database
+        try:
+            import os
+            from src.web.database import DEFAULT_DB_PATH
+            db_path = os.environ.get("DECLUTTARR_DB_PATH", DEFAULT_DB_PATH)
+            if os.path.exists(db_path):
+                import aiosqlite
+                async with aiosqlite.connect(db_path) as conn:
+                    cursor = await conn.execute("SELECT download_id FROM protected_downloads")
+                    rows = await cursor.fetchall()
+                    for row in rows:
+                        if row[0] not in protected_downloads:
+                            protected_downloads.append(row[0])
+        except Exception:
+            pass  # Database may not exist if web is disabled
+
         self.protected = protected_downloads
         self.private = private_downloads
 

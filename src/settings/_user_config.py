@@ -43,6 +43,7 @@ CONFIG_MAPPING = {
     ],
     "instances": ["SONARR", "RADARR", "READARR", "LIDARR", "WHISPARR"],
     "download_clients": ["QBITTORRENT"],
+    "web": ["WEB_ENABLED", "WEB_HOST", "WEB_PORT", "PROXY_PREFIX", "WEB_DB_PATH"],
 }
 
 
@@ -81,6 +82,11 @@ def _load_from_env() -> dict:
 
     for section, keys in CONFIG_MAPPING.items():
         section_config = {}
+        # Some env vars are prefixed with the section name to keep deployment
+        # docs unambiguous (e.g. WEB_HOST vs the bare HOST). Strip that prefix
+        # when storing so the resulting keys match the YAML schema (`host`,
+        # not `web_host`) and downstream classes find them.
+        section_prefix = section.upper() + "_"
 
         for key in keys:
             env_key = key if os.getenv(key) is not None else key.lower()
@@ -100,7 +106,8 @@ def _load_from_env() -> dict:
                     e,
                 )
                 parsed_value = {}
-            section_config[key.lower()] = parsed_value
+            stored_key = key[len(section_prefix):] if key.startswith(section_prefix) else key
+            section_config[stored_key.lower()] = parsed_value
 
         config[section] = section_config
 
