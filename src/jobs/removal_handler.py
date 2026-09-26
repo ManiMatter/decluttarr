@@ -23,6 +23,7 @@ class RemovalHandler:
                 await self._remove_download(affected_download, download_id, blocklist)
             elif handling_method == "obsolete_tag":
                 await self._tag_as_obsolete(affected_download, download_id)
+                self.arr.tracker.obsolete_tagged.append(download_id)
 
             # Print out detailed removal messages (if any)
             if "removal_messages" in affected_download:

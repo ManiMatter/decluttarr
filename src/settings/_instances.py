@@ -29,6 +29,7 @@ class Tracker:
         self.defective = {}
         self.download_progress = {}
         self.deleted = []
+        self.obsolete_tagged = []
         self.extension_checked = []
 
     def reset(self) -> None:
@@ -38,6 +39,7 @@ class Tracker:
             self.defective,
             self.download_progress,
             self.deleted,
+            self.obsolete_tagged,
             self.extension_checked,
         ):
             attr.clear()

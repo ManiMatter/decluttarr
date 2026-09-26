@@ -136,11 +136,47 @@ class JobManager:
                 "job_runner/full_queue at start: %s",
                 queue_manager.format_queue(full_queue),
             )
+            self._forget_deleted_downloads_still_in_queue(full_queue)
             return True
 
         self.arr.tracker.reset()
         logger.verbose("Removal Jobs: None triggered (Queue is empty)")
         return False
+
+    def _forget_deleted_downloads_still_in_queue(self, full_queue):
+        """
+        Drop downloads from the deleted tracker that are still in the queue.
+
+        The deleted tracker stops the same download from being removed twice
+        within one run, but is otherwise only cleared once the queue is empty.
+        A download that is still in the queue was evidently not removed, so
+        keeping it in the tracker would silently suppress every future removal
+        attempt for as long as decluttarr runs.
+
+        Downloads handled via obsolete_tag are exempt: they are meant to stay in
+        the queue, so their presence is not evidence of a failed removal.
+        """
+        queue_download_ids = {item.get("downloadId") for item in full_queue} - {None}
+        still_in_queue = {
+            download_id
+            for download_id in self.arr.tracker.deleted
+            if download_id in queue_download_ids
+            and download_id not in self.arr.tracker.obsolete_tagged
+        }
+        if not still_in_queue:
+            return
+
+        logger.debug(
+            "job_manager.py/_forget_deleted_downloads_still_in_queue: "
+            "Marked as deleted but still in queue (removal did not take effect), "
+            "thus eligible for removal again: %s",
+            ", ".join(sorted(still_in_queue)),
+        )
+        self.arr.tracker.deleted = [
+            download_id
+            for download_id in self.arr.tracker.deleted
+            if download_id not in still_in_queue
+        ]
 
     async def _download_clients_connected(self):
         for clients in [
