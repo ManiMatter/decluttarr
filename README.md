@@ -64,7 +64,7 @@ Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
 
 Decluttarr is a helper tool that works with the *arr-application suite, and automates the clean-up for their download queues, keeping them free of stalled / redundant downloads. 
 
-It supports [Radarr](https://github.com/Radarr/Radarr/), [Sonarr](https://github.com/Sonarr/Sonarr/), [Readarr](https://github.com/Readarr/Readarr/), [Lidarr](https://github.com/Lidarr/Lidarr/), and [Whisparr](https://github.com/Whisparr/Whisparr/).
+It supports [Radarr](https://github.com/Radarr/Radarr/), [Sonarr](https://github.com/Sonarr/Sonarr/), [Sportarr](https://github.com/Sportarr/Sportarr/), [Readarr](https://github.com/Readarr/Readarr/), [Lidarr](https://github.com/Lidarr/Lidarr/), and [Whisparr](https://github.com/Whisparr/Whisparr/).
 
 Feature overview:
 
@@ -275,6 +275,10 @@ services:
           api_key: "$SONARR_API_KEY"
         - base_url: "http://sonarr2:8989"
           api_key: "$SONARR_API_KEY"
+
+      # SPORTARR: >
+      #   - base_url: "http://sportarr:1867"
+      #     api_key: "$SPORTARR_API_KEY"
 
       # RADARR: >
       #   - base_url: "http://radarr:7878"
