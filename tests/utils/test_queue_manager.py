@@ -103,3 +103,28 @@ def test_format_queue_multiple_different_download_ids(mock_queue_manager):
     }
     result = mock_queue_manager.format_queue(queue_items)
     assert result == expected
+
+
+
+@pytest.mark.asyncio
+async def test_orphans_ignore_progress_between_fetches(mock_queue_manager, monkeypatch):
+    # An active download changes sizeleft between the full and the normal fetch.
+    # It is in both, so it is not an orphan. Item 2 is only in the full queue.
+    full = [
+        {"id": 1, "downloadId": "a", "sizeleft": 900, "detail_item_id": 10},
+        {"id": 2, "downloadId": "b", "sizeleft": 500, "detail_item_id": None},
+    ]
+    normal = [{"id": 1, "downloadId": "a", "sizeleft": 850, "detail_item_id": 10}]
+
+    async def fake_refresh():
+        return None
+
+    async def fake_get_queue(*, full_queue=False):
+        return list(full) if full_queue else list(normal)
+
+    monkeypatch.setattr(mock_queue_manager, "_refresh_queue", fake_refresh)
+    monkeypatch.setattr(mock_queue_manager, "_get_queue", fake_get_queue)
+
+    result = await mock_queue_manager.get_queue_items("orphans")
+
+    assert [item["id"] for item in result] == [2]

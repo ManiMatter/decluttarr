@@ -38,7 +38,11 @@ class QueueManager:
                 logger.debug(
                     f"queue_manager.py/get_queue_items (normal) to determine orphans: Current queue ({len(normal_queue)} items) = {self.format_queue(normal_queue)}"
                 )
-            queue_items = [fq for fq in full_queue if fq not in normal_queue]
+            # Compare by queue item id, not by whole record: the two fetches are separate
+            # requests after a RefreshMonitoredDownloads, so sizeleft/timeleft of an active
+            # download differ between them and a record comparison marks it as an orphan (#322)
+            normal_ids = {nq.get("id") for nq in normal_queue}
+            queue_items = [fq for fq in full_queue if fq.get("id") not in normal_ids]
         elif queue_scope == "full":
             queue_items = await self._get_queue(full_queue=True)
         else:
