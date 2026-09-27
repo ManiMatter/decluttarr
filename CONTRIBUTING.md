@@ -45,7 +45,7 @@ Code contributions are very welcome - thanks for helping improve this app!
 8) Finally, we will then commit the change to the main branch, which will create the "latest"-docker image
 
 You do not need to know about how to create docker images to contribute here.
-To get started:
+To get started, follow these steps:
 1) Create a fork of decluttarr
 2) Clone the git repository from the dev branch to your local machine `git clone -b dev https://github.com/yourName/decluttarr`
 3) Create a virtual python environment (`python3 -m venv venv`)

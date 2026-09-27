@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Decluttarr{% endblock %}
+{% block content %}
+<div x-data="dashboard">
+
+    <!-- Status Bar -->
+    <div hx-get="/partials/status-bar" hx-trigger="load, every 30s, refresh" hx-swap="innerHTML">
+        <article aria-busy="true">Loading status...</article>
+    </div>
+
+    <!-- Instance Cards -->
+    <div class="grid">
+        {% for inst in instances %}
+        <article>
+            <header>
+                <hgroup>
+                    <h4>{{ inst.name }}</h4>
+                    <p>{{ inst.arr_type | capitalize }}</p>
+                </hgroup>
+            </header>
+            <p><small>{{ inst.base_url }}</small></p>
+        </article>
+        {% endfor %}
+    </div>
+
+    <!-- Actions -->
+    <div class="dashboard-actions">
+        <button class="outline" @click="triggerCycle" :aria-busy="triggering">
+            Run Now
+        </button>
+        <button class="outline secondary" @click="toggleTestRun">
+            Toggle Test Run
+        </button>
+        <span x-show="message" x-text="message" x-transition style="color: var(--pico-primary);"></span>
+    </div>
+
+    <!-- Queue Table -->
+    <section>
+        <h3>Download Queue</h3>
+        <div hx-get="/partials/queue-table" hx-trigger="load, every 60s, refresh" hx-swap="innerHTML"
+             id="queue-container">
+            <article aria-busy="true">Loading queue...</article>
+        </div>
+    </section>
+
+    <!-- Recent Activity (SSE-powered) -->
+    <section>
+        <h3>Recent Activity</h3>
+        <div hx-get="/partials/activity-feed" hx-trigger="load, every 30s, refresh" hx-swap="innerHTML"
+             id="activity-feed">
+            <article aria-busy="true">Loading activity...</article>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ request.url_for('static', path='dashboard.js') }}"></script>
+{% endblock %}

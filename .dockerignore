@@ -5,3 +5,4 @@ ToDo
 .vscode
 .notebooks
 logs/*
+**/data
