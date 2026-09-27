@@ -57,6 +57,7 @@ Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
     - [READARR](#readarr)
     - [LIDARR](#lidarr)
     - [WHISPARR](#whisparr)
+    - [SPORTARR](#sportarr)
   - [Downloaders](#download-clients)
     - [QBITTORRENT](#qbittorrent)
 
@@ -701,6 +702,8 @@ Defines arr-instances on which download queue should be decluttered
 #### Lidarr
 - Equivalent of [Radarr](#radarr)
 #### Whisparr
+- Equivalent of [Radarr](#radarr)
+#### Sportarr
 - Equivalent of [Radarr](#radarr)
 
 
