@@ -151,7 +151,9 @@ async def test_forgotten_download_is_removed_again_on_the_next_run():
     )
 
     # Assert
-    manager.arr.remove_queue_item.assert_awaited_once_with(queue_id=42, blocklist=True)
+    manager.arr.remove_queue_item.assert_awaited_once_with(
+        queue_id=42, blocklist=True, remove_from_client=True
+    )
 
 
 @pytest.mark.asyncio
