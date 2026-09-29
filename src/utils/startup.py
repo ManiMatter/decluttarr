@@ -133,7 +133,7 @@ async def retry_degraded_instances(settings, watch_manager=None):
             )
             if (
                 watch_manager
-                and getattr(unit, "arr_type", None) in ("sonarr", "radarr")
+                and getattr(unit, "arr_type", None) in ("sonarr", "sportarr", "radarr")
                 and settings.jobs.detect_deletions.enabled
             ):
                 await watch_manager.setup_for_arr(unit)

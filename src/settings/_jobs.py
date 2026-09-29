@@ -127,14 +127,14 @@ class Jobs:
         ):  # this triggers only when reading from yaml-file. for docker-compose, empty configs are not loaded, thus the entire job would not be parsed
             job.enabled = True
         elif isinstance(job_config, bool):
-            if job:
+            if job is not None:
                 job.enabled = job_config
             else:
                 job = JobParams(enabled=job_config)
         elif isinstance(job_config, dict):
             job_config.setdefault("enabled", True)
 
-            if job:
+            if job is not None:
                 for key, value in job_config.items():
                     setattr(job, key, value)
             else:

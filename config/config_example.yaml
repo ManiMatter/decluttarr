@@ -55,6 +55,9 @@ instances:
     - base_url: "http://sonarr:8989"
       api_key: "xxxx"
       # timeout: 30 # Optional: Overrides general timeout for this instance.
+  # sportarr:
+  #   - base_url: "http://sportarr:1867"
+  #     api_key: "xxxx"
   radarr:
     - base_url: "http://radarr:7878"
       api_key: "xxxx"
