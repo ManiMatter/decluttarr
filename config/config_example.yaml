@@ -6,8 +6,8 @@ general:
   # ignored_download_clients: ["emulerr"]
   # ssl_verification: false # Optional: Defaults to true
   # request_timeout: 15 # Optional: Request timeout in seconds. Defaults to 15. Can be overridden per instance.
-  # private_tracker_handling: "obsolete_tag" # remove, skip, obsolete_tag. Optional. Default: remove
-  # public_tracker_handling: "remove"  # remove, skip, obsolete_tag. Optional. Default: remove
+  # private_tracker_handling: "obsolete_tag" # remove, remove_from_queue, skip, obsolete_tag. Optional. Default: remove
+  # public_tracker_handling: "remove"  # remove, remove_from_queue, skip, obsolete_tag. Optional. Default: remove
   # obsolete_tag: "Obsolete" # optional. Default: "Obsolete"
   # protected_tag: "Keep" # optional. Default: "Keep"
 

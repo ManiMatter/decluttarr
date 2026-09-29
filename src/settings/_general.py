@@ -2,7 +2,7 @@ from src.settings._config_as_yaml import get_config_as_yaml
 from src.settings._validate_data_types import validate_data_types
 from src.utils.log_setup import logger
 
-VALID_TRACKER_HANDLING = {"remove", "skip", "obsolete_tag"}
+VALID_TRACKER_HANDLING = {"remove", "remove_from_queue", "skip", "obsolete_tag"}
 
 
 class General:

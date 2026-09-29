@@ -199,3 +199,43 @@ async def test_setup_wrong_arr_type_and_old_version_still_pass():
         assert await arr.setup() is True
 
     assert arr.ready is True
+
+
+def _arr_for_queue_removal():
+    arr = ArrInstance.__new__(ArrInstance)
+    arr.api_url = "http://sonarr/api/v3"
+    arr.api_key = "test_key"
+    arr.settings = MagicMock()
+    arr._timeout = 15
+    return arr
+
+
+@pytest.mark.asyncio
+async def test_remove_queue_item_deletes_from_client_by_default():
+    arr = _arr_for_queue_removal()
+
+    with patch(
+        "src.settings._instances.make_request", new=AsyncMock()
+    ) as mocked_request:
+        mocked_request.return_value = MagicMock(status_code=200)
+        await arr.remove_queue_item(queue_id=7, blocklist=True)
+
+    assert mocked_request.call_args.kwargs["params"]["removeFromClient"] is True
+
+
+@pytest.mark.asyncio
+async def test_remove_queue_item_can_leave_the_torrent_in_the_client():
+    """remove_from_client=False clears the queue entry but keeps the torrent seeding."""
+    arr = _arr_for_queue_removal()
+
+    with patch(
+        "src.settings._instances.make_request", new=AsyncMock()
+    ) as mocked_request:
+        mocked_request.return_value = MagicMock(status_code=200)
+        await arr.remove_queue_item(
+            queue_id=7, blocklist=True, remove_from_client=False
+        )
+
+    params = mocked_request.call_args.kwargs["params"]
+    assert params["removeFromClient"] is False
+    assert params["blocklist"] is True
