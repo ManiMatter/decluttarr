@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
       - name: Bump version and push tag
         if: ${{ github.ref_name == 'latest' }}
         id: setversion
-        uses: anothrNick/github-tag-action@1.36.0
+        uses: anothrNick/github-tag-action@1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
