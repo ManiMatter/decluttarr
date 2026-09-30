@@ -62,7 +62,7 @@ class RemoveBadFiles(RemovalJob):
 
             download_client, download_client_type = (
                 self.settings.download_clients.get_download_client_by_name(
-                    download_client_name
+                    download_client_name, ready_only=True
                 )
             )
             if not download_client or not download_client_type:

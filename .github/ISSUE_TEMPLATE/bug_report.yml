@@ -1,0 +1,152 @@
+name: 🐛 Bug Report
+description: Report a reproducible problem with decluttarr
+title: "[Bug] "
+labels: ["Bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. **Please fill in every required field** — incomplete reports take much longer to resolve and may be closed pending more info.
+
+        Before submitting, please confirm:
+        - You've read the ReadMe, especially the **Dependencies & Hints & FAQ** section. 
+          Make sure you read the correct ReadMe version:
+
+          - [**LATEST** ReadMe](https://github.com/ManiMatter/decluttarr/blob/latest/README.md) if you use ```latest``` code
+          - [**DEV** ReadMe](https://github.com/ManiMatter/decluttarr/blob/dev/README.md) if you use ```dev``` code
+        - You've searched [open and closed issues](https://github.com/ManiMatter/decluttarr/issues?q=is%3Aissue) for the same problem
+        - This is a reproducible bug, not a configuration question (use [Discussions](https://github.com/ManiMatter/decluttarr/discussions) for those)
+
+  - type: input
+    id: version
+    attributes:
+      label: Decluttarr commit hash
+      description: |
+        The **short commit hash** of the build you're running. `latest` / `dev` tags move too quickly to be useful for reproduction, so please give us the specific commit.
+
+        - **Docker users:** grab it from the `short_commit_id` line in the `🛠️  Decluttarr - Settings 🛠️` startup banner (you'll be pasting the full banner in the logs field below)
+        - **Local Python users:** run `git rev-parse --short HEAD`
+      placeholder: "e.g. 51b6a4c"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment method
+      options:
+        - Docker Compose with config.yaml
+        - Docker Compose with environment variables
+        - docker run
+        - Local Python (main.py)
+        - Other (describe under "Steps to reproduce")
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Host OS / architecture
+      description: |
+        Where decluttarr is running. Path-related bugs (especially `detect_deletions`) and qBit cookie issues sometimes behave differently on Windows or ARM.
+      options:
+        - Linux x86_64 (amd64)
+        - Linux ARM (arm64 / armv7)
+        - macOS
+        - Windows
+        - Other (describe under "Steps to reproduce")
+    validations:
+      required: true
+
+  - type: input
+    id: arr_versions
+    attributes:
+      label: "*arr instance versions"
+      description: Versions of any Sonarr / Radarr / Lidarr / Readarr / Whisparr instances involved in the bug.
+      placeholder: "e.g. Sonarr 4.0.10, Radarr 5.18.4"
+    validations:
+      required: true
+
+  - type: input
+    id: download_client_version
+    attributes:
+      label: Download client + version
+      description: qBittorrent / SABnzbd / etc. and version. Write `n/a` if the bug doesn't involve a download client.
+      placeholder: "e.g. qBittorrent 5.2.0, or n/a"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: test_run
+    attributes:
+      label: test_run state
+      description: |
+        Removal-related bugs behave very differently with `test_run: true` (no actual removals) vs `false`. Pick the value of `general.test_run` (or `TEST_RUN`) when the bug occurred.
+      options:
+        - "false (production — actual removals)"
+        - "true (test_run mode — no actual removals)"
+        - Reproduces with both
+        - N/A (bug doesn't involve removal logic)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Reproduction frequency
+      options:
+        - Always (every cycle / every time)
+        - Sometimes (intermittent)
+        - Once / haven't tried again
+        - Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Decluttarr startup banner + debug logs
+      description: |
+        Please follow these three steps to produce a useful log dump:
+
+        1. **Disable jobs not related to your issue** in your config — keeps the logs focused and short
+        2. **Set `log_level: DEBUG`** (or `VERBOSE` if DEBUG is too noisy)
+        3. **Restart decluttarr and paste everything from the `🛠️  Decluttarr - Settings 🛠️` startup banner through the cycle that exhibits the bug**
+
+        The startup banner already contains `image_tag` / `short_commit_id` and the entire active config (general, jobs, instances, download clients) with API keys masked as `*****`.
+
+        **Still sanitize before pasting:** scrub any `?apikey=...` query parameters, `Authorization:` headers, session cookies, and any arr/qBit URLs you'd rather not share. Decluttarr already redacts `X-Api-Key` headers but not query-string keys.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start decluttarr with the config above
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, related issues, what you've already tried, hardware/OS details if relevant, etc.

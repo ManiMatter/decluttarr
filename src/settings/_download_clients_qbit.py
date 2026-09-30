@@ -2,12 +2,19 @@ from packaging import version
 from requests.cookies import RequestsCookieJar
 
 from src.settings._constants import ApiEndpoints, MinVersions
-from src.utils.common import extract_json_from_response, make_request, wait_and_exit
+from src.utils.common import (
+    extract_json_from_response,
+    is_definitive_setup_error,
+    make_request,
+)
 from src.utils.log_setup import logger
 
 
 class QbitError(Exception):
-    pass
+    def __init__(self, message, tip="", definitive=False):
+        super().__init__(message)
+        self.tip = tip
+        self.definitive = definitive
 
 
 class QbitClients(list):
@@ -39,6 +46,10 @@ class QbitClient:
     cookie: dict[str, str] = None
     version: str = None
     bandwidth_usage: int = 0
+    ready: bool = False
+    failure_kind: str = None  # None | "transient" | "definitive"
+    last_error: str = None
+    setup_tip: str = ""
 
     def __init__(
         self,
@@ -47,8 +58,11 @@ class QbitClient:
         username: str = None,
         password: str = None,
         name: str = None,
+        timeout: int | None = None,
+        api_key: str = None,
     ):
         self.settings = settings
+        self._timeout = timeout
         if not base_url:
             logger.error("Skipping qBittorrent client entry: 'base_url' is required.")
             error = "qBittorrent client must have a 'base_url'."
@@ -59,6 +73,8 @@ class QbitClient:
         self.min_version = MinVersions.qbittorrent
         self.username = username
         self.password = password
+        # Treat an empty/whitespace api_key as unset so it falls back to password auth.
+        self.api_key = api_key.strip() if isinstance(api_key, str) else api_key
         self.name = name
         if not self.name:
             logger.verbose(
@@ -66,7 +82,19 @@ class QbitClient:
             )
             self.name = "qBittorrent"
 
+        if self.api_key and (username or password):
+            logger.info(
+                f"qBittorrent '{self.name}': both api_key and username/password provided; using api_key (credentials ignored).",
+            )
+
         self._remove_none_attributes()
+
+    @property
+    def timeout(self):
+        instance_timeout = getattr(self, "_timeout", None)
+        if instance_timeout is not None:
+            return instance_timeout
+        return getattr(getattr(self.settings, "general", None), "request_timeout", 15)
 
     def _remove_none_attributes(self):
         """Remove attributes that are None to keep the object clean."""
@@ -74,8 +102,27 @@ class QbitClient:
             if getattr(self, attr) is None:
                 delattr(self, attr)
 
+    def _auth_kwargs(self) -> dict:
+        """Return the make_request auth kwargs for the configured mode.
+
+        Key mode (qBit >= 5.2): stateless 'Authorization: Bearer' header on every
+        request. Password mode (legacy): the session SID cookie from refresh_cookie().
+        Must stay a method (not cached) so password mode reads the freshly
+        refreshed self.cookie each cycle.
+        """
+        api_key = getattr(self, "api_key", None)
+        if api_key:
+            return {"headers": {"Authorization": f"Bearer {api_key}"}}
+        return {"cookies": getattr(self, "cookie", None)}
+
     async def refresh_cookie(self):
         """Refresh the qBittorrent session cookie."""
+        if getattr(self, "api_key", None):
+            # Key mode is stateless; qBit rejects /auth/login under API-key auth.
+            logger.debug(
+                "_download_clients_qBit.py/refresh_cookie: API-key mode, skipping login",
+            )
+            return
 
         def _connection_error():
             error = "Login failed."
@@ -95,6 +142,7 @@ class QbitClient:
                 "post",
                 endpoint,
                 self.settings,
+                timeout=self.timeout,
                 data=data,
                 headers=headers,
                 ignore_test_run=True,
@@ -133,7 +181,8 @@ class QbitClient:
             "get",
             endpoint,
             self.settings,
-            cookies=self.cookie,
+            timeout=self.timeout,
+            **self._auth_kwargs(),
         )
         self.version = response.text[1:]  # Remove the '_v' prefix
         logger.debug(
@@ -149,10 +198,33 @@ class QbitClient:
                 f"Please update qBittorrent to at least version {min_version}. Current version: {self.version}",
             )
             error = f"qBittorrent version {self.version} is too old. Please update."
-            raise QbitError(error)
+            raise QbitError(error, definitive=True)
         if version.parse(self.version) < version.parse("5.0.0"):
             logger.info(
                 "[Tip!] Consider upgrading to qBittorrent v5.0.0 or newer to reduce network overhead.",
+            )
+
+    def log_auth_version_guidance(self):
+        """Log authentication guidance once the qBittorrent version is known."""
+        qbit_version = version.parse(self.version)
+        api_key = getattr(self, "api_key", None)
+
+        if api_key and qbit_version < version.parse("5.2.0"):
+            logger.warning(
+                "qBittorrent %s does not support API-key authentication; API keys "
+                "require qBittorrent 5.2.0 or newer. The configured API key did not "
+                "authenticate this connection.",
+                self.version,
+            )
+        elif (
+            not api_key
+            and (getattr(self, "username", None) or getattr(self, "password", None))
+            and qbit_version >= version.parse("5.2.0")
+        ):
+            logger.info(
+                "[Tip!] qBittorrent %s supports API-key authentication. Consider "
+                "replacing username/password with api_key.",
+                self.version,
             )
 
     async def create_tag(self, tag: str):
@@ -161,7 +233,9 @@ class QbitClient:
             "_download_clients_qBit.py/create_tag: Checking if tag '{tag}' exists (and creating it if not)",
         )
         url = f"{self.api_url}/torrents/tags"
-        response = await make_request("get", url, self.settings, cookies=self.cookie)
+        response = await make_request(
+            "get", url, self.settings, timeout=self.timeout, **self._auth_kwargs()
+        )
         current_tags = response.json()
 
         if tag not in current_tags:
@@ -171,8 +245,9 @@ class QbitClient:
                 "post",
                 self.api_url + "/torrents/createTags",
                 self.settings,
+                timeout=self.timeout,
                 data=data,
-                cookies=self.cookie,
+                **self._auth_kwargs(),
             )
 
     async def create_required_tags(self):
@@ -196,7 +271,8 @@ class QbitClient:
                 "get",
                 endpoint,
                 self.settings,
-                cookies=self.cookie,
+                timeout=self.timeout,
+                **self._auth_kwargs(),
             )
             qbit_settings = response.json()
 
@@ -209,77 +285,131 @@ class QbitClient:
                     "post",
                     self.api_url + "/app/setPreferences",
                     self.settings,
+                    timeout=self.timeout,
                     data=data,
-                    cookies=self.cookie,
+                    **self._auth_kwargs(),
                 )
 
     async def check_qbit_reachability(self):
-        """Check if the qBittorrent URL is reachable."""
+        """Check if the qBittorrent URL is reachable (and the credentials work)."""
         try:
             logger.debug(
                 "_download_clients_qBit.py/check_qbit_reachability: Checking if qbit is reachable",
             )
-            endpoint = f"{self.api_url}/auth/login"
-            data = {
-                "username": getattr(self, "username", ""),
-                "password": getattr(self, "password", ""),
-            }
-            headers = {"content-type": "application/x-www-form-urlencoded"}
-            await make_request(
-                "post",
-                endpoint,
-                self.settings,
-                data=data,
-                headers=headers,
-                log_error=False,
-                ignore_test_run=True,
-            )
-
+            if getattr(self, "api_key", None):
+                # Key mode: qBit rejects /auth/login, so probe a normal authed
+                # endpoint with the Bearer header instead.
+                await make_request(
+                    "get",
+                    f"{self.api_url}/app/version",
+                    self.settings,
+                    timeout=self.timeout,
+                    log_error=False,
+                    ignore_test_run=True,
+                    **self._auth_kwargs(),
+                )
+                response = None  # key mode: no login body to inspect below
+            else:
+                endpoint = f"{self.api_url}/auth/login"
+                data = {
+                    "username": getattr(self, "username", ""),
+                    "password": getattr(self, "password", ""),
+                }
+                headers = {"content-type": "application/x-www-form-urlencoded"}
+                response = await make_request(
+                    "post",
+                    endpoint,
+                    self.settings,
+                    timeout=self.timeout,
+                    data=data,
+                    headers=headers,
+                    log_error=False,
+                    ignore_test_run=True,
+                )
         except Exception as e:  # noqa: BLE001
-            tip = "💡 Tip: Did you specify the URL (and username/password if required) correctly?"
-            logger.error(f"-- | qBittorrent\n❗️ {e}\n{tip}\n")
-            wait_and_exit()
+            if getattr(self, "api_key", None):
+                tip = (
+                    "💡 Tip: Is the qBittorrent API key correct, and is your qBittorrent "
+                    "at least v5.2.0? API-key auth requires qBit 5.2+ (WebAPI 2.14.1+)."
+                )
+            else:
+                tip = "💡 Tip: Did you specify the URL (and username/password if required) correctly?"
+            if str(e) != self.last_error:  # Only report new failure modes in full
+                logger.error(f"-- | qBittorrent\n❗️ {e}\n{tip}\n")
+            raise QbitError(e, tip=tip) from e
+
+        # Bad credentials: qBit answers HTTP 200 with the body "Fails." Treat this
+        # as a definitive config error so we don't retry-loop every cycle and get
+        # the source IP banned by qBittorrent's failed-login protection.
+        if getattr(response, "text", None) == "Fails.":
+            tip = "💡 Tip: Check the qBittorrent username/password."
+            error = "qBittorrent login failed (incorrect username/password)."
+            if error != self.last_error:
+                logger.error(f"-- | qBittorrent\n❗️ {error}\n{tip}\n")
+            raise QbitError(error, tip=tip, definitive=True)
 
     async def check_connected(self):
         """Check if the qBittorrent is connected to internet."""
         logger.debug(
             "_download_clients_qBit.py/check_qbit_reachability: Checking if qbit is connected to the internet",
         )
-        qbit_connection_status = (
-            (
-                await make_request(
-                    "get",
-                    self.api_url + "/sync/maindata",
-                    self.settings,
-                    cookies=self.cookie,
-                )
-            ).json()
-        )["server_state"]["connection_status"]
+        try:
+            qbit_connection_status = (
+                (
+                    await make_request(
+                        "get",
+                        self.api_url + "/sync/maindata",
+                        self.settings,
+                        timeout=self.timeout,
+                        **self._auth_kwargs(),
+                    )
+                ).json()
+            )["server_state"]["connection_status"]
+        except Exception as e:
+            logger.warning(
+                ">>> %s: Failed to reach /sync/maindata (%s). Treating as disconnected.",
+                self.name,
+                e,
+            )
+            return False
         if qbit_connection_status == "disconnected":
             return False
         return True
 
     async def setup(self):
-        """Perform the qBittorrent setup by calling relevant managers."""
-        # Check reachabilty
-        await self.check_qbit_reachability()
-
-        # Refresh the qBittorrent cookie first
-        await self.refresh_cookie()
-
+        """Perform the qBittorrent setup; degrade instead of exiting on failure."""
         try:
+            await self.check_qbit_reachability()
+
+            # Refresh the qBittorrent cookie first
+            await self.refresh_cookie()
+
             # Fetch version and validate it
             await self.fetch_version()
             await self.validate_version()
-            logger.info(f"OK | qBittorrent ({self.base_url})")
-        except QbitError as e:
-            logger.error(f"qBittorrent version check failed: {e}")
-            wait_and_exit()  # Exit if version check fails
+            self.log_auth_version_guidance()
 
-        # Continue with other setup tasks regardless of version check result
-        await self.create_required_tags()
-        await self.set_unwanted_folder()
-        await self.warn_no_bandwidth_limit_set()
+            await self.create_required_tags()
+            await self.set_unwanted_folder()
+            await self.warn_no_bandwidth_limit_set()
+
+            logger.info(f"OK | qBittorrent ({self.base_url})")
+            self.ready = True
+            self.failure_kind = None
+            self.last_error = None
+            self.setup_tip = ""
+        except Exception as e:  # noqa: BLE001
+            if not isinstance(e, QbitError) and str(e) != self.last_error:
+                logger.error(
+                    f"Unhandled error during qBittorrent setup: {e}", exc_info=True
+                )
+            self.ready = False
+            self.failure_kind = (
+                "definitive" if is_definitive_setup_error(e) else "transient"
+            )
+            self.last_error = str(e)
+            self.setup_tip = getattr(e, "tip", "")
+        return self.ready
 
     async def get_protected_and_private(self):
         """Fetch torrents from qBittorrent and checks for protected and private status."""
@@ -353,8 +483,9 @@ class QbitClient:
             "post",
             self.api_url + "/torrents/addTags",
             self.settings,
+            timeout=self.timeout,
             data=data,
-            cookies=self.cookie,
+            **self._auth_kwargs(),
         )
 
     async def fetch_download_progress(self, download_id):
@@ -376,8 +507,9 @@ class QbitClient:
             method="get",
             endpoint=f"{self.api_url}/torrents/info",
             settings=self.settings,
+            timeout=self.timeout,
             params=None,  # Retrieve all torrents
-            cookies=self.cookie,
+            **self._auth_kwargs(),
         )
 
         all_items = response.json()
@@ -395,14 +527,14 @@ class QbitClient:
     async def get_torrent_properties(self, qbit_hash):
         params = {"hash": qbit_hash.lower()}
         response = await make_request(
-                        "get",
-                        self.api_url + "/torrents/properties",
-                        self.settings,
-                        params=params,
-                        cookies=self.cookie,
-                    )
+            "get",
+            self.api_url + "/torrents/properties",
+            self.settings,
+            timeout=self.timeout,
+            params=params,
+            **self._auth_kwargs(),
+        )
         return response.json()
-
 
     async def get_torrent_files(self, download_id):
         # this may not work if the wrong qbit
@@ -411,8 +543,9 @@ class QbitClient:
             method="get",
             endpoint=self.api_url + "/torrents/files",
             settings=self.settings,
+            timeout=self.timeout,
             params={"hash": download_id.lower()},
-            cookies=self.cookie,
+            **self._auth_kwargs(),
         )
         return response.json()
 
@@ -429,8 +562,9 @@ class QbitClient:
             "post",
             self.api_url + "/torrents/filePrio",
             self.settings,
+            timeout=self.timeout,
             data=data,
-            cookies=self.cookie,
+            **self._auth_kwargs(),
         )
 
     async def set_bandwidth_usage(self):
@@ -440,7 +574,8 @@ class QbitClient:
             method="get",
             endpoint=self.api_url + "/transfer/info",
             settings=self.settings,
-            cookies=self.cookie,
+            timeout=self.timeout,
+            **self._auth_kwargs(),
         )
         records = extract_json_from_response(response)
         limit = records["dl_rate_limit"]
@@ -476,6 +611,7 @@ class QbitClient:
             "post",
             f"{self.api_url}/torrents/delete",
             self.settings,
+            timeout=self.timeout,
             data=data,
-            cookies=self.cookie,
+            **self._auth_kwargs(),
         )

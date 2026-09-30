@@ -2,10 +2,12 @@ general:
   log_level: INFO
   test_run: true
   timer: 10
+  # request_timeout: 15 # Optional: timeout for all HTTP/API calls in seconds
   # ignored_download_clients: ["emulerr"]
   # ssl_verification: false # Optional: Defaults to true
-  # private_tracker_handling: "obsolete_tag" # remove, skip, obsolete_tag. Optional. Default: remove
-  # public_tracker_handling: "remove"  # remove, skip, obsolete_tag. Optional. Default: remove
+  # request_timeout: 15 # Optional: Request timeout in seconds. Defaults to 15. Can be overridden per instance.
+  # private_tracker_handling: "obsolete_tag" # remove, remove_from_queue, skip, obsolete_tag. Optional. Default: remove
+  # public_tracker_handling: "remove"  # remove, remove_from_queue, skip, obsolete_tag. Optional. Default: remove
   # obsolete_tag: "Obsolete" # optional. Default: "Obsolete"
   # protected_tag: "Keep" # optional. Default: "Keep"
 
@@ -52,6 +54,10 @@ instances:
   sonarr:
     - base_url: "http://sonarr:8989"
       api_key: "xxxx"
+      # timeout: 30 # Optional: Overrides general timeout for this instance.
+  # sportarr:
+  #   - base_url: "http://sportarr:1867"
+  #     api_key: "xxxx"
   radarr:
     - base_url: "http://radarr:7878"
       api_key: "xxxx"
@@ -68,9 +74,11 @@ instances:
 download_clients:
   qbittorrent:
     - base_url: "http://qbittorrent:8080" # You can use decluttarr without qbit (not all features available, see readme).
-      # username: xxxx # (optional -> if not provided, assuming not needed)
-      # password: xxxx # (optional -> if not provided, assuming not needed)
+      # api_key: "qbt_xxxx" # (recommended -> requires qBittorrent 5.2.0+; generate under Web UI settings. Takes precedence over username/password.)
+      # username: xxxx # (legacy -> for qBittorrent < 5.2; ignored if api_key is set)
+      # password: xxxx # (legacy -> for qBittorrent < 5.2; ignored if api_key is set)
       # name: "qBittorrent" # (optional -> if not provided, assuming "qBittorrent". Must correspond with what is specified in your *arr as download client name)
+      # timeout: 30 # (optional -> overrides general timeout for this instance)
   # sabnzbd:
   #   - base_url: "http://sabnzbd:8080" # SABnzbd server URL
   #     api_key: "your_api_key_here" # (required -> SABnzbd API key)

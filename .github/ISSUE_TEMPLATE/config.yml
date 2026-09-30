@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions, usage help, config troubleshooting
+    url: https://github.com/ManiMatter/decluttarr/discussions
+    about: |
+      For general questions, configuration help, or "why is this happening" — please use Discussions instead of opening an issue. The issue tracker is reserved for reproducible bugs and feature requests.
+  - name: 📚 README & FAQ
+    url: https://github.com/ManiMatter/decluttarr#dependencies--hints--faq
+    about: |
+      Many common problems (qBit cookie issues, multi-instance YAML format, "no valid arr instances" errors, etc.) are covered in the README's Dependencies & Hints & FAQ section. Please check there first.

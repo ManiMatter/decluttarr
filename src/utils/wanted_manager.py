@@ -42,6 +42,7 @@ class WantedManager:
             method="GET",
             endpoint=f"{self.arr.api_url}/wanted/{missing_or_cutoff}",
             settings=self.settings,
+            timeout=self.arr.timeout,
             params=params,
             headers={"X-Api-Key": self.arr.api_key},
         )
@@ -60,6 +61,7 @@ class WantedManager:
             method="POST",
             endpoint=f"{self.arr.api_url}/command",
             settings=self.settings,
+            timeout=self.arr.timeout,
             json=json,
             headers={"X-Api-Key": self.arr.api_key},
         )

@@ -165,6 +165,7 @@ async def test_file_deletion_triggers_handler_with_watchermanager(tmp_path):
             self.name = "Test"
             self.arr_type = "sonarr"
             self.base_url = "http://localhost"
+            self.ready = True
             self.called_paths = []
             self.refreshed_ids = []
 
@@ -210,3 +211,20 @@ async def test_file_deletion_triggers_handler_with_watchermanager(tmp_path):
 
     finally:
         watcher.stop()
+
+
+@pytest.mark.asyncio
+async def test_get_folders_to_watch_skips_not_ready_arr():
+    arr_mock = MagicMock()
+    arr_mock.arr_type = "sonarr"
+    arr_mock.ready = False
+    arr_mock.get_root_folders = AsyncMock()
+
+    settings = MagicMock()
+    settings.instances = [arr_mock]
+    watcher_manager = WatcherManager(settings)
+
+    folders = await watcher_manager.get_folders_to_watch()
+
+    assert folders == []
+    arr_mock.get_root_folders.assert_not_awaited()

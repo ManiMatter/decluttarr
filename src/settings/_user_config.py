@@ -13,6 +13,7 @@ CONFIG_MAPPING = {
         "LOG_LEVEL",
         "TEST_RUN",
         "TIMER",
+        "REQUEST_TIMEOUT",
         "SSL_VERIFICATION",
         "IGNORED_DOWNLOAD_CLIENTS",
         "PRIVATE_TRACKER_HANDLING",
@@ -40,7 +41,7 @@ CONFIG_MAPPING = {
         "SEARCH_UNMET_CUTOFF",
         "SEARCH_MISSING",
     ],
-    "instances": ["SONARR", "RADARR", "READARR", "LIDARR", "WHISPARR"],
+    "instances": ["SONARR", "SPORTARR", "RADARR", "READARR", "LIDARR", "WHISPARR"],
     "download_clients": ["QBITTORRENT"],
 }
 
@@ -92,7 +93,11 @@ def _load_from_env() -> dict:
                 parsed_value = _lowercase(parsed_value)
             except yaml.YAMLError as e:
                 logger.error(
-                    f"Failed to parse environment variable {key} as YAML:\n{e}",
+                    "Could not parse %s as YAML. Check for smart quotes or "
+                    "incorrect indentation. Configuration from this variable "
+                    "was ignored.\n%s",
+                    key,
+                    e,
                 )
                 parsed_value = {}
             section_config[key.lower()] = parsed_value

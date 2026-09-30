@@ -13,7 +13,12 @@ from src.settings._constants import (
     RefreshItemCommand,
     RefreshItemKey,
 )
-from src.utils.common import extract_json_from_response, make_request, wait_and_exit
+from src.utils.common import (
+    extract_json_from_response,
+    is_definitive_setup_error,
+    make_request,
+    wait_and_exit,
+)
 from src.utils.log_setup import logger
 
 
@@ -24,6 +29,7 @@ class Tracker:
         self.defective = {}
         self.download_progress = {}
         self.deleted = []
+        self.obsolete_tagged = []
         self.extension_checked = []
 
     def reset(self) -> None:
@@ -33,6 +39,7 @@ class Tracker:
             self.defective,
             self.download_progress,
             self.deleted,
+            self.obsolete_tagged,
             self.extension_checked,
         ):
             attr.clear()
@@ -42,6 +49,8 @@ class Tracker:
         private_downloads = []
 
         for qbit in settings.download_clients.qbittorrent:
+            if not qbit.ready:
+                continue
             protected, private = await qbit.get_protected_and_private()
             protected_downloads.extend(protected)
             private_downloads.extend(private)
@@ -51,7 +60,10 @@ class Tracker:
 
 
 class ArrError(Exception):
-    pass
+    def __init__(self, message, tip="", definitive=False):
+        super().__init__(message)
+        self.tip = tip
+        self.definitive = definitive
 
 
 class ArrInstances(list):
@@ -81,7 +93,7 @@ class ArrInstances(list):
         }
 
         outputs = []
-        for arr_type in ["sonarr", "radarr", "readarr", "lidarr", "whisparr"]:
+        for arr_type in ["sonarr", "sportarr", "radarr", "readarr", "lidarr", "whisparr"]:
             arrs = self.get_by_arr_type(arr_type)
             if arrs:
                 output = get_config_as_yaml(
@@ -122,6 +134,7 @@ class ArrInstances(list):
                             arr_type=arr_type,
                             base_url=client_config["base_url"],
                             api_key=client_config["api_key"],
+                            timeout=client_config.get("timeout"),
                         ),
                     )
                 except KeyError as e:
@@ -134,8 +147,12 @@ class ArrInstance:
 
     version: str = None
     name: str = None
+    ready: bool = False
+    failure_kind: str = None  # None | "transient" | "definitive"
+    last_error: str = None
+    setup_tip: str = ""
 
-    def __init__(self, settings, arr_type: str, base_url: str, api_key: str):
+    def __init__(self, settings, arr_type: str, base_url: str, api_key: str, timeout: int | None = None):
         if not base_url:
             logger.error(f"Skipping {arr_type} client entry: 'base_url' is required.")
             error = f"{arr_type} client must have a 'base_url'."
@@ -147,6 +164,7 @@ class ArrInstance:
             raise ValueError(error)
 
         self.settings = settings
+        self._timeout = timeout
         self.tracker = Tracker()
         self.arr_type = arr_type
         self.base_url = base_url.rstrip("/")
@@ -158,16 +176,22 @@ class ArrInstance:
         self.detail_item_id_key = self.detail_item_key + "Id"
         self.detail_item_ids_key = self.detail_item_key + "Ids"
         self.detail_item_search_command = getattr(DetailItemSearchCommand, arr_type)
-        if self.arr_type in ("radarr", "sonarr"):
+        if self.arr_type in ("radarr", "sonarr", "sportarr"):
             self.refresh_item_key = getattr(RefreshItemKey, arr_type)
             self.refresh_item_id_key = self.refresh_item_key + "Id"
             self.refresh_item_command = getattr(RefreshItemCommand, arr_type)
+
+    @property
+    def timeout(self):
+        if self._timeout is not None:
+            return self._timeout
+        return getattr(getattr(self.settings, "general", None), "request_timeout", 15)
 
     async def _check_ui_language(self):
         """Check if the UI language is set to English."""
         endpoint = self.api_url + "/config/ui"
         headers = {"X-Api-Key": self.api_key}
-        response = await make_request("get", endpoint, self.settings, headers=headers)
+        response = await make_request("get", endpoint, self.settings, timeout=self.timeout, headers=headers)
         ui_language = (response.json())["uiLanguage"]
         if ui_language > 1:  # Not English
             logger.error("!! %s Error: !!", self.name)
@@ -178,7 +202,8 @@ class ArrInstance:
                 "> Details: https://github.com/ManiMatter/decluttarr/issues/132)",
             )
             error = "Not English"
-            raise ArrError(error)
+            tip = f"💡 Tip: Set the UI language to English in {self.name} (under Settings/UI)"
+            raise ArrError(error, tip=tip, definitive=True)
 
     def _check_min_version(self, status):
         """Check if ARR instance meets minimum version requirements."""
@@ -196,6 +221,13 @@ class ArrInstance:
     def _check_arr_type(self, status):
         """Check if the ARR instance is of the correct type."""
         actual_arr_type = status["appName"]
+        if self.arr_type == "sportarr":
+            # Sportarr's Sonarr-compatible API reports appName "Sonarr" (other
+            # consumers validate on that), so its identity marker is the extra
+            # sportarrVersion field a real Sonarr never sends.
+            if "sportarrVersion" in status:
+                return
+            actual_arr_type = "Sonarr"
         if actual_arr_type.lower() != self.arr_type:
             logger.error("!! %s Error: !!", self.name)
             logger.error(
@@ -216,6 +248,7 @@ class ArrInstance:
                 "get",
                 endpoint,
                 self.settings,
+                timeout=self.timeout,
                 headers=headers,
                 log_error=False,
             )
@@ -234,11 +267,12 @@ class ArrInstance:
             else:
                 tip = ""
 
-            logger.error(f"-- | {self.arr_type} ({self.base_url})\n❗️ {e}\n{tip}\n")
-            raise ArrError(e) from e
+            if str(e) != self.last_error:  # Only report new failure modes in full
+                logger.error(f"-- | {self.arr_type} ({self.base_url})\n❗️ {e}\n{tip}\n")
+            raise ArrError(e, tip=tip) from e
 
     async def setup(self):
-        """Check on specific ARR instance."""
+        """Check on specific ARR instance; degrade instead of exiting on failure."""
         try:
             status = await self._check_reachability()
             self.name = status.get("instanceName", self.arr_type)
@@ -251,10 +285,20 @@ class ArrInstance:
             logger.debug(f"Current version of {self.name}: {self.version}")
             await self._check_matching_decluttarr_download_clients()
 
+            self.ready = True
+            self.failure_kind = None
+            self.last_error = None
+            self.setup_tip = ""
         except Exception as e:  # noqa: BLE001
-            if not isinstance(e, ArrError):
+            if not isinstance(e, ArrError) and str(e) != self.last_error:
                 logger.error(f"Unhandled error: {e}", exc_info=True)
-            wait_and_exit()
+            self.ready = False
+            self.failure_kind = (
+                "definitive" if is_definitive_setup_error(e) else "transient"
+            )
+            self.last_error = str(e)
+            self.setup_tip = getattr(e, "tip", "")
+        return self.ready
 
     async def fetch_arr_download_clients(self) -> list[dict[str, object]]:
         """Fetch the list of download clients from the *arr API."""
@@ -264,7 +308,7 @@ class ArrInstance:
         endpoint = self.api_url + "/downloadclient"
         headers = {"X-Api-Key": self.api_key}
 
-        response = await make_request("get", endpoint, self.settings, headers=headers)
+        response = await make_request("get", endpoint, self.settings, timeout=self.timeout, headers=headers)
         return extract_json_from_response(response)
 
     async def _check_matching_decluttarr_download_clients(self):
@@ -306,7 +350,9 @@ class ArrInstance:
                     logger.info(tip)
         return
 
-    async def remove_queue_item(self, queue_id, *, blocklist=False):
+    async def remove_queue_item(
+        self, queue_id, *, blocklist=False, remove_from_client=True
+    ):
         """
         Remove a specific queue item from the queue by its queue id.
 
@@ -315,23 +361,29 @@ class ArrInstance:
         Args:
             queue_id (str): The queue ID of the queue item to be removed.
             blocklist (bool): Whether to add the item to the blocklist. Default is False.
+            remove_from_client (bool): Whether to also delete the download from the
+                download client. Default is True. Set to False to clear only the queue
+                entry and leave the torrent in place (e.g. to keep seeding a private
+                tracker torrent that still carries a hit-and-run obligation).
 
         Returns:
             bool: Returns True if the removal was successful, False otherwise.
 
         """
         logger.debug(
-            f"_instances.py/remove_queue_item: Removing queue item, blocklist: {blocklist}"
+            f"_instances.py/remove_queue_item: Removing queue item, blocklist: {blocklist}, "
+            f"remove_from_client: {remove_from_client}"
         )
         endpoint = f"{self.api_url}/queue/{queue_id}"
         headers = {"X-Api-Key": self.api_key}
-        query = {"removeFromClient": True, "blocklist": blocklist}
+        query = {"removeFromClient": remove_from_client, "blocklist": blocklist}
 
         # Send the request to remove the download from the queue
         response = await make_request(
             "delete",
             endpoint,
             self.settings,
+            timeout=self.timeout,
             headers=headers,
             params=query,
         )
@@ -345,27 +397,27 @@ class ArrInstance:
         endpoint = f"{self.api_url}/{self.detail_item_key}/{detail_id}"
         headers = {"X-Api-Key": self.api_key}
 
-        response = await make_request("get", endpoint, self.settings, headers=headers)
+        response = await make_request("get", endpoint, self.settings, timeout=self.timeout, headers=headers)
         return response.json()["monitored"]
 
     async def get_series(self):
         """Fetch download client information and return the implementation value."""
         endpoint = self.api_url + "/series"
         headers = {"X-Api-Key": self.api_key}
-        response = await make_request("get", endpoint, self.settings, headers=headers)
+        response = await make_request("get", endpoint, self.settings, timeout=self.timeout, headers=headers)
         return response.json()
 
     async def get_root_folders(self):
         """Fetch Root folders."""
         endpoint = self.api_url + "/rootFolder"
         headers = {"X-Api-Key": self.api_key}
-        response = await make_request("get", endpoint, self.settings, headers=headers)
+        response = await make_request("get", endpoint, self.settings, timeout=self.timeout, headers=headers)
         return response.json()
 
     async def get_refresh_item(self):
         endpoint = self.api_url + "/" + self.refresh_item_key
         headers = {"X-Api-Key": self.api_key}
-        response = await make_request("get", endpoint, self.settings, headers=headers)
+        response = await make_request("get", endpoint, self.settings, timeout=self.timeout, headers=headers)
         return response.json()
 
     async def get_refresh_item_by_path(self, folder_path):
@@ -383,6 +435,7 @@ class ArrInstance:
             method="POST",
             endpoint=f"{self.api_url}/command",
             settings=self.settings,
+            timeout=self.timeout,
             json={
                 "name": self.refresh_item_command,
                 self.refresh_item_id_key: refresh_item_id,

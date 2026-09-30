@@ -14,6 +14,7 @@ class JobParams:
     max_concurrent_searches: int
     min_days_between_searches: int
     target_tags: list
+    detect_via_missing_size: bool = False
 
     def __init__(
         self,
@@ -25,6 +26,7 @@ class JobParams:
         max_concurrent_searches=None,
         min_days_between_searches=None,
         target_tags=None,
+        detect_via_missing_size=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
@@ -34,6 +36,7 @@ class JobParams:
         self.max_concurrent_searches = max_concurrent_searches
         self.min_days_between_searches = min_days_between_searches
         self.target_tags = target_tags
+        self.detect_via_missing_size = detect_via_missing_size
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -43,6 +46,10 @@ class JobParams:
         for attr in list(vars(self)):
             if getattr(self, attr) is None:
                 delattr(self, attr)
+
+    def __bool__(self):
+        """Allow direct truthiness checks to reflect whether this job is enabled."""
+        return bool(getattr(self, "enabled", False))
 
 
 class JobDefaults:
@@ -86,6 +93,7 @@ class Jobs:
         )
         self.remove_metadata_missing = JobParams(
             max_strikes=self.job_defaults.max_strikes,
+            detect_via_missing_size=False,
         )
         self.remove_missing_files = JobParams()
         self.remove_orphans = JobParams()
@@ -119,14 +127,14 @@ class Jobs:
         ):  # this triggers only when reading from yaml-file. for docker-compose, empty configs are not loaded, thus the entire job would not be parsed
             job.enabled = True
         elif isinstance(job_config, bool):
-            if job:
+            if job is not None:
                 job.enabled = job_config
             else:
                 job = JobParams(enabled=job_config)
         elif isinstance(job_config, dict):
             job_config.setdefault("enabled", True)
 
-            if job:
+            if job is not None:
                 for key, value in job_config.items():
                     setattr(job, key, value)
             else:

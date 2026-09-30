@@ -1,5 +1,6 @@
 """Test loading the user configuration from environment variables."""
 
+import logging
 import os
 import textwrap
 from unittest.mock import patch
@@ -14,6 +15,7 @@ from src.settings._user_config import _load_from_env
 # Single values as plain strings (not YAML block strings)
 LOG_LEVEL_VALUE = "VERBOSE"
 TIMER_VALUE = "10"
+REQUEST_TIMEOUT_VALUE = "35"
 SSL_VERIFICATION_VALUE = "true"
 
 # List
@@ -79,6 +81,7 @@ def fixture_env_vars():
     env = {
         "LOG_LEVEL": LOG_LEVEL_VALUE,
         "TIMER": TIMER_VALUE,
+        "REQUEST_TIMEOUT": REQUEST_TIMEOUT_VALUE,
         "SSL_VERIFICATION": SSL_VERIFICATION_VALUE,
         "IGNORED_DOWNLOAD_CLIENTS": ignored_download_clients_yaml,
         "REMOVE_BAD_FILES": remove_bad_files_yaml,
@@ -107,6 +110,7 @@ qbit_expected = yaml.safe_load(qbit_yaml)
     [
         ("general", "log_level", LOG_LEVEL_VALUE),
         ("general", "timer", int(TIMER_VALUE)),
+        ("general", "request_timeout", int(REQUEST_TIMEOUT_VALUE)),
         ("general", "ssl_verification", True),
         (
             "general",
@@ -134,3 +138,20 @@ def test_env_loading_parametrized(
         assert value == expected
     else:
         assert value == expected
+
+
+def test_invalid_download_client_yaml_logs_actionable_error(caplog):
+    malformed_qbit_yaml = '- base_url: "http://qbittorrent:8080'
+
+    with (
+        patch.dict(os.environ, {"QBITTORRENT": malformed_qbit_yaml}, clear=True),
+        caplog.at_level(logging.ERROR, logger="src.utils.log_setup"),
+    ):
+        config = _load_from_env()
+
+    assert config["download_clients"]["qbittorrent"] == {}
+    assert len(caplog.records) == 1
+    message = caplog.records[0].getMessage()
+    assert "Could not parse QBITTORRENT as YAML" in message
+    assert "smart quotes or incorrect indentation" in message
+    assert "Configuration from this variable was ignored" in message

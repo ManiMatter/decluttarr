@@ -1,0 +1,41 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature] "
+labels: ["Feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an improvement! Please make sure there isn't already an [open issue](https://github.com/ManiMatter/decluttarr/issues?q=is%3Aissue+is%3Aopen+label%3AFeature) or [discussion](https://github.com/ManiMatter/decluttarr/discussions) covering the same idea.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case or pain point that the feature would address. What are you trying to accomplish that's currently awkward, manual, or impossible?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: |
+        How would this feature work from the user's perspective?
+        - What does the config look like?
+        - What does decluttarr do at runtime?
+        - Are there new env vars / yaml keys / log messages?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you've tried, other tools that solve this differently, or alternative implementations you've thought through.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Mockups, references, related issues, or willingness to contribute a PR.

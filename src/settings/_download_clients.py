@@ -81,11 +81,16 @@ class DownloadClients:
                 seen.add(name.lower())
 
     def get_download_client_by_name(
-        self, name: str, download_client_type: str | None = None
+        self,
+        name: str,
+        download_client_type: str | None = None,
+        ready_only: bool = False,
     ):
         """
         Retrieve the download client and download client type by its name.
         If download_client_type is provided, search only in that type.
+        If ready_only is True, a client that failed its startup check (not ready)
+        is treated as unavailable, so degraded clients never get called from jobs.
         """
         name_lower = name.lower()
         types_to_search = (
@@ -97,6 +102,8 @@ class DownloadClients:
 
             for download_client in download_clients:
                 if download_client.name.lower() == name_lower:
+                    if ready_only and not getattr(download_client, "ready", False):
+                        return None, None
                     return download_client, client_type
 
         return None, None
