@@ -15,6 +15,7 @@ class JobParams:
     min_days_between_searches: int
     target_tags: list
     detect_via_missing_size: bool = False
+    remove_download: bool = False
 
     def __init__(
         self,
@@ -27,6 +28,7 @@ class JobParams:
         min_days_between_searches=None,
         target_tags=None,
         detect_via_missing_size=None,
+        remove_download=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
@@ -37,6 +39,7 @@ class JobParams:
         self.min_days_between_searches = min_days_between_searches
         self.target_tags = target_tags
         self.detect_via_missing_size = detect_via_missing_size
+        self.remove_download = remove_download
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -111,7 +114,7 @@ class Jobs:
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
         )
-        self.detect_deletions = JobParams()
+        self.detect_deletions = JobParams(remove_download=False)
 
     def _set_job_configs(self, config):
         # Populate jobs from YAML config

@@ -166,6 +166,8 @@ async def test_file_deletion_triggers_handler_with_watchermanager(tmp_path):
             self.arr_type = "sonarr"
             self.base_url = "http://localhost"
             self.ready = True
+            self.settings = MagicMock()
+            self.settings.jobs.detect_deletions.remove_download = False
             self.called_paths = []
             self.refreshed_ids = []
 

@@ -49,6 +49,8 @@ jobs:
   search_missing:
     # min_days_between_searches: 7
     # max_concurrent_searches: 3
+  detect_deletions:
+    # remove_download: true
 
 instances:
   sonarr:
