@@ -17,6 +17,7 @@ class JobParams:
     target_tags: list
     detect_via_missing_size: bool = False
     skip_unreleased: bool = True
+    remove_download: bool = False
 
     def __init__(
         self,
@@ -31,6 +32,7 @@ class JobParams:
         target_tags=None,
         detect_via_missing_size=None,
         skip_unreleased=None,
+        remove_download=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
@@ -43,6 +45,7 @@ class JobParams:
         self.target_tags = target_tags
         self.detect_via_missing_size = detect_via_missing_size
         self.skip_unreleased = skip_unreleased
+        self.remove_download = remove_download
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -131,7 +134,7 @@ class Jobs:
             min_days_between_searches=self.job_defaults.min_days_between_searches,
             skip_unreleased=self.job_defaults.skip_unreleased,
         )
-        self.detect_deletions = JobParams()
+        self.detect_deletions = JobParams(remove_download=False)
 
     def _set_job_configs(self, config):
         # Populate jobs from YAML config
