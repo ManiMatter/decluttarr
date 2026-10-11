@@ -1,7 +1,7 @@
 name: 🐛 Bug Report
 description: Report a reproducible problem with decluttarr
 title: "[Bug] "
-labels: ["Bug"]
+labels: ["Bug", "Needs Triage"]
 body:
   - type: markdown
     attributes:
