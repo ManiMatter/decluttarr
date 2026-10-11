@@ -155,14 +155,21 @@ class SabnzbdClient:
             "_download_clients_sabnzbd.py/check_connected: Checking if SABnzbd is connected"
         )
         params = {"mode": "status", "apikey": self.api_key, "output": "json"}
-        response = await make_request(
-            "get",
-            self.api_url,
-            self.settings,
-            timeout=self.timeout,
-            params=params,
-        )
-        status_data = response.json()
+        try:
+            response = await make_request(
+                "get",
+                self.api_url,
+                self.settings,
+                timeout=self.timeout,
+                params=params,
+            )
+            status_data = response.json()
+        except Exception:
+            logger.warning(
+                ">>> %s: Failed to reach SABnzbd status endpoint. Treating as disconnected.",
+                self.name,
+            )
+            return False
         # SABnzbd doesn't have a direct "disconnected" status like qBittorrent
         # We check if we can get status successfully
         return "status" in status_data
