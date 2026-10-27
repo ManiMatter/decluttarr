@@ -9,9 +9,16 @@ from src.job_manager import JobManager
 from src.settings.settings import Settings
 from src.utils.log_setup import logger
 from src.utils.startup import launch_steps, retry_degraded_instances
+from src.web.events import EventBus, NoOpEventBus, Event, EventType
 
 settings = Settings()
-job_manager = JobManager(settings)
+
+# Event bus for web UI integration
+web_enabled = settings.web.enabled
+event_bus = EventBus() if web_enabled else NoOpEventBus()
+trigger_event = asyncio.Event() if web_enabled else None
+
+job_manager = JobManager(settings, event_bus=event_bus)
 watch_manager = WatcherManager(settings)
 
 
@@ -44,8 +51,19 @@ async def wait_next_run():
 
     logger.verbose(f"*** Done - Next run at {formatted_next_run} ****")
 
-    # Wait for the next run
-    await asyncio.sleep(settings.general.timer * 60)
+    # Wait for the next run, but allow manual trigger to interrupt
+    if trigger_event:
+        try:
+            await asyncio.wait_for(
+                trigger_event.wait(),
+                timeout=settings.general.timer * 60,
+            )
+            trigger_event.clear()
+            logger.info("Manual trigger received, starting cycle early")
+        except asyncio.TimeoutError:
+            pass
+    else:
+        await asyncio.sleep(settings.general.timer * 60)
 
 
 # Main function
@@ -60,6 +78,10 @@ async def main():
 
         # Give degraded instances a chance to rejoin before this cycle's jobs
         await retry_degraded_instances(settings, watch_manager)
+
+        await event_bus.emit(Event(EventType.CYCLE_START, {
+            "instances": [arr.name for arr in settings.instances],
+        }))
 
         # Refresh qBit Cookies (SABnzbd doesn't need cookie refresh)
         for qbit in settings.download_clients.qbittorrent:
@@ -77,7 +99,10 @@ async def main():
         for arr in settings.instances:
             if not arr.ready:  # skip was already logged by retry_degraded_instances
                 continue
-            await job_manager.run_jobs(arr)
+            try:
+                await job_manager.run_jobs(arr)
+            except Exception as e:
+                logger.error(f"Error running jobs on {arr.name}: {e}")
             logger.verbose("")
 
         # Run download client jobs (these run independently of *arr instances)
@@ -89,10 +114,42 @@ async def main():
                 exc_info=True,
             )
 
+        await event_bus.emit(Event(EventType.CYCLE_END, {
+            "instances": [arr.name for arr in settings.instances],
+        }))
+
         # Wait for the next run
         await wait_next_run()
 
 
+async def main_with_restart():
+    """Run main loop with automatic restart on unexpected failures."""
+    while True:
+        try:
+            await main()
+        except SystemExit as e:
+            if e.code == 0:
+                raise  # Clean shutdown (e.g. SIGTERM), don't restart
+            logger.error("Main loop exited (unreachable service). Restarting in 30 seconds...")
+            await asyncio.sleep(30)
+        except Exception as e:
+            logger.error(f"Main loop crashed: {e}. Restarting in 30 seconds...")
+            await asyncio.sleep(30)
+
+
+async def start():
+    """Entry point that optionally runs web server alongside main loop."""
+    if web_enabled:
+        from src.web.app import start_web_server
+        web_task = asyncio.create_task(
+            start_web_server(settings, event_bus, trigger_event)
+        )
+        main_task = asyncio.create_task(main_with_restart())
+        await asyncio.gather(main_task, web_task)
+    else:
+        await main_with_restart()
+
+
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, terminate)
-    asyncio.run(main())
+    asyncio.run(start())

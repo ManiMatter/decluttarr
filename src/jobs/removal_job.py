@@ -17,16 +17,18 @@ class RemovalJob(ABC):
     queue = []
 
     # Default class attributes (can be overridden in subclasses)
-    def __init__(self, arr, settings, job_name) -> None:
+    def __init__(self, arr, settings, job_name, event_bus=None) -> None:
         self.arr = arr
         self.settings = settings
         self.job_name = job_name
+        self.event_bus = event_bus
         self.job = getattr(self.settings.jobs, self.job_name)
         self.queue_manager = QueueManager(self.arr, self.settings)
         self.max_strikes = getattr(self.job, "max_strikes", None)
         if self.max_strikes:
             self.strikes_handler = StrikesHandler(
-                job_name=self.job_name, arr=self.arr, max_strikes=self.max_strikes
+                job_name=self.job_name, arr=self.arr, max_strikes=self.max_strikes,
+                event_bus=self.event_bus,
             )
 
     async def run(self) -> int:
@@ -48,6 +50,19 @@ class RemovalJob(ABC):
             self.affected_items
         )
 
+        # Emit flagged events
+        if self.event_bus and self.affected_downloads:
+            from src.web.events import Event, EventType
+            for download_id, dl_info in self.affected_downloads.items():
+                await self.event_bus.emit(Event(EventType.ITEM_FLAGGED, {
+                    "arr_name": self.arr.name,
+                    "arr_type": self.arr.arr_type,
+                    "job_name": self.job_name,
+                    "download_id": download_id,
+                    "title": dl_info.get("title", "Unknown"),
+                    "test_run": self.settings.general.test_run,
+                }))
+
         # -- Checks --
         self._ignore_protected()
         self._ignore_degraded_client_downloads()
@@ -61,6 +76,7 @@ class RemovalJob(ABC):
             arr=self.arr,
             settings=self.settings,
             job_name=self.job_name,
+            event_bus=self.event_bus,
         ).remove_downloads(self.affected_downloads, self.blocklist)
 
         return len(self.affected_downloads)

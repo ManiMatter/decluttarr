@@ -1,0 +1,79 @@
+{% if items %}
+<figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th>Instance</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Client</th>
+                <th>Progress</th>
+                <th>Strikes</th>
+                <th>Protected</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr class="{% if item.strikes %}row-flagged{% endif %}{% if item.protected %} row-protected{% endif %}">
+                <td>
+                    <span class="badge" data-arr-type="{{ item.arr_type }}">{{ item.arr_name }}</span>
+                </td>
+                <td class="queue-title">
+                    <span class="truncate" title="{{ item.title }}">{{ item.title }}</span>
+                </td>
+                <td class="queue-status">
+                    <span class="badge status-{{ item.status | lower }}"
+                          {% if item.status_messages %}title="{{ item.status_messages | join('\n') }}"{% endif %}>
+                        {{ item.status }}
+                    </span>
+                </td>
+                <td><small>{{ item.download_client }}</small></td>
+                <td>
+                    {% if item.size > 0 %}
+                        {% set pct = ((1 - item.sizeleft / item.size) * 100) | round(1) %}
+                        <progress value="{{ pct }}" max="100"></progress>
+                        <small>{{ pct }}%</small>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% for job_name, strike_info in item.strikes.items() %}
+                        <span class="badge strike-badge" title="{{ job_name }}">
+                            {{ strike_info.strikes }}
+                        </span>
+                    {% endfor %}
+                    {% if not item.strikes %}-{% endif %}
+                </td>
+                <td>
+                    {% if item.protected %}
+                        <span class="badge protected-badge">Protected</span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not item.protected %}
+                    <button class="outline small-btn btn-protect"
+                            data-download-id="{{ item.download_id }}"
+                            data-title="{{ item.title }}"
+                            data-arr-name="{{ item.arr_name }}">
+                        Protect
+                    </button>
+                    {% else %}
+                    <button class="outline small-btn btn-unprotect"
+                            data-download-id="{{ item.download_id }}">
+                        Unprotect
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+<p><small>{{ total }} items in queue</small></p>
+{% else %}
+<p>Queue is empty</p>
+{% endif %}

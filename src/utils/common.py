@@ -103,8 +103,10 @@ async def make_request(
 
 def wait_and_exit(seconds=30):
     logger.info(f"Decluttarr will wait for {seconds} seconds and then exit.")
-    time.sleep(seconds)
-    sys.exit()
+    # Raise SystemExit instead of blocking with time.sleep(), so the async
+    # event loop (and web UI) stays responsive. main_with_restart() catches
+    # SystemExit and handles the retry delay.
+    sys.exit(1)
 
 
 def is_definitive_setup_error(exc):

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Decluttarr{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ request.url_for('static', path='favicon.svg') }}">
+    <meta name="root-path" content="{{ request.scope.get('root_path', '') }}">
+    <link rel="stylesheet" href="{{ request.url_for('static', path='vendor/pico.min.css') }}">
+    <script src="{{ request.url_for('static', path='base.js') }}"></script>
+    <script src="{{ request.url_for('static', path='vendor/htmx.min.js') }}"></script>
+    <script src="{{ request.url_for('static', path='vendor/alpine.csp.min.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ request.url_for('static', path='style.css') }}">
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><a href="{{ request.scope.get('root_path', '') }}/"><strong>Decluttarr</strong></a></li>
+        </ul>
+        <ul>
+            <li><a href="{{ request.scope.get('root_path', '') }}/" {% if request.url.path == "/" %}class="active"{% endif %}>Dashboard</a></li>
+            <li><a href="{{ request.scope.get('root_path', '') }}/activity" {% if request.url.path == "/activity" %}class="active"{% endif %}>Activity</a></li>
+            <li><a href="{{ request.scope.get('root_path', '') }}/settings" {% if request.url.path == "/settings" %}class="active"{% endif %}>Settings</a></li>
+            <li><a href="{{ request.url_for('swagger_ui_html') }}" target="_blank">API</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container">
+        <small>Decluttarr {{ settings.envs.image_tag }} ({{ settings.envs.short_commit_id }})</small>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

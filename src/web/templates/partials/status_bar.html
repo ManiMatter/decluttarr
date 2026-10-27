@@ -1,0 +1,17 @@
+<div class="status-bar grid">
+    <div>
+        <strong>Status:</strong> Running
+        {% if settings.general.test_run %}
+            <span class="badge test-badge">TEST RUN</span>
+        {% endif %}
+    </div>
+    <div>
+        <strong>Timer:</strong> every {{ settings.general.timer }} min
+    </div>
+    <div>
+        <strong>Instances:</strong> {{ settings.instances | length }}
+    </div>
+    <div>
+        <strong>Version:</strong> {{ settings.envs.image_tag }}
+    </div>
+</div>
