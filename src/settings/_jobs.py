@@ -15,6 +15,7 @@ class JobParams:
     min_days_between_searches: int
     target_tags: list
     detect_via_missing_size: bool = False
+    check_availability: bool = False
 
     def __init__(
         self,
@@ -27,6 +28,7 @@ class JobParams:
         min_days_between_searches=None,
         target_tags=None,
         detect_via_missing_size=None,
+        check_availability=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
@@ -37,6 +39,7 @@ class JobParams:
         self.min_days_between_searches = min_days_between_searches
         self.target_tags = target_tags
         self.detect_via_missing_size = detect_via_missing_size
+        self.check_availability = check_availability
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -62,15 +65,22 @@ class JobDefaults:
     min_speed: int = 100
     message_patterns = ["*"]
     target_tags = []
+    check_availability: bool = False
 
     def __init__(self, config, settings):
         job_defaults_config = config.get("job_defaults", {})
         self.target_tags.append(settings.general.obsolete_tag)
         self.max_strikes = job_defaults_config.get("max_strikes", self.max_strikes)
-        self.max_concurrent_searches = job_defaults_config.get("max_concurrent_searches", self.max_concurrent_searches)
+        self.max_concurrent_searches = job_defaults_config.get(
+            "max_concurrent_searches", self.max_concurrent_searches
+        )
         self.min_days_between_searches = job_defaults_config.get(
             "min_days_between_searches",
             self.min_days_between_searches,
+        )
+        self.check_availability = job_defaults_config.get(
+            "check_availability",
+            self.check_availability,
         )
         validate_data_types(self)
 
@@ -106,10 +116,12 @@ class Jobs:
         self.search_unmet_cutoff = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
+            check_availability=self.job_defaults.check_availability,
         )
         self.search_missing = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
+            check_availability=self.job_defaults.check_availability,
         )
         self.detect_deletions = JobParams()
 

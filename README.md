@@ -37,6 +37,7 @@ Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
     - [MAX_STRIKES](#max_strikes)
     - [MIN_DAYS_BETWEEN_SEARCHES](#min_days_between_searches)
     - [MAX_CONCURRENT_SEARCHES](#max_concurrent_searches)
+    - [CHECK_AVAILABILITY](#check_availability)
   - [Jobs](#jobs)
     - [REMOVE_BAD_FILES](#remove_bad_files)
     - [REMOVE_FAILED_DOWNLOADS](#remove_failed_downloads)
@@ -502,6 +503,15 @@ If a job has the same settings configured on job-level, the job-level settings w
 -   Permissible Values: Any number
 -   Is Mandatory: No (Defaults to 3)
 
+#### CHECK_AVAILABILITY
+
+-   Only relevant together with search_unmet_cutoff and search_missing
+-   When enabled, decluttarr checks Radarr availability settings (`isAvailable`) and only triggers searches for movies that are currently considered available in Radarr (for example, waiting until digital or physical release date according to the movie's minimum availability setting)
+-   Items from other applications (e.g. Sonarr, Lidarr) that do not track movie availability are searched as usual
+-   Type: Boolean
+-   Permissible Values: True, False
+-   Is Mandatory: No (Defaults to False)
+
 ### **Jobs**
 
 This is the interesting section. It defines which job you want decluttarr to run for you.
@@ -646,10 +656,10 @@ This is the interesting section. It defines which job you want decluttarr to run
 -   Type: Boolean or Dict
 -   Permissible Values: 
     - If Bool: True, False 
-    - If Dict: min_days_between_searches, max_concurrent_searches
+    - If Dict: min_days_between_searches, max_concurrent_searches, check_availability
 -   Is Mandatory: No (Defaults to False)
 -   Note:
-      - You can also specify min_days_between_searches and max_concurrent_searches as job defaults (see above) or simply rely on the system defaults
+      - You can also specify min_days_between_searches, max_concurrent_searches, and check_availability as job defaults (see above) or simply rely on the system defaults
 
 #### SEARCH_MISSING
 
@@ -657,10 +667,10 @@ This is the interesting section. It defines which job you want decluttarr to run
 -   Type: Boolean or Dict
 -   Permissible Values: 
     - If Bool: True, False 
-    - If Dict: min_days_between_searches, max_concurrent_searches
+    - If Dict: min_days_between_searches, max_concurrent_searches, check_availability
 -   Is Mandatory: No (Defaults to False)
 -   Note:
-      - You can also specify min_days_between_searches and max_concurrent_searches as job defaults (see above) or simply rely on the system defaults
+      - You can also specify min_days_between_searches, max_concurrent_searches, and check_availability as job defaults (see above) or simply rely on the system defaults
 
 
 #### DETECT_DELETIONS

@@ -58,8 +58,8 @@ class SearchHandler:
         )
         await self._trigger_search(wanted_items)
 
-    def _get_initial_wanted_items(self):
-        wanted = self.wanted_manager.get_wanted_items(self.missing_or_cutoff)
+    async def _get_initial_wanted_items(self):
+        wanted = await self.wanted_manager.get_wanted_items(self.missing_or_cutoff)
         if not wanted:
             logger.verbose(
                 f"Job '{self.job_name}' did not trigger a search: No {self.search_target_label}"
@@ -74,6 +74,14 @@ class SearchHandler:
             )
             return []
 
+        if getattr(self.job, "check_availability", False):
+            items = self._filter_unavailable(items)
+            if not items:
+                logger.verbose(
+                    f"Job '{self.job_name}' did not trigger a search: All {self.search_target_label} are not yet available"
+                )
+                return []
+
         items = self._filter_recent_searches(items)
         if not items:
             logger.verbose(
@@ -82,6 +90,18 @@ class SearchHandler:
             return []
 
         return items[: self.job.max_concurrent_searches]
+
+    def _filter_unavailable(self, items):
+        result = []
+        for item in items:
+            if item.get("isAvailable") is False:
+                title = item.get("title", f"ID {item.get('id')}")
+                logger.debug(
+                    f"search_handler.py/_filter_unavailable: Skipping '{title}' - not yet available"
+                )
+            else:
+                result.append(item)
+        return result
 
     def _filter_already_downloading(self, wanted_items, queue):
         queue_ids = {q["detail_item_id"] for q in queue}

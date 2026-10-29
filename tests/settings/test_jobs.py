@@ -39,7 +39,45 @@ def test_bool_false_keeps_job_defaults():
 
 
 def test_dict_merges_onto_job_defaults():
-    jobs = _jobs({"remove_failed_imports": {"message_patterns": ["Not an upgrade*"]}, "remove_stalled": {"max_strikes": 5}})
+    jobs = _jobs(
+        {
+            "remove_failed_imports": {"message_patterns": ["Not an upgrade*"]},
+            "remove_stalled": {"max_strikes": 5},
+        }
+    )
     assert jobs.remove_failed_imports.enabled is True
     assert jobs.remove_failed_imports.message_patterns == ["Not an upgrade*"]
     assert jobs.remove_stalled.max_strikes == 5
+
+
+def test_search_jobs_check_availability_defaults():
+    jobs = _jobs({})
+    assert jobs.search_missing.check_availability is False
+    assert jobs.search_unmet_cutoff.check_availability is False
+
+
+def test_search_jobs_check_availability_from_job_defaults():
+    from src.settings._jobs import Jobs
+
+    config = {
+        "job_defaults": {"check_availability": True},
+        "jobs": {"search_missing": True, "search_unmet_cutoff": True},
+    }
+    jobs = Jobs(config, _FakeSettings())
+    assert jobs.search_missing.check_availability is True
+    assert jobs.search_unmet_cutoff.check_availability is True
+
+
+def test_search_jobs_check_availability_override():
+    from src.settings._jobs import Jobs
+
+    config = {
+        "job_defaults": {"check_availability": False},
+        "jobs": {
+            "search_missing": {"check_availability": True},
+            "search_unmet_cutoff": {"check_availability": False},
+        },
+    }
+    jobs = Jobs(config, _FakeSettings())
+    assert jobs.search_missing.check_availability is True
+    assert jobs.search_unmet_cutoff.check_availability is False

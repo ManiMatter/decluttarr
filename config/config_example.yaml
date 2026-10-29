@@ -15,6 +15,7 @@ job_defaults:
   max_strikes: 3
   min_days_between_searches: 7
   max_concurrent_searches: 3
+  # check_availability: false # If true, checks Radarr availability settings (isAvailable) before searching
 
 jobs:
   remove_bad_files:
@@ -46,9 +47,11 @@ jobs:
   search_unmet_cutoff:
     # min_days_between_searches: 7
     # max_concurrent_searches: 3
+    # check_availability: true
   search_missing:
     # min_days_between_searches: 7
     # max_concurrent_searches: 3
+    # check_availability: true
 
 instances:
   sonarr:
