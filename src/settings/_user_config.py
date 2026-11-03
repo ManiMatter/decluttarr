@@ -20,7 +20,6 @@ CONFIG_MAPPING = {
         "PUBLIC_TRACKER_HANDLING",
         "OBSOLETE_TAG",
         "PROTECTED_TAG",
-        "DETECT_DELETIONS",
     ],
     "job_defaults": [
         "MAX_STRIKES",
@@ -40,6 +39,7 @@ CONFIG_MAPPING = {
         "REMOVE_UNMONITORED",
         "SEARCH_UNMET_CUTOFF",
         "SEARCH_MISSING",
+        "DETECT_DELETIONS",
     ],
     "instances": ["SONARR", "SPORTARR", "RADARR", "READARR", "LIDARR", "WHISPARR"],
     "download_clients": ["QBITTORRENT"],

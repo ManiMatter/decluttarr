@@ -269,6 +269,7 @@ services:
       #   min_days_between_searches: 7
       #   max_concurrent_searches: 3
       # DETECT_DELETIONS:
+      #   remove_download: True
 
       # --- Instances ---
       SONARR: >
@@ -674,9 +675,14 @@ This is the interesting section. It defines which job you want decluttarr to run
     This job monitors the media folders you have set up in sonarr/radarr (lidarr, readarr, and whisparr are not supported at this point).
     If a file gets deleted in there, it tries to find out which movie/TV show it belongs to and refreshes it.
     Thereby, deleted items get "unmonitored" and therefore not re-downloaded.
--   Type: Boolean
--   Permissible Values: 
-    - True, False 
+    Optionally (`remove_download`), it also removes the related torrent from qBittorrent (including its files) before refreshing.
+    The torrent is found via the arr's import history, and is only removed if none of the media imported from it (e.g. the other episodes of a season pack) still exists on disk.
+    Torrents with the protected tag are never removed, and private/public tracker torrents follow `PRIVATE_TRACKER_HANDLING` / `PUBLIC_TRACKER_HANDLING`: "skip" and "remove_from_queue" keep the torrent, "obsolete_tag" tags it instead of removing it, and "remove" deletes it.
+    Note that this deletes the torrent's data, so cross-seeded torrents sharing those files lose them too. It also triggers when radarr/sonarr replaces a file on a quality upgrade, not only on manual deletions.
+-   Type: Boolean or Dict
+-   Permissible Values:
+    - If Bool: True, False
+    - If Dict: remove_download (Boolean, defaults to False)
 -   Is Mandatory: No (Defaults to False)
 -   Note:
       - Decluttarr must have access to the paths that you have set up in your radarr/sonarr instances

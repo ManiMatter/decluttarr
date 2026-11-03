@@ -428,6 +428,61 @@ class ArrInstance:
                 return item
         return None
 
+    async def get_import_history(self, refresh_item_id):
+        """Imports of a movie/series as (media_id, download_id, date, source_path), oldest first. download_id is None for manual imports."""
+        response = await make_request(
+            "get",
+            f"{self.api_url}/history/{self.refresh_item_key}",
+            self.settings,
+            timeout=self.timeout,
+            headers={"X-Api-Key": self.api_key},
+            params={self.refresh_item_id_key: refresh_item_id},
+        )
+        imports = [
+            (
+                record[self.detail_item_id_key],
+                record.get("downloadId") or None,
+                record.get("date", ""),
+                (record.get("data") or {}).get("droppedPath"),
+            )
+            for record in response.json()
+            if record.get("eventType") == "downloadFolderImported"
+            and record.get(self.detail_item_id_key)
+        ]
+        return sorted(imports, key=lambda entry: entry[2])
+
+    async def get_media_file_paths(self, media_ids):
+        """Current file paths (as known by the arr) of the given movies/episodes, as {media_id: path}."""
+        headers = {"X-Api-Key": self.api_key}
+        paths = {}
+        media_ids = list(media_ids)
+        if self.arr_type == "radarr":
+            for media_id in media_ids:
+                response = await make_request(
+                    "get",
+                    f"{self.api_url}/movie/{media_id}",
+                    self.settings,
+                    timeout=self.timeout,
+                    headers=headers,
+                )
+                paths[media_id] = (response.json().get("movieFile") or {}).get("path")
+        else:
+            for start in range(0, len(media_ids), 100):  # keeps the URL short
+                response = await make_request(
+                    "get",
+                    f"{self.api_url}/episode",
+                    self.settings,
+                    timeout=self.timeout,
+                    headers=headers,
+                    params={
+                        "episodeIds": media_ids[start : start + 100],
+                        "includeEpisodeFile": "true",
+                    },
+                )
+                for episode in response.json():
+                    paths[episode["id"]] = (episode.get("episodeFile") or {}).get("path")
+        return {media_id: path for media_id, path in paths.items() if path}
+
     async def refresh_item(self, refresh_item_id):
         # Refresh the queue by making the POST request using an external make_request function
         logger.debug("_instances.py/_refresh_item: Refreshing Item")

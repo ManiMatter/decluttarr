@@ -5,6 +5,7 @@ from pathlib import Path
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+from src.deletion_handler.download_remover import DownloadRemover
 from src.utils.log_setup import logger
 
 
@@ -67,6 +68,15 @@ class DeletionHandler(FileSystemEventHandler):
         for folder_path, files in deletions.items():
             refresh_item = await self.arr.get_refresh_item_by_path(folder_path)
             if refresh_item:
+                # Must happen before the refresh: afterwards the arr no longer tracks the media
+                if (
+                    getattr(self.arr.settings.jobs.detect_deletions, "remove_download", False)
+                    is True
+                ):
+                    await DownloadRemover(self.arr).remove_for_item(
+                        refresh_item,
+                        deleted_paths={str(Path(folder_path) / file) for file in files},
+                    )
                 logger.info(
                     f"Job 'detect_deletions' triggered media refresh on {self.arr.name} ({self.arr.base_url}): {refresh_item['title']}"
                 )
