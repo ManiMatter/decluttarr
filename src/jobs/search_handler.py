@@ -67,6 +67,13 @@ class SearchHandler:
         return wanted
 
     def _filter_wanted_items(self, items, queue):
+        items = self._filter_unreleased(items)
+        if not items:
+            logger.verbose(
+                f"Job '{self.job_name}' did not trigger a search: None of the {self.search_target_label} are released yet"
+            )
+            return []
+
         items = self._filter_already_downloading(items, queue)
         if not items:
             logger.verbose(
@@ -82,6 +89,29 @@ class SearchHandler:
             return []
 
         return items[: self.job.max_concurrent_searches]
+
+    @staticmethod
+    def _filter_unreleased(items):
+        now = datetime.now(timezone.utc)
+        result = []
+
+        for item in items:
+            if "isAvailable" in item:
+                if item["isAvailable"]:
+                    result.append(item)
+                continue
+
+            release = item.get("airDateUtc") or item.get("releaseDate")
+            if release:
+                release_time = dateutil.parser.isoparse(release)
+                if release_time.tzinfo is None:
+                    release_time = release_time.replace(tzinfo=timezone.utc)
+                if release_time > now:
+                    continue
+
+            result.append(item)
+
+        return result
 
     def _filter_already_downloading(self, wanted_items, queue):
         queue_ids = {q["detail_item_id"] for q in queue}
