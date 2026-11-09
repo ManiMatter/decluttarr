@@ -333,6 +333,15 @@ instances:
       api_key: !ENV RADARR_API_KEY
 ```
 
+Instead of `api_key`, an instance can use `api_key_file` to read the key from a file, for example a [Docker secret](https://docs.docker.com/compose/how-tos/use-secrets/):
+
+```yaml
+instances:
+  sonarr:
+    - base_url: "http://sonarr.media"
+      api_key_file: /run/secrets/sonarr_api_key
+```
+
 ## Upgrading from V1 to V2
 
 Decluttarr v2 is a major update with a cleaner config format and powerful new features. Here's what changed and how to upgrade.

@@ -133,13 +133,22 @@ class ArrInstances(list):
                             settings,
                             arr_type=arr_type,
                             base_url=client_config["base_url"],
-                            api_key=client_config["api_key"],
+                            api_key=self._get_api_key(client_config),
                             timeout=client_config.get("timeout"),
                         ),
                     )
                 except KeyError as e:
                     error = f"Missing required key {e} in {arr_type} client config."
                     logger.error(error)
+                except OSError as e:
+                    error = f"Could not read api_key_file for {arr_type} client: {e}"
+                    logger.error(error)
+
+    @staticmethod
+    def _get_api_key(client_config):
+        if "api_key_file" in client_config:
+            return Path(client_config["api_key_file"]).read_text(encoding="utf-8").strip()
+        return client_config["api_key"]
 
 
 class ArrInstance:
