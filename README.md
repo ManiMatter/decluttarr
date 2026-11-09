@@ -654,6 +654,7 @@ This is the interesting section. It defines which job you want decluttarr to run
 #### SEARCH_MISSING
 
 -   Steers whether searches are automatically triggered for items that are missing
+-   Items that are not released yet are skipped (Radarr: not yet available per the movie's minimum availability; Sonarr: not aired yet; Lidarr/Readarr: release date in the future)
 -   Type: Boolean or Dict
 -   Permissible Values: 
     - If Bool: True, False 
