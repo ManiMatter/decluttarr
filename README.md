@@ -37,6 +37,7 @@ Looking to **upgrade from V1 to V2**? Look [here](#upgrading-from-v1-to-v2)
     - [MAX_STRIKES](#max_strikes)
     - [MIN_DAYS_BETWEEN_SEARCHES](#min_days_between_searches)
     - [MAX_CONCURRENT_SEARCHES](#max_concurrent_searches)
+    - [SKIP_UNRELEASED](#skip_unreleased)
   - [Jobs](#jobs)
     - [REMOVE_BAD_FILES](#remove_bad_files)
     - [REMOVE_FAILED_DOWNLOADS](#remove_failed_downloads)
@@ -217,6 +218,7 @@ services:
       # max_strikes: 3
       # MIN_DAYS_BETWEEN_SEARCHES: 7
       # MAX_CONCURRENT_SEARCHES: 3
+      # SKIP_UNRELEASED: True
 
       # # --- Jobs (short notation) ---
       # If you want to go with the most basic settings, you can just turn them all on:
@@ -502,6 +504,15 @@ If a job has the same settings configured on job-level, the job-level settings w
 -   Permissible Values: Any number
 -   Is Mandatory: No (Defaults to 3)
 
+#### SKIP_UNRELEASED
+
+-   Only relevant together with search_unmet_cutoff and search_missing
+-   When enabled, items that are not released yet are not searched for (Radarr: not yet available per the movie's minimum availability; Sonarr: not aired yet; Lidarr/Readarr: release date in the future)
+-   Items without any release information are searched as usual
+-   Type: Boolean
+-   Permissible Values: True, False
+-   Is Mandatory: No (Defaults to True)
+
 ### **Jobs**
 
 This is the interesting section. It defines which job you want decluttarr to run for you.
@@ -646,10 +657,10 @@ This is the interesting section. It defines which job you want decluttarr to run
 -   Type: Boolean or Dict
 -   Permissible Values: 
     - If Bool: True, False 
-    - If Dict: min_days_between_searches, max_concurrent_searches
+    - If Dict: min_days_between_searches, max_concurrent_searches, skip_unreleased
 -   Is Mandatory: No (Defaults to False)
 -   Note:
-      - You can also specify min_days_between_searches and max_concurrent_searches as job defaults (see above) or simply rely on the system defaults
+      - You can also specify min_days_between_searches, max_concurrent_searches, and skip_unreleased as job defaults (see above) or simply rely on the system defaults
 
 #### SEARCH_MISSING
 
@@ -657,10 +668,10 @@ This is the interesting section. It defines which job you want decluttarr to run
 -   Type: Boolean or Dict
 -   Permissible Values: 
     - If Bool: True, False 
-    - If Dict: min_days_between_searches, max_concurrent_searches
+    - If Dict: min_days_between_searches, max_concurrent_searches, skip_unreleased
 -   Is Mandatory: No (Defaults to False)
 -   Note:
-      - You can also specify min_days_between_searches and max_concurrent_searches as job defaults (see above) or simply rely on the system defaults
+      - You can also specify min_days_between_searches, max_concurrent_searches, and skip_unreleased as job defaults (see above) or simply rely on the system defaults
 
 
 #### DETECT_DELETIONS

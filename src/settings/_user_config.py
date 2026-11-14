@@ -26,6 +26,7 @@ CONFIG_MAPPING = {
         "MAX_STRIKES",
         "MIN_DAYS_BETWEEN_SEARCHES",
         "MAX_CONCURRENT_SEARCHES",
+        "SKIP_UNRELEASED",
     ],
     "jobs": [
         "REMOVE_BAD_FILES",
