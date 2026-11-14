@@ -15,6 +15,7 @@ class JobParams:
     min_days_between_searches: int
     target_tags: list
     detect_via_missing_size: bool = False
+    skip_unreleased: bool = True
 
     def __init__(
         self,
@@ -27,6 +28,7 @@ class JobParams:
         min_days_between_searches=None,
         target_tags=None,
         detect_via_missing_size=None,
+        skip_unreleased=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
@@ -37,6 +39,7 @@ class JobParams:
         self.min_days_between_searches = min_days_between_searches
         self.target_tags = target_tags
         self.detect_via_missing_size = detect_via_missing_size
+        self.skip_unreleased = skip_unreleased
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -62,6 +65,7 @@ class JobDefaults:
     min_speed: int = 100
     message_patterns = ["*"]
     target_tags = []
+    skip_unreleased: bool = True
 
     def __init__(self, config, settings):
         job_defaults_config = config.get("job_defaults", {})
@@ -71,6 +75,10 @@ class JobDefaults:
         self.min_days_between_searches = job_defaults_config.get(
             "min_days_between_searches",
             self.min_days_between_searches,
+        )
+        self.skip_unreleased = job_defaults_config.get(
+            "skip_unreleased",
+            self.skip_unreleased,
         )
         validate_data_types(self)
 
@@ -106,10 +114,12 @@ class Jobs:
         self.search_unmet_cutoff = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
+            skip_unreleased=self.job_defaults.skip_unreleased,
         )
         self.search_missing = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
+            skip_unreleased=self.job_defaults.skip_unreleased,
         )
         self.detect_deletions = JobParams()
 

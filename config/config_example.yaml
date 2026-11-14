@@ -15,6 +15,7 @@ job_defaults:
   max_strikes: 3
   min_days_between_searches: 7
   max_concurrent_searches: 3
+  # skip_unreleased: true # If true, items that are not released yet are not searched. Default: true
 
 jobs:
   remove_bad_files:
@@ -46,9 +47,11 @@ jobs:
   search_unmet_cutoff:
     # min_days_between_searches: 7
     # max_concurrent_searches: 3
+    # skip_unreleased: true
   search_missing:
     # min_days_between_searches: 7
     # max_concurrent_searches: 3
+    # skip_unreleased: true
 
 instances:
   sonarr:
