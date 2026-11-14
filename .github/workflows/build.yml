@@ -38,7 +38,8 @@ jobs:
   unit-tests:
     needs: validate-branch-name
     if: needs.validate-branch-name.outputs.valid_branch_name == 'true'
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest (26.04) has no Python 3.10.13 build; keep in sync with docker/Dockerfile
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
