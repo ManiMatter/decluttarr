@@ -27,7 +27,13 @@ class WantedManager:
             return []
 
         sort_key = f"{self.arr.detail_item_key}s.lastSearchTime"
-        params = {"page": "1", "pageSize": total_records_count, "sortKey": sort_key}
+        # Least recently searched first, so never-searched items are picked up first.
+        params = {
+            "page": "1",
+            "pageSize": total_records_count,
+            "sortKey": sort_key,
+            "sortDirection": "ascending",
+        }
 
         records = await self.fetch_wanted_field(
             missing_or_cutoff, params=params, key="records"
