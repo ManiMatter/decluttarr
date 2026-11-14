@@ -27,10 +27,7 @@ class WantedManager:
             return []
 
         sort_key = f"{self.arr.detail_item_key}s.lastSearchTime"
-        # sortDirection must be explicit: the *arr API defaults to descending for
-        # lastSearchTime, which puts most-recently-searched items first and never-searched
-        # items (null lastSearchTime) last. That starves the backlog, re-searching the same
-        # top N forever. Ascending puts least-/never-searched items first, as intended (#376).
+        # Least recently searched first, so never-searched items are picked up first.
         params = {
             "page": "1",
             "pageSize": total_records_count,
