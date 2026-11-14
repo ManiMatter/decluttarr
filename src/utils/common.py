@@ -26,7 +26,14 @@ def sanitize_kwargs(data):
         for key, value in data.items():
             if (
                 key.lower()
-                in {"username", "password", "x-api-key", "apikey", "cookies"}
+                in {
+                    "username",
+                    "password",
+                    "x-api-key",
+                    "apikey",
+                    "cookies",
+                    "authorization",
+                }
                 and value
             ):
                 redacted[key] = "[**redacted**]"
@@ -42,7 +49,7 @@ async def make_request(
     method: str,
     endpoint: str,
     settings,
-    timeout: int = 15,
+    timeout: float | None = None,
     *,
     log_error=True,
     **kwargs,
@@ -51,6 +58,11 @@ async def make_request(
     A utility function to make HTTP requests (GET, POST, DELETE, PUT).
     """
     ignore_test_run = kwargs.pop("ignore_test_run", False)
+    request_timeout = timeout
+    if request_timeout is None:
+        request_timeout = getattr(
+            getattr(settings, "general", None), "request_timeout", 15
+        )
 
     if settings.general.test_run and not ignore_test_run:
         if method.lower() in ("put", "post", "delete"):
@@ -74,7 +86,7 @@ async def make_request(
             endpoint,
             **kwargs,
             verify=settings.general.ssl_verification,
-            timeout=timeout,
+            timeout=request_timeout,
         )
         response.raise_for_status()
         return response
@@ -93,6 +105,18 @@ def wait_and_exit(seconds=30):
     logger.info(f"Decluttarr will wait for {seconds} seconds and then exit.")
     time.sleep(seconds)
     sys.exit()
+
+
+def is_definitive_setup_error(exc):
+    """Definitive = a configuration error that cannot heal without user action."""
+    for candidate in (exc, exc.__cause__):
+        if getattr(candidate, "definitive", False):
+            return True
+        if isinstance(candidate, requests.exceptions.HTTPError):
+            response = getattr(candidate, "response", None)
+            if response is not None and response.status_code in (401, 403):
+                return True
+    return False
 
 
 def extract_json_from_response(response, key: str | None = None):

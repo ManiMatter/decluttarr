@@ -168,7 +168,7 @@ class RemoveSlow(RemovalJob):
             download_client_name = item["downloadClient"]
             download_client, download_client_type = (
                 self.settings.download_clients.get_download_client_by_name(
-                    download_client_name
+                    download_client_name, ready_only=True
                 )
             )
             item["download_client"] = download_client

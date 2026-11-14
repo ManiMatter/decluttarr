@@ -50,6 +50,7 @@ class RemovalJob(ABC):
 
         # -- Checks --
         self._ignore_protected()
+        self._ignore_degraded_client_downloads()
         if self.max_strikes:
             self.affected_downloads = self.strikes_handler.filter_strike_exceeds(
                 self.affected_downloads, self.queue
@@ -75,6 +76,36 @@ class RemovalJob(ABC):
             for download_id, queue_items in self.affected_downloads.items()
             if download_id not in self.arr.tracker.protected
         }
+
+    def _ignore_degraded_client_downloads(self):
+        """Fail-closed: never remove a download whose configured client is degraded.
+
+        A degraded (not-ready) download client can't be queried for protection
+        status (protected tag, private/public tracker), so its downloads must be
+        left untouched rather than deleted blindly. Downloads on healthy clients,
+        or on clients not configured in decluttarr, are unaffected.
+        """
+        safe = {}
+        skipped = 0
+        for download_id, download in self.affected_downloads.items():
+            # download is the grouped metadata dict from group_by_download_id.
+            client_name = download.get("downloadClient")
+            client = None
+            if client_name:
+                client, _ = self.settings.download_clients.get_download_client_by_name(
+                    client_name
+                )
+            if client is not None and not client.ready:
+                skipped += 1
+                continue
+            safe[download_id] = download
+
+        if skipped:
+            logger.warning(
+                f">>> {self.job_name}: skipped {skipped} download(s) on {self.arr.name} "
+                "whose download client is degraded (protection can't be verified; left untouched).",
+            )
+        self.affected_downloads = safe
 
     @abstractmethod  # Implemented on level of each removal job
     async def _find_affected_items(self) -> None:

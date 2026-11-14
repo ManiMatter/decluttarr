@@ -38,7 +38,8 @@ jobs:
   unit-tests:
     needs: validate-branch-name
     if: needs.validate-branch-name.outputs.valid_branch_name == 'true'
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest (26.04) has no Python 3.10.13 build; keep in sync with docker/Dockerfile
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -56,7 +57,10 @@ jobs:
   build:
     needs: unit-tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+      packages: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,7 +69,7 @@ jobs:
       - name: Bump version and push tag
         if: ${{ github.ref_name == 'latest' }}
         id: setversion
-        uses: anothrNick/github-tag-action@1.36.0
+        uses: anothrNick/github-tag-action@1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true

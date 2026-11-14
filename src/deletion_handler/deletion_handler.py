@@ -99,35 +99,53 @@ class WatcherManager:
         for arr, folder_path in folders_to_watch:
             self.set_watcher(arr, folder_path)
 
+    async def setup_for_arr(self, arr):
+        """Set up deletion watchers for a single arr (e.g. one that rejoined after a degraded startup)."""
+        if self.loop is None:
+            self.loop = asyncio.get_running_loop()
+        for folder_path in await self.get_folders_to_watch_for_arr(arr):
+            self.set_watcher(arr, folder_path)
+
     async def get_folders_to_watch(self):
         """Gets from all arrs the root folders and lists those that are accessible for the arr, and have present for decluttarr."""
         folders_to_watch = []
         logger.verbose("")
         logger.verbose("*** Setting up monitoring for deletions ***")
         for arr in self.settings.instances:
-            if arr.arr_type not in (
-                "sonarr",
-                "radarr",
-            ):  # only working for sonarr / radarr for now
-                continue
-            root_folders = await arr.get_root_folders()
+            for folder_path in await self.get_folders_to_watch_for_arr(arr):
+                folders_to_watch.append((arr, folder_path))
 
-            for folder in root_folders:
-                if folder.get("accessible") and "path" in folder:
-                    path = Path(folder["path"])
-                    if path.exists():
-                        folders_to_watch.append((arr, folder["path"]))
-                    else:
-                        logger.warning(
-                            f"Job 'detect_deletions' on {arr.name} ({arr.base_url}) does not have access to this path and will not monitor it: '{path}'"
-                        )
+        return folders_to_watch
+
+    async def get_folders_to_watch_for_arr(self, arr):
+        """Root folder paths of one arr that are accessible for both the arr and decluttarr."""
+        folders_to_watch = []
+        if arr.arr_type not in (
+            "sonarr",
+            "sportarr",
+            "radarr",
+        ):  # only working for sonarr / radarr for now
+            return folders_to_watch
+        if not arr.ready:  # degraded instance; watchers are added when it rejoins
+            return folders_to_watch
+        root_folders = await arr.get_root_folders()
+
+        for folder in root_folders:
+            if folder.get("accessible") and "path" in folder:
+                path = Path(folder["path"])
+                if path.exists():
+                    folders_to_watch.append(folder["path"])
+                else:
+                    logger.warning(
+                        f"Job 'detect_deletions' on {arr.name} ({arr.base_url}) does not have access to this path and will not monitor it: '{path}'"
+                    )
+                    logger.info(
+                        ">>> 💡 Tip: Make sure that the paths in decluttarr and in your arr instance are identical."
+                    )
+                    if self.settings.envs.in_docker:
                         logger.info(
-                            ">>> 💡 Tip: Make sure that the paths in decluttarr and in your arr instance are identical."
+                            ">>> 💡 Tip: Make sure decluttarr and your arr instance have the same mount points"
                         )
-                        if self.settings.envs.in_docker:
-                            logger.info(
-                                ">>> 💡 Tip: Make sure decluttarr and your arr instance have the same mount points"
-                            )
 
         return folders_to_watch
 

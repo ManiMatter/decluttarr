@@ -21,8 +21,16 @@ class RemovalHandler:
 
             if handling_method == "remove":
                 await self._remove_download(affected_download, download_id, blocklist)
+            elif handling_method == "remove_from_queue":
+                await self._remove_download(
+                    affected_download,
+                    download_id,
+                    blocklist,
+                    remove_from_client=False,
+                )
             elif handling_method == "obsolete_tag":
                 await self._tag_as_obsolete(affected_download, download_id)
+                self.arr.tracker.obsolete_tagged.append(download_id)
 
             # Print out detailed removal messages (if any)
             if "removal_messages" in affected_download:
@@ -31,19 +39,31 @@ class RemovalHandler:
 
             self.arr.tracker.deleted.append(download_id)
 
-    async def _remove_download(self, affected_download, download_id, blocklist):
+    async def _remove_download(
+        self, affected_download, download_id, blocklist, *, remove_from_client=True
+    ):
         queue_id = affected_download["queue_ids"][0]
+        action = "removal" if remove_from_client else "queue removal (torrent kept)"
         logger.info(
-            f"Job '{self.job_name}' triggered removal: {affected_download['title']}"
+            f"Job '{self.job_name}' triggered {action}: {affected_download['title']}"
         )
-        logger.debug(f"remove_handler.py/_remove_download: download_id={download_id}")
-        await self.arr.remove_queue_item(queue_id=queue_id, blocklist=blocklist)
+        logger.debug(
+            f"remove_handler.py/_remove_download: download_id={download_id}, "
+            f"remove_from_client={remove_from_client}"
+        )
+        await self.arr.remove_queue_item(
+            queue_id=queue_id,
+            blocklist=blocklist,
+            remove_from_client=remove_from_client,
+        )
 
     async def _tag_as_obsolete(self, affected_download, download_id):
         logger.info(
             f"Job '{self.job_name}' triggered obsolete-tagging: {affected_download['title']}"
         )
         for qbit in self.settings.download_clients.qbittorrent:
+            if not qbit.ready:
+                continue
             await qbit.set_tag(
                 tags=[self.settings.general.obsolete_tag], hashes=[download_id]
             )
@@ -55,12 +75,12 @@ class RemovalHandler:
         download_client_name = affected_download["downloadClient"]
         _, download_client_type = (
             self.settings.download_clients.get_download_client_by_name(
-                download_client_name
+                download_client_name, ready_only=True
             )
         )
 
         if download_client_type != "qbittorrent":
-            return "remove"  # handling is only implemented for qbit
+            return "remove"  # handling is only implemented for qbit (and only if ready)
 
         if len(self.settings.download_clients.qbittorrent) == 0:
             return "remove"  # qbit not configured, thus can't tag

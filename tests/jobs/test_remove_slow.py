@@ -391,3 +391,45 @@ async def test_find_affected_items_simple(queue_item, should_be_affected):
         assert (
             not affected_items
         ), f"Item {queue_item.get('downloadId')} should NOT be affected"
+
+
+@pytest.mark.asyncio
+async def test_add_download_client_resolves_ready_only():
+    """A not-ready client resolves to None so downstream job logic skips it."""
+    job = RemoveSlow.__new__(RemoveSlow)
+    job.settings = MagicMock()
+    job.settings.download_clients.get_download_client_by_name.return_value = (
+        None,
+        None,
+    )
+    job.queue = [{"downloadClient": "qBittorrent"}]
+
+    await job.add_download_client_to_queue_items()
+
+    job.settings.download_clients.get_download_client_by_name.assert_called_once_with(
+        "qBittorrent", ready_only=True
+    )
+    assert job.queue[0]["download_client"] is None
+    assert job.queue[0]["download_client_type"] is None
+
+
+@pytest.mark.asyncio
+async def test_update_bandwidth_usage_skips_degraded_client():
+    """A degraded client (mapped to None) must not have set_bandwidth_usage called."""
+    job = RemoveSlow.__new__(RemoveSlow)
+    job.queue = [{"download_client": None, "download_client_type": None}]
+
+    # Should be a no-op — no client to call, no exception.
+    await job.update_bandwidth_usage()
+
+
+@pytest.mark.asyncio
+async def test_update_bandwidth_usage_calls_ready_qbit():
+    """A ready qbit client still gets its bandwidth refreshed (regression)."""
+    client = AsyncMock()
+    job = RemoveSlow.__new__(RemoveSlow)
+    job.queue = [{"download_client": client, "download_client_type": "qbittorrent"}]
+
+    await job.update_bandwidth_usage()
+
+    client.set_bandwidth_usage.assert_awaited_once()

@@ -10,10 +10,13 @@ class JobParams:
     keep_archives = False
     message_patterns: list
     max_strikes: int
+    min_days_stalled: int = 0
     min_speed: int
     max_concurrent_searches: int
     min_days_between_searches: int
     target_tags: list
+    detect_via_missing_size: bool = False
+    skip_unreleased: bool = True
 
     def __init__(
         self,
@@ -21,19 +24,25 @@ class JobParams:
         keep_archives=None,
         message_patterns=None,
         max_strikes=None,
+        min_days_stalled=None,
         min_speed=None,
         max_concurrent_searches=None,
         min_days_between_searches=None,
         target_tags=None,
+        detect_via_missing_size=None,
+        skip_unreleased=None,
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
         self.message_patterns = message_patterns
         self.max_strikes = max_strikes
+        self.min_days_stalled = min_days_stalled
         self.min_speed = min_speed
         self.max_concurrent_searches = max_concurrent_searches
         self.min_days_between_searches = min_days_between_searches
         self.target_tags = target_tags
+        self.detect_via_missing_size = detect_via_missing_size
+        self.skip_unreleased = skip_unreleased
 
         # Remove attributes that are None to keep the object clean
         self._remove_none_attributes()
@@ -43,6 +52,10 @@ class JobParams:
         for attr in list(vars(self)):
             if getattr(self, attr) is None:
                 delattr(self, attr)
+
+    def __bool__(self):
+        """Allow direct truthiness checks to reflect whether this job is enabled."""
+        return bool(getattr(self, "enabled", False))
 
 
 class JobDefaults:
@@ -55,6 +68,7 @@ class JobDefaults:
     min_speed: int = 100
     message_patterns = ["*"]
     target_tags = []
+    skip_unreleased: bool = True
 
     def __init__(self, config, settings):
         job_defaults_config = config.get("job_defaults", {})
@@ -65,6 +79,14 @@ class JobDefaults:
             "min_days_between_searches",
             self.min_days_between_searches,
         )
+        self.skip_unreleased = job_defaults_config.get(
+            "skip_unreleased",
+            self.skip_unreleased,
+        )
+        if "min_days_stalled" in job_defaults_config:
+            logger.warning(
+                "job_defaults: min_days_stalled is ignored here. Set it under jobs: remove_stalled instead.",
+            )
         validate_data_types(self)
 
 
@@ -86,6 +108,7 @@ class Jobs:
         )
         self.remove_metadata_missing = JobParams(
             max_strikes=self.job_defaults.max_strikes,
+            detect_via_missing_size=False,
         )
         self.remove_missing_files = JobParams()
         self.remove_orphans = JobParams()
@@ -93,15 +116,20 @@ class Jobs:
             max_strikes=self.job_defaults.max_strikes,
             min_speed=self.job_defaults.min_speed,
         )
-        self.remove_stalled = JobParams(max_strikes=self.job_defaults.max_strikes)
+        self.remove_stalled = JobParams(
+            max_strikes=self.job_defaults.max_strikes,
+            min_days_stalled=0,
+        )
         self.remove_unmonitored = JobParams()
         self.search_unmet_cutoff = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
+            skip_unreleased=self.job_defaults.skip_unreleased,
         )
         self.search_missing = JobParams(
             max_concurrent_searches=self.job_defaults.max_concurrent_searches,
             min_days_between_searches=self.job_defaults.min_days_between_searches,
+            skip_unreleased=self.job_defaults.skip_unreleased,
         )
         self.detect_deletions = JobParams()
 
@@ -119,14 +147,14 @@ class Jobs:
         ):  # this triggers only when reading from yaml-file. for docker-compose, empty configs are not loaded, thus the entire job would not be parsed
             job.enabled = True
         elif isinstance(job_config, bool):
-            if job:
+            if job is not None:
                 job.enabled = job_config
             else:
                 job = JobParams(enabled=job_config)
         elif isinstance(job_config, dict):
             job_config.setdefault("enabled", True)
 
-            if job:
+            if job is not None:
                 for key, value in job_config.items():
                     setattr(job, key, value)
             else:

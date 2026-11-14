@@ -1,12 +1,15 @@
 from packaging import version
 
 from src.settings._constants import MinVersions
-from src.utils.common import make_request, wait_and_exit
+from src.utils.common import is_definitive_setup_error, make_request
 from src.utils.log_setup import logger
 
 
 class SabnzbdError(Exception):
-    pass
+    def __init__(self, message, tip="", definitive=False):
+        super().__init__(message)
+        self.tip = tip
+        self.definitive = definitive
 
 
 class SabnzbdClients(list):
@@ -36,6 +39,10 @@ class SabnzbdClient:
     """Represents a single SABnzbd client."""
 
     version: str = None
+    ready: bool = False
+    failure_kind: str = None  # None | "transient" | "definitive"
+    last_error: str = None
+    setup_tip: str = ""
 
     def __init__(
         self,
@@ -43,8 +50,10 @@ class SabnzbdClient:
         base_url: str = None,
         api_key: str = None,
         name: str = None,
+        timeout: int | None = None,
     ):
         self.settings = settings
+        self._timeout = timeout
         if not base_url:
             logger.error("Skipping SABnzbd client entry: 'base_url' is required.")
             error = "SABnzbd client must have a 'base_url'."
@@ -68,6 +77,13 @@ class SabnzbdClient:
 
         self._remove_none_attributes()
 
+    @property
+    def timeout(self):
+        instance_timeout = getattr(self, "_timeout", None)
+        if instance_timeout is not None:
+            return instance_timeout
+        return getattr(getattr(self.settings, "general", None), "request_timeout", 15)
+
     def _remove_none_attributes(self):
         """Remove attributes that are None to keep the object clean."""
         for attr in list(vars(self)):
@@ -80,7 +96,7 @@ class SabnzbdClient:
             "_download_clients_sabnzbd.py/fetch_version: Getting SABnzbd Version"
         )
         params = {"mode": "version", "apikey": self.api_key, "output": "json"}
-        response = await make_request("get", self.api_url, self.settings, params=params)
+        response = await make_request("get", self.api_url, self.settings, timeout=self.timeout, params=params)
         response_data = response.json()
         self.version = response_data.get("version", "unknown")
         logger.debug(
@@ -96,28 +112,42 @@ class SabnzbdClient:
                 f"Please update SABnzbd to at least version {min_version}. Current version: {self.version}",
             )
             error = f"SABnzbd version {self.version} is too old. Please update."
-            raise SabnzbdError(error)
+            raise SabnzbdError(error, definitive=True)
 
     async def check_sabnzbd_reachability(self):
-        """Check if the SABnzbd URL is reachable."""
+        """Check if the SABnzbd URL is reachable (and the API key works)."""
         try:
             logger.debug(
                 "_download_clients_sabnzbd.py/check_sabnzbd_reachability: Checking if SABnzbd is reachable"
             )
             params = {"mode": "version", "apikey": self.api_key, "output": "json"}
-            await make_request(
+            response = await make_request(
                 "get",
                 self.api_url,
                 self.settings,
+                timeout=self.timeout,
                 params=params,
                 log_error=False,
                 ignore_test_run=True,
             )
-
         except Exception as e:  # noqa: BLE001
             tip = "💡 Tip: Did you specify the URL and API key correctly?"
-            logger.error(f"-- | SABnzbd\n❗️ {e}\n{tip}\n")
-            wait_and_exit()
+            if str(e) != self.last_error:  # Only report new failure modes in full
+                logger.error(f"-- | SABnzbd\n❗️ {e}\n{tip}\n")
+            raise SabnzbdError(e, tip=tip) from e
+
+        # Bad API key: SABnzbd answers HTTP 200 with {"error": "API Key Incorrect"}.
+        # Treat as a definitive config error so we don't retry-loop forever.
+        try:
+            error_msg = response.json().get("error")
+        except (ValueError, AttributeError):
+            error_msg = None
+        if error_msg:
+            tip = "💡 Tip: Check the SABnzbd API key."
+            error = f"SABnzbd rejected the request: {error_msg}"
+            if error != self.last_error:
+                logger.error(f"-- | SABnzbd\n❗️ {error}\n{tip}\n")
+            raise SabnzbdError(error, tip=tip, definitive=True)
 
     async def check_connected(self):
         """Check if SABnzbd is connected and operational."""
@@ -129,6 +159,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
         status_data = response.json()
@@ -137,18 +168,31 @@ class SabnzbdClient:
         return "status" in status_data
 
     async def setup(self):
-        """Perform the SABnzbd setup by calling relevant managers."""
-        # Check reachability
-        await self.check_sabnzbd_reachability()
-
+        """Perform the SABnzbd setup; degrade instead of exiting on failure."""
         try:
+            await self.check_sabnzbd_reachability()
+
             # Fetch version and validate it
             await self.fetch_version()
             await self.validate_version()
+
             logger.info(f"OK | SABnzbd ({self.base_url})")
-        except SabnzbdError as e:
-            logger.error(f"SABnzbd version check failed: {e}")
-            wait_and_exit()  # Exit if version check fails
+            self.ready = True
+            self.failure_kind = None
+            self.last_error = None
+            self.setup_tip = ""
+        except Exception as e:  # noqa: BLE001
+            if not isinstance(e, SabnzbdError) and str(e) != self.last_error:
+                logger.error(
+                    f"Unhandled error during SABnzbd setup: {e}", exc_info=True
+                )
+            self.ready = False
+            self.failure_kind = (
+                "definitive" if is_definitive_setup_error(e) else "transient"
+            )
+            self.last_error = str(e)
+            self.setup_tip = getattr(e, "tip", "")
+        return self.ready
 
     async def get_queue_items(self):
         """Fetch queue items from SABnzbd."""
@@ -160,6 +204,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
         queue_data = response.json()
@@ -175,6 +220,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
         history_data = response.json()
@@ -196,6 +242,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
 
@@ -215,6 +262,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
 
@@ -234,6 +282,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
 
@@ -252,6 +301,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
 
@@ -308,6 +358,7 @@ class SabnzbdClient:
             "get",
             self.api_url,
             self.settings,
+            timeout=self.timeout,
             params=params,
         )
         status_data = response.json()

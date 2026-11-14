@@ -1,4 +1,6 @@
 # Cleans the download queue
+import requests
+
 from src.jobs.remove_bad_files import RemoveBadFiles
 from src.jobs.remove_done_seeding import RemoveDoneSeeding
 from src.jobs.remove_failed_downloads import RemoveFailedDownloads
@@ -24,12 +26,25 @@ class JobManager:
     async def run_jobs(self, arr):
         self.arr = arr
         logger.info(f"*** Running jobs on {self.arr.name} ({self.arr.base_url}) ***")
-        await self.removal_jobs()
-        await self.search_jobs()
+        await self._run_arr_job_group("Removal Jobs", self.removal_jobs)
+        await self._run_arr_job_group("Search Jobs", self.search_jobs)
 
     async def run_download_client_jobs(self):
         """Run jobs that operate on download clients directly."""
-        if not await self._download_clients_connected():
+        try:
+            if not await self._download_clients_connected():
+                return None
+        except requests.exceptions.RequestException as err:
+            logger.error(
+                f"Download client connectivity check failed with request error: {err}",
+                exc_info=True,
+            )
+            return None
+        except Exception as err:  # noqa: BLE001
+            logger.error(
+                f"Download client connectivity check failed: {err}",
+                exc_info=True,
+            )
             return None
 
         items_detected = 0
@@ -41,6 +56,9 @@ class JobManager:
             )
 
             for client in download_clients:
+                if not client.ready:
+                    continue
+
                 # Get jobs for this client
                 download_client_jobs = self._get_download_client_jobs_for_client(
                     client,
@@ -56,7 +74,9 @@ class JobManager:
 
                 for download_client_job in download_client_jobs:
                     if download_client_job.job.enabled:
-                        items_detected += await download_client_job.run()
+                        items_detected += await self._run_download_client_job(
+                            download_client_job, client
+                        )
 
         return items_detected
 
@@ -116,11 +136,47 @@ class JobManager:
                 "job_runner/full_queue at start: %s",
                 queue_manager.format_queue(full_queue),
             )
+            self._forget_deleted_downloads_still_in_queue(full_queue)
             return True
 
         self.arr.tracker.reset()
         logger.verbose("Removal Jobs: None triggered (Queue is empty)")
         return False
+
+    def _forget_deleted_downloads_still_in_queue(self, full_queue):
+        """
+        Drop downloads from the deleted tracker that are still in the queue.
+
+        The deleted tracker stops the same download from being removed twice
+        within one run, but is otherwise only cleared once the queue is empty.
+        A download that is still in the queue was evidently not removed, so
+        keeping it in the tracker would silently suppress every future removal
+        attempt for as long as decluttarr runs.
+
+        Downloads handled via obsolete_tag are exempt: they are meant to stay in
+        the queue, so their presence is not evidence of a failed removal.
+        """
+        queue_download_ids = {item.get("downloadId") for item in full_queue} - {None}
+        still_in_queue = {
+            download_id
+            for download_id in self.arr.tracker.deleted
+            if download_id in queue_download_ids
+            and download_id not in self.arr.tracker.obsolete_tagged
+        }
+        if not still_in_queue:
+            return
+
+        logger.debug(
+            "job_manager.py/_forget_deleted_downloads_still_in_queue: "
+            "Marked as deleted but still in queue (removal did not take effect), "
+            "thus eligible for removal again: %s",
+            ", ".join(sorted(still_in_queue)),
+        )
+        self.arr.tracker.deleted = [
+            download_id
+            for download_id in self.arr.tracker.deleted
+            if download_id not in still_in_queue
+        ]
 
     async def _download_clients_connected(self):
         for clients in [
@@ -133,6 +189,8 @@ class JobManager:
 
     async def _check_client_connection_status(self, clients):
         for client in clients:
+            if not client.ready:  # never-set-up client must not veto or be polled
+                continue
             logger.debug(
                 f"job_manager.py/_check_client_connection_status: Checking if {client.name} is connected",
             )
@@ -142,6 +200,37 @@ class JobManager:
                 )
                 return False
         return True
+
+    async def _run_arr_job_group(self, label, job_runner):
+        """Run one ARR job group and keep the main loop alive on failures."""
+        try:
+            await job_runner()
+        except requests.exceptions.RequestException as err:
+            logger.error(
+                f"{label}: request error on {self.arr.name} ({self.arr.base_url}): {err}",
+                exc_info=True,
+            )
+        except Exception as err:  # noqa: BLE001
+            logger.error(
+                f"{label}: unexpected error on {self.arr.name} ({self.arr.base_url}): {err}",
+                exc_info=True,
+            )
+
+    async def _run_download_client_job(self, download_client_job, client):
+        """Run one download-client job and keep the loop alive on failures."""
+        try:
+            return await download_client_job.run()
+        except requests.exceptions.RequestException as err:
+            logger.error(
+                f"Download-client job '{download_client_job.job_name}' failed on {client.name} ({client.base_url}) due to request error: {err}",
+                exc_info=True,
+            )
+        except Exception as err:  # noqa: BLE001
+            logger.error(
+                f"Download-client job '{download_client_job.job_name}' failed on {client.name} ({client.base_url}): {err}",
+                exc_info=True,
+            )
+        return 0
 
     def _get_removal_jobs(self):
         """

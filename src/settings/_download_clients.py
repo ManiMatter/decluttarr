@@ -1,6 +1,7 @@
 from src.settings._config_as_yaml import get_config_as_yaml
 from src.settings._download_clients_qbit import QbitClients
 from src.settings._download_clients_sabnzbd import SabnzbdClients
+from src.utils.log_setup import logger
 
 DOWNLOAD_CLIENT_TYPES = ["qbittorrent", "sabnzbd"]
 
@@ -30,6 +31,10 @@ class DownloadClients:
                     "protected_tag",
                 ]:
                     setattr(settings.general, key, None)
+                if settings.jobs.remove_stalled.min_days_stalled:
+                    logger.warning(
+                        "remove_stalled: min_days_stalled has no effect without a qBittorrent download client and will be ignored.",
+                    )
 
     def _set_sabnzbd_clients(self, config, settings):
         download_clients = config.get("download_clients", {})
@@ -81,11 +86,16 @@ class DownloadClients:
                 seen.add(name.lower())
 
     def get_download_client_by_name(
-        self, name: str, download_client_type: str | None = None
+        self,
+        name: str,
+        download_client_type: str | None = None,
+        ready_only: bool = False,
     ):
         """
         Retrieve the download client and download client type by its name.
         If download_client_type is provided, search only in that type.
+        If ready_only is True, a client that failed its startup check (not ready)
+        is treated as unavailable, so degraded clients never get called from jobs.
         """
         name_lower = name.lower()
         types_to_search = (
@@ -97,6 +107,8 @@ class DownloadClients:
 
             for download_client in download_clients:
                 if download_client.name.lower() == name_lower:
+                    if ready_only and not getattr(download_client, "ready", False):
+                        return None, None
                     return download_client, client_type
 
         return None, None

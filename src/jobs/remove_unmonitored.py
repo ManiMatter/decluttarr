@@ -1,4 +1,7 @@
+import requests
+
 from src.jobs.removal_job import RemovalJob
+from src.utils.log_setup import logger
 
 
 class RemoveUnmonitored(RemovalJob):
@@ -10,7 +13,24 @@ class RemoveUnmonitored(RemovalJob):
         monitored_download_ids = []
         for item in self.queue:
             detail_item_id = item["detail_item_id"]
-            if detail_item_id is None or await self.arr.is_monitored(detail_item_id):
+            try:
+                is_monitored = detail_item_id is None or await self.arr.is_monitored(
+                    detail_item_id
+                )
+            except requests.exceptions.HTTPError as err:
+                response = getattr(err, "response", None)
+                if response is None or response.status_code != 404:  # noqa: PLR2004
+                    raise
+                logger.warning(
+                    "Skipping stale queue item %s: %s %s no longer exists on %s.",
+                    item.get("downloadId"),
+                    self.arr.detail_item_key,
+                    detail_item_id,
+                    self.arr.name,
+                )
+                is_monitored = True
+
+            if is_monitored:
                 # When queue item has been matched to artist (for instance in lidarr) but not yet to the detail (eg. album), then detail key is logically missing.
                 # Thus we can't check if the item is monitored yet
                 monitored_download_ids.append(item["downloadId"])
