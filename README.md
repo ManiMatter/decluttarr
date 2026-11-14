@@ -646,8 +646,14 @@ This is the interesting section. It defines which job you want decluttarr to run
 -   Steers whether stalled downloads with no connections are removed from the queue
 -   Blocklisted: Yes
 -   Type: Boolean or Dict
--   Permissible Values: True, False or max_strikes (int)
+-   Permissible Values: True, False, max_strikes (int) or min_days_stalled (int)
 -   Is Mandatory: No (Defaults to False)
+-   Note:
+      - With min_days_stalled you can require a download to have transferred no data for a given number of days before it is removed. This is useful for long thresholds, where max_strikes alone is unreliable: strikes are held in memory and reset whenever decluttarr restarts, whereas this is read from qBittorrent on every run
+      - The days are counted from qBittorrent's `last_activity` for the torrent. Uploading counts as activity, so a stalled torrent that still seeds to others is not removed until that stops too. A torrent that never transferred anything is counted from when it was added
+      - Downloads younger than min_days_stalled are not flagged and do not collect strikes. Once they are old enough, the usual max_strikes apply on top, so removal comes after min_days_stalled plus max_strikes cycles
+      - Only applies to downloads in qBittorrent, and is ignored (with a warning) if no qBittorrent is configured. Downloads from other clients, or that qBittorrent does not know about, are not spared
+      - Can only be set on this job, not as a job default. If not provided, 0 is used, i.e. no minimum is enforced and behaviour is unchanged
 
 #### REMOVE_UNMONITORED
 

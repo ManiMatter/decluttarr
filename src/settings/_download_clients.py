@@ -1,6 +1,7 @@
 from src.settings._config_as_yaml import get_config_as_yaml
 from src.settings._download_clients_qbit import QbitClients
 from src.settings._download_clients_sabnzbd import SabnzbdClients
+from src.utils.log_setup import logger
 
 DOWNLOAD_CLIENT_TYPES = ["qbittorrent", "sabnzbd"]
 
@@ -30,6 +31,10 @@ class DownloadClients:
                     "protected_tag",
                 ]:
                     setattr(settings.general, key, None)
+                if settings.jobs.remove_stalled.min_days_stalled:
+                    logger.warning(
+                        "remove_stalled: min_days_stalled has no effect without a qBittorrent download client and will be ignored.",
+                    )
 
     def _set_sabnzbd_clients(self, config, settings):
         download_clients = config.get("download_clients", {})
