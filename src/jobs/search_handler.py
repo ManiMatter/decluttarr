@@ -67,12 +67,13 @@ class SearchHandler:
         return wanted
 
     def _filter_wanted_items(self, items, queue):
-        items = self._filter_unreleased(items)
-        if not items:
-            logger.verbose(
-                f"Job '{self.job_name}' did not trigger a search: None of the {self.search_target_label} are released yet"
-            )
-            return []
+        if getattr(self.job, "skip_unreleased", True):
+            items = self._filter_unreleased(items)
+            if not items:
+                logger.verbose(
+                    f"Job '{self.job_name}' did not trigger a search: None of the {self.search_target_label} are released yet"
+                )
+                return []
 
         items = self._filter_already_downloading(items, queue)
         if not items:

@@ -43,3 +43,24 @@ def test_dict_merges_onto_job_defaults():
     assert jobs.remove_failed_imports.enabled is True
     assert jobs.remove_failed_imports.message_patterns == ["Not an upgrade*"]
     assert jobs.remove_stalled.max_strikes == 5
+
+
+def test_skip_unreleased_defaults_to_true():
+    jobs = _jobs({"search_missing": True, "search_unmet_cutoff": True})
+    assert jobs.search_missing.skip_unreleased is True
+    assert jobs.search_unmet_cutoff.skip_unreleased is True
+
+
+def test_skip_unreleased_from_job_defaults_and_job_override():
+    from src.settings._jobs import Jobs
+
+    config = {
+        "job_defaults": {"skip_unreleased": False},
+        "jobs": {
+            "search_missing": True,
+            "search_unmet_cutoff": {"skip_unreleased": True},
+        },
+    }
+    jobs = Jobs(config, _FakeSettings())
+    assert jobs.search_missing.skip_unreleased is False
+    assert jobs.search_unmet_cutoff.skip_unreleased is True
