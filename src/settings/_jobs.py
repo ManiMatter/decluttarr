@@ -83,6 +83,10 @@ class JobDefaults:
             "skip_unreleased",
             self.skip_unreleased,
         )
+        if "min_days_stalled" in job_defaults_config:
+            logger.warning(
+                "job_defaults: min_days_stalled is ignored here. Set it under jobs: remove_stalled instead.",
+            )
         validate_data_types(self)
 
 

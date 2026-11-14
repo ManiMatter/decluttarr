@@ -1,3 +1,7 @@
+from unittest.mock import patch
+
+import pytest
+
 from src.settings._jobs import JobParams
 
 
@@ -77,3 +81,14 @@ def test_remove_stalled_min_days_stalled_read_from_job_config():
     jobs = _jobs({"remove_stalled": {"min_days_stalled": 7}})
 
     assert jobs.remove_stalled.min_days_stalled == 7
+
+
+@pytest.mark.parametrize(("job_defaults", "warned"), [({"min_days_stalled": 7}, True), ({}, False)])
+def test_min_days_stalled_under_job_defaults_warns(job_defaults, warned):
+    from src.settings._jobs import Jobs
+
+    with patch("src.settings._jobs.logger") as logger:
+        jobs = Jobs({"job_defaults": job_defaults, "jobs": {}}, _FakeSettings())
+
+    assert logger.warning.called is warned
+    assert jobs.remove_stalled.min_days_stalled == 0
