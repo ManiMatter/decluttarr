@@ -42,6 +42,7 @@ class General:
         self.public_tracker_handling = general_config.get(
             "public_tracker_handling", self.public_tracker_handling
         )
+
         self.obsolete_tag = general_config.get("obsolete_tag", self.obsolete_tag)
         self.protected_tag = general_config.get("protected_tag", self.protected_tag)
 

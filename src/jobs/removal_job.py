@@ -5,6 +5,10 @@ from src.jobs.strikes_handler import StrikesHandler
 from src.utils.log_setup import logger
 from src.utils.queue_manager import QueueManager
 
+# Protected downloads already reported as skipped (arr name, job name, download id), so the
+# activity log gets one entry per download instead of one per cycle.
+_REPORTED_PROTECTED_SKIPS = set()
+
 
 class RemovalJob(ABC):
     job_name = None
@@ -17,16 +21,18 @@ class RemovalJob(ABC):
     queue = []
 
     # Default class attributes (can be overridden in subclasses)
-    def __init__(self, arr, settings, job_name) -> None:
+    def __init__(self, arr, settings, job_name, event_bus=None) -> None:
         self.arr = arr
         self.settings = settings
         self.job_name = job_name
+        self.event_bus = event_bus
         self.job = getattr(self.settings.jobs, self.job_name)
         self.queue_manager = QueueManager(self.arr, self.settings)
         self.max_strikes = getattr(self.job, "max_strikes", None)
         if self.max_strikes:
             self.strikes_handler = StrikesHandler(
-                job_name=self.job_name, arr=self.arr, max_strikes=self.max_strikes
+                job_name=self.job_name, arr=self.arr, max_strikes=self.max_strikes,
+                event_bus=self.event_bus,
             )
 
     async def run(self) -> int:
@@ -49,8 +55,19 @@ class RemovalJob(ABC):
         )
 
         # -- Checks --
+        protected_downloads = {
+            download_id: dl_info
+            for download_id, dl_info in self.affected_downloads.items()
+            if download_id in self.arr.tracker.protected
+        }
         self._ignore_protected()
         self._ignore_degraded_client_downloads()
+
+        # Emit events only for downloads that can actually be acted on. Protected downloads
+        # are logged once as skipped, not flagged on every cycle.
+        await self._emit_flagged_events()
+        await self._emit_protected_skip_events(protected_downloads)
+
         if self.max_strikes:
             self.affected_downloads = self.strikes_handler.filter_strike_exceeds(
                 self.affected_downloads, self.queue
@@ -61,9 +78,44 @@ class RemovalJob(ABC):
             arr=self.arr,
             settings=self.settings,
             job_name=self.job_name,
+            event_bus=self.event_bus,
         ).remove_downloads(self.affected_downloads, self.blocklist)
 
         return len(self.affected_downloads)
+
+    async def _emit_flagged_events(self):
+        if not (self.event_bus and self.affected_downloads):
+            return
+        from src.web.events import Event, EventType
+        for download_id, dl_info in self.affected_downloads.items():
+            await self.event_bus.emit(Event(EventType.ITEM_FLAGGED, {
+                "arr_name": self.arr.name,
+                "arr_type": self.arr.arr_type,
+                "job_name": self.job_name,
+                "download_id": download_id,
+                "title": dl_info.get("title", "Unknown"),
+                "test_run": self.settings.general.test_run,
+            }))
+
+    async def _emit_protected_skip_events(self, protected_downloads):
+        """Log a protected download as skipped once (per process), instead of on every cycle."""
+        if not (self.event_bus and protected_downloads):
+            return
+        from src.web.events import Event, EventType
+        for download_id, dl_info in protected_downloads.items():
+            key = (self.arr.name, self.job_name, download_id)
+            if key in _REPORTED_PROTECTED_SKIPS:
+                continue
+            _REPORTED_PROTECTED_SKIPS.add(key)
+            await self.event_bus.emit(Event(EventType.ITEM_SKIPPED, {
+                "arr_name": self.arr.name,
+                "arr_type": self.arr.arr_type,
+                "job_name": self.job_name,
+                "download_id": download_id,
+                "title": dl_info.get("title", "Unknown"),
+                "details": {"reason": "protected"},
+                "test_run": self.settings.general.test_run,
+            }))
 
     def _ignore_protected(self):
         """

@@ -1,0 +1,40 @@
+{% if items %}
+<table role="grid" class="activity-feed-table">
+    <tbody>
+        {% for item in items %}
+        <tr class="{% if item.action == 'removed' %}action-removed{% elif item.action == 'recovered' %}action-recovered{% endif %}">
+            <td style="white-space: nowrap; width: 140px;">
+                <small>{{ item.timestamp }}</small>
+            </td>
+            <td>
+                <span class="badge" data-arr-type="{{ item.arr_type }}">{{ item.arr_name }}</span>
+            </td>
+            <td>
+                <span class="badge action-badge-{{ item.action }}">{{ item.action }}</span>
+            </td>
+            <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                title="{{ item.title }}">
+                {{ item.title }}
+            </td>
+            <td>
+                <code>{{ item.job_name }}</code>
+            </td>
+            {% if item.strikes is not none %}
+            <td>
+                <span class="badge strike-badge">{{ item.strikes }}/{{ item.max_strikes or '?' }}</span>
+            </td>
+            {% else %}
+            <td></td>
+            {% endif %}
+            {% if item.test_run %}
+            <td><span class="badge test-badge">TEST</span></td>
+            {% else %}
+            <td></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No recent activity</p>
+{% endif %}

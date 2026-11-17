@@ -43,6 +43,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends procps && \
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD pgrep -f main.py || exit 1
 
+EXPOSE 9999
+
 CMD ["python", "main.py"]
 
 # For debugging:

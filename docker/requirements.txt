@@ -13,3 +13,8 @@ pyyaml_env_tag==1.1
 demjson3==3.0.6
 ruff==0.11.11
 watchdog==6.0.0
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+aiosqlite==0.20.0
+jinja2==3.1.5
+python-multipart==0.0.20
