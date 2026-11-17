@@ -8,6 +8,7 @@ class EventType(str, Enum):
     CYCLE_START = "cycle_start"
     CYCLE_END = "cycle_end"
     ITEM_FLAGGED = "item_flagged"
+    ITEM_SKIPPED = "item_skipped"
     ITEM_REMOVED = "item_removed"
     ITEM_RECOVERED = "item_recovered"
     ITEM_PROTECTED = "item_protected"

@@ -136,6 +136,7 @@ class ActivityRecorder:
     async def _record(self, event: Event):
         action_map = {
             EventType.ITEM_FLAGGED: "flagged",
+            EventType.ITEM_SKIPPED: "skipped",
             EventType.ITEM_REMOVED: "removed",
             EventType.ITEM_RECOVERED: "recovered",
             EventType.ITEM_PROTECTED: "protected",
