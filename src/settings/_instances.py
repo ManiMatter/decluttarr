@@ -440,15 +440,16 @@ class ArrInstance:
     async def refresh_item(self, refresh_item_id):
         # Refresh the queue by making the POST request using an external make_request function
         logger.debug("_instances.py/_refresh_item: Refreshing Item")
+        if self.arr_type == "radarr":
+            payload = {"movieIds": [refresh_item_id]}
+        else:
+            payload = {self.refresh_item_id_key: refresh_item_id}
         await make_request(
             method="POST",
             endpoint=f"{self.api_url}/command",
             settings=self.settings,
             timeout=self.timeout,
-            json={
-                "name": self.refresh_item_command,
-                self.refresh_item_id_key: refresh_item_id,
-            },
+            json={"name": self.refresh_item_command, **payload},
             headers={"X-Api-Key": self.api_key},
         )
         return
