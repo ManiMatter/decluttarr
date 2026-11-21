@@ -70,6 +70,26 @@ async def test_get_refresh_item_calls_make_request_with_correct_params(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "arr_type, expected_json",
+    [
+        ("radarr", {"name": "RefreshMovie", "movieIds": [42]}),
+        ("sonarr", {"name": "RefreshSeries", "seriesId": 42}),
+    ],
+)
+async def test_refresh_item_sends_correct_command_body(arr_type, expected_json):
+    arr = ArrInstance({}, arr_type, f"http://{arr_type}/", "test_key")
+
+    with patch(
+        "src.settings._instances.make_request", new_callable=AsyncMock
+    ) as mock_make_request:
+        await arr.refresh_item(42)
+
+    mock_make_request.assert_awaited_once()
+    assert mock_make_request.await_args.kwargs["json"] == expected_json
+
+
+@pytest.mark.asyncio
 async def test_get_refresh_item_by_path_returns_correct_item():
     arr = ArrInstance({}, "radarr", "http://radarr/", "test_key")
 
