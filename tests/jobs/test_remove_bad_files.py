@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
@@ -371,3 +372,82 @@ def test_all_files_stopped(
         torrent_files, stoppable_files
     )
     assert result == all_files_stopped
+
+
+def _low_availability_file():
+    return {
+        "name": "Show/episode.mkv",
+        "file_name": "episode.mkv",
+        "file_extension": ".mkv",
+        "size": 100 * 1024 * 1024,
+        "priority": 1,
+        "progress": 0.1,
+        "availability": 0.4,
+        "index": 0,
+    }
+
+
+@pytest.mark.parametrize(
+    ("min_days", "age_days", "expected"),
+    [
+        (0, 0, False),  # Disabled: never too new
+        (3, 1, True),  # Younger than the minimum
+        (3, 5, False),  # Older than the minimum
+    ],
+)
+def test_is_too_new_for_availability_check(removal_job, min_days, age_days, expected):
+    removal_job.job.min_days_low_availability = min_days
+    qbit_item = {"added_on": time.time() - age_days * 86400}
+
+    # pylint: disable=W0212
+    assert removal_job._is_too_new_for_availability_check(qbit_item) is expected
+
+
+def test_low_availability_ignored_while_torrent_is_new(removal_job):
+    files = [_low_availability_file()]
+
+    stoppable = removal_job._get_stoppable_files(  # pylint: disable=W0212
+        files, check_availability=False
+    )
+
+    assert not stoppable
+
+
+def test_new_torrent_still_checked_for_bad_extension(removal_job):
+    file = {**_low_availability_file(), "file_extension": ".exe"}
+
+    stoppable = removal_job._get_stoppable_files(  # pylint: disable=W0212
+        [file], check_availability=False
+    )
+
+    assert len(stoppable) == 1
+    assert stoppable[0][1] == ["Bad extension: .exe"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("age_days", "removed"), [(1, False), (5, True)])
+async def test_handle_qbit_respects_min_days_low_availability(
+    removal_job, age_days, removed
+):
+    removal_job.job.min_days_low_availability = 3
+    removal_job.arr.tracker.extension_checked = []
+    removal_job.arr.tracker.protected = []
+    removal_job.queue = [{"downloadId": "ABC"}]
+    qbit_client = AsyncMock()
+    qbit_client.get_qbit_items.return_value = [
+        {
+            "hash": "abc",
+            "name": "Show",
+            "has_metadata": True,
+            "state": "downloading",
+            "availability": 0.4,
+            "added_on": time.time() - age_days * 86400,
+        }
+    ]
+    qbit_client.get_torrent_files.return_value = [_low_availability_file()]
+
+    affected = await removal_job._handle_qbit(  # pylint: disable=W0212
+        qbit_client, {"ABC"}
+    )
+
+    assert bool(affected) is removed

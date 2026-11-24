@@ -92,3 +92,15 @@ def test_min_days_stalled_under_job_defaults_warns(job_defaults, warned):
 
     assert logger.warning.called is warned
     assert jobs.remove_stalled.min_days_stalled == 0
+
+
+def test_remove_bad_files_min_days_low_availability_defaults_to_zero():
+    jobs = _jobs({"remove_bad_files": None})
+
+    assert jobs.remove_bad_files.min_days_low_availability == 0
+
+
+def test_remove_bad_files_min_days_low_availability_read_from_job_config():
+    jobs = _jobs({"remove_bad_files": {"min_days_low_availability": 3}})
+
+    assert jobs.remove_bad_files.min_days_low_availability == 3
