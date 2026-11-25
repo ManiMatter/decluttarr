@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 from src.jobs.removal_job import RemovalJob
@@ -23,6 +24,8 @@ ARCHIVE_EXTENSIONS = [
 BAD_KEYWORDS = ["Sample", "Trailer"]
 BAD_KEYWORD_LIMIT = 500 # Megabyte; do not remove items larger than that
 # fmt: on
+
+SECONDS_PER_DAY = 86400
 
 
 class RemoveBadFiles(RemovalJob):
@@ -97,7 +100,12 @@ class RemoveBadFiles(RemovalJob):
                 continue
 
             torrent_files = await self._get_active_files(qbit_client, qbit_item["hash"])
-            stoppable_files = self._get_stoppable_files(torrent_files)
+            stoppable_files = self._get_stoppable_files(
+                torrent_files,
+                check_availability=not self._is_too_new_for_availability_check(
+                    qbit_item
+                ),
+            )
 
             if not stoppable_files:
                 continue
@@ -164,7 +172,20 @@ class RemoveBadFiles(RemovalJob):
         for file, reasons in stopped_files:
             logger.verbose(f"- {file['file_name']} ({' & '.join(reasons)})")
 
-    def _get_stoppable_files(self, torrent_files):
+    def _is_too_new_for_availability_check(self, qbit_item) -> bool:
+        """
+        Check if the torrent was added less than min_days_low_availability ago.
+
+        Availability of a fresh torrent is often still ramping up as peers connect,
+        so its files should not be dropped for low availability yet.
+        """
+        min_days = getattr(self.job, "min_days_low_availability", 3)
+        added_on = qbit_item.get("added_on")
+        if not min_days or not added_on:
+            return False
+        return time.time() - added_on < min_days * SECONDS_PER_DAY
+
+    def _get_stoppable_files(self, torrent_files, check_availability=True):
         """Return files that can be marked as 'Do not Download' based on specific conditions."""
         stoppable_files = []
 
@@ -182,7 +203,7 @@ class RemoveBadFiles(RemovalJob):
                     reasons.append("Contains bad keyword in path")
 
                 # Check if the file has low availability
-                if self._is_complete_partial(file):
+                if check_availability and self._is_complete_partial(file):
                     reasons.append(
                         f"Low availability: {file['availability'] * 100:.1f}%"
                     )

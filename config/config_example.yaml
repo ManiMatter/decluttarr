@@ -20,6 +20,7 @@ job_defaults:
 jobs:
   remove_bad_files:
     # keep_archives: true
+    # min_days_low_availability: 3
   remove_done_seeding:
     # target_tags:
     #   - "Obsolete"

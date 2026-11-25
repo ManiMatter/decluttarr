@@ -8,6 +8,7 @@ class JobParams:
 
     enabled: bool = False
     keep_archives = False
+    min_days_low_availability: int = 3
     message_patterns: list
     max_strikes: int
     min_days_stalled: int = 0
@@ -22,6 +23,7 @@ class JobParams:
         self,
         enabled=None,
         keep_archives=None,
+        min_days_low_availability=None,
         message_patterns=None,
         max_strikes=None,
         min_days_stalled=None,
@@ -34,6 +36,7 @@ class JobParams:
     ):
         self.enabled = enabled
         self.keep_archives = keep_archives
+        self.min_days_low_availability = min_days_low_availability
         self.message_patterns = message_patterns
         self.max_strikes = max_strikes
         self.min_days_stalled = min_days_stalled
@@ -100,7 +103,10 @@ class Jobs:
         del self.job_defaults
 
     def _set_job_defaults(self):
-        self.remove_bad_files = JobParams(keep_archives=self.job_defaults.keep_archives)
+        self.remove_bad_files = JobParams(
+            keep_archives=self.job_defaults.keep_archives,
+            min_days_low_availability=3,
+        )
         self.remove_done_seeding = JobParams(target_tags=self.job_defaults.target_tags)
         self.remove_failed_downloads = JobParams()
         self.remove_failed_imports = JobParams(
