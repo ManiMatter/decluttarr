@@ -179,7 +179,7 @@ class RemoveBadFiles(RemovalJob):
         Availability of a fresh torrent is often still ramping up as peers connect,
         so its files should not be dropped for low availability yet.
         """
-        min_days = getattr(self.job, "min_days_low_availability", 0)
+        min_days = getattr(self.job, "min_days_low_availability", 3)
         added_on = qbit_item.get("added_on")
         if not min_days or not added_on:
             return False

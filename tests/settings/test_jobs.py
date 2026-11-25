@@ -94,8 +94,14 @@ def test_min_days_stalled_under_job_defaults_warns(job_defaults, warned):
     assert jobs.remove_stalled.min_days_stalled == 0
 
 
-def test_remove_bad_files_min_days_low_availability_defaults_to_zero():
+def test_remove_bad_files_min_days_low_availability_defaults_to_three():
     jobs = _jobs({"remove_bad_files": None})
+
+    assert jobs.remove_bad_files.min_days_low_availability == 3
+
+
+def test_remove_bad_files_min_days_low_availability_can_be_turned_off():
+    jobs = _jobs({"remove_bad_files": {"min_days_low_availability": 0}})
 
     assert jobs.remove_bad_files.min_days_low_availability == 0
 

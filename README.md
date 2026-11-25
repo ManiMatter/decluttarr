@@ -544,7 +544,7 @@ This is the interesting section. It defines which job you want decluttarr to run
       - If you turn keep_archives on (default: false), packaged files (rar, zip, 7zip, etc.) are not removed
       - This may be helpful if you use a tool such as [unpackerr](https://github.com/Unpackerr/unpackerr) that can handle it
       - However, you may also find that these packages may contain bad/malicious files (which will not removed by decluttarr)
-      - With min_days_low_availability (default: 0) files of a torrent are not stopped for low availability until the torrent was added at least that many days ago. This avoids removing fresh torrents whose availability is still building up. Bad extensions and bad keywords are still checked right away
+      - With min_days_low_availability (default: 3) files of a torrent are not stopped for low availability until the torrent was added at least that many days ago. This avoids removing fresh torrents whose availability is still building up. Set it to 0 to check availability right away. Bad extensions and bad keywords are still checked right away
 
 #### REMOVE_DONE_SEEDING
 
